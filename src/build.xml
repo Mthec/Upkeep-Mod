@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="jar" name="Upkeep Cost Settings">
+    <target name="jar">
+        <jar destfile="../out/jar/mods/upkeepcosts/upkeepcosts.jar">
+            <fileset dir="../out/production/NoMinimumUpkeep" includes="mod/" />
+        </jar>
+        <copy file="upkeepcosts.properties" tofile="../out/jar/mods/upkeepcosts.properties" />
+        <copy todir="C:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher">
+            <fileset dir="../out/jar" />
+        </copy>
+    </target>
+    <target name="zip" depends="jar">
+        <zip destfile="../upkeepcosts.zip">
+            <zipfileset dir="../out/jar" />
+        </zip>
+    </target>
+</project>
