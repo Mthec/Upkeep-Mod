@@ -13,21 +13,23 @@ import java.util.Properties;
 import java.util.logging.Logger;
 
 public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener {
-    private static final Logger logger = Logger.getLogger(UpkeepCosts.class.getName());
-    Long tile_upkeep;
-    Long tile_cost;
-    Long perimeter_cost;
-    Long perimeter_upkeep;
-    Long normal_guard_cost;
-    Long normal_guard_upkeep;
-    Long epic_guard_cost;
-    Long epic_guard_upkeep;
-    Long minimum_upkeep;
+    protected static final Logger logger = Logger.getLogger(UpkeepCosts.class.getName());
+    protected String NO_UPKEEP = "Upkeep is not enabled on this server, upkeep costs will have no effect.";
+    protected String FREE_DEEDS = "Deeds are free on this server, costs will have no effect.";
+    public Long tile_upkeep;
+    public Long tile_cost;
+    public Long perimeter_cost;
+    public Long perimeter_upkeep;
+    public Long normal_guard_cost;
+    public Long normal_guard_upkeep;
+    public Long epic_guard_cost;
+    public Long epic_guard_upkeep;
+    public Long minimum_upkeep;
 
     @Override
     public void configure(Properties properties) {
-        for (Field field : this.getClass().getDeclaredFields()) {
-            if (field.getName().equals("logger")) {
+        for (Field field : this.getClass().getFields()) {
+            if (!(field.getType().isAssignableFrom(Long.class))) {
                 continue;
             }
             try {
@@ -49,10 +51,10 @@ public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener
     public void onServerStarted() {
         ServerEntry local = Servers.localServer;
         if (!local.isUpkeep()) {
-            logger.info("Upkeep is not enabled on this server, upkeep costs will have no effect.");
+            logger.info(NO_UPKEEP);
         }
-        if (!local.isFreeDeeds()) {
-            logger.info("Deeds are free on this server, costs will have no effect.");
+        if (local.isFreeDeeds()) {
+            logger.info(FREE_DEEDS);
         }
         if (tile_cost != null) {
             Villages.TILE_COST = tile_cost;
@@ -98,14 +100,7 @@ public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener
             Villages.MINIMUM_UPKEEP_STRING = (new Change(Villages.MINIMUM_UPKEEP)).getChangeString();
         }
 
-        logger.info(String.format("Upkeep costs are as follows: Tile %s, %s - Perimeter %s, %s - Guards %s, %s - Minimum %s",
-                Villages.TILE_COST_STRING,
-                Villages.TILE_UPKEEP_STRING,
-                Villages.PERIMETER_COST_STRING,
-                Villages.PERIMETER_UPKEEP_STRING,
-                Villages.GUARD_COST_STRING,
-                Villages.GUARD_UPKEEP_STRING,
-                Villages.MINIMUM_UPKEEP_STRING));
+        logValues();
     }
 
     void negative (String property) {
@@ -114,5 +109,16 @@ public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener
     
     void invalid (String property) {
         logger.warning(String.format("Invalid value for %s.  Value will not be changed.", property));
+    }
+
+    void logValues () {
+        logger.info(String.format("Upkeep costs are as follows: Tile %s, %s - Perimeter %s, %s - Guards %s, %s - Minimum %s",
+                Villages.TILE_COST_STRING,
+                Villages.TILE_UPKEEP_STRING,
+                Villages.PERIMETER_COST_STRING,
+                Villages.PERIMETER_UPKEEP_STRING,
+                Villages.GUARD_COST_STRING,
+                Villages.GUARD_UPKEEP_STRING,
+                Villages.MINIMUM_UPKEEP_STRING));
     }
 }

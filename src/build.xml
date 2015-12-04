@@ -2,16 +2,32 @@
 <project default="jar" name="Upkeep Cost Settings">
     <target name="jar">
         <jar destfile="../out/jar/mods/upkeepcosts/upkeepcosts.jar">
-            <fileset dir="../out/production/NoMinimumUpkeep" includes="mod/" />
+            <fileset dir="../out/production/NoMinimumUpkeep" includes="**/UpkeepCosts.class" />
         </jar>
         <copy file="upkeepcosts.properties" tofile="../out/jar/mods/upkeepcosts.properties" />
+
+        <jar destfile="../out/jarui/mods/upkeepcosts/upkeepcosts.jar">
+            <fileset dir="../out/production/NoMinimumUpkeep" includes="**/Upkeep*" excludes="locale/**" />
+        </jar>
+        <copy file="upkeepcosts.properties" tofile="../out/jarui/mods/upkeepcosts.properties" />
+        <propertyfile file="../out/jarui/mods/upkeepcosts.properties">
+            <entry key="classname" value="mod.wurmonline.mods.upkeepcosts.UpkeepCostsUI" />
+        </propertyfile>
+
         <copy todir="C:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher">
-            <fileset dir="../out/jar" />
+            <fileset dir="../out/jarui" />
+        </copy>
+        <copy todir="C:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher/locales">
+            <fileset dir="locale" />
         </copy>
     </target>
     <target name="zip" depends="jar">
         <zip destfile="../upkeepcosts.zip">
             <zipfileset dir="../out/jar" />
+        </zip>
+        <zip destfile="../upkeepcostsui.zip">
+            <zipfileset dir="../out/jarui" />
+            <zipfileset file="locale/UpkeepCosts.properties" fullpath="locale/UpkeepCosts.properties" />
         </zip>
     </target>
 </project>
