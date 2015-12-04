@@ -19,7 +19,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -27,11 +26,9 @@ import java.util.logging.Level;
 public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
     ServerGuiController controller;
     UpkeepPropertySheet upkeepPropertySheet;
-    ResourceBundle messages = LocaleHelper.getBundle("UpkeepCosts");
 
     public UpkeepCostsUI () {
-        NO_UPKEEP = messages.getString("no_upkeep");
-        FREE_DEEDS = messages.getString("free_deeds");
+        messages = LocaleHelper.getBundle("UpkeepCosts");
     }
 
     @Override
@@ -75,9 +72,8 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
                 Villages.MINIMUM_UPKEEP_STRING));
     }
 
-    File getFile () {
-        return new File(Paths.get(controller.getCurrentDir(), "mods", "upkeepcosts", "upkeepcosts.properties").toUri());
-    }
+    @Override
+    void lateConfigure () {}
 
     @FXML
     ScrollPane container;

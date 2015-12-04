@@ -1,5 +1,6 @@
 package mod.wurmonline.mods.upkeepcosts;
 
+import com.wurmonline.server.ServerDirInfo;
 import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Change;
@@ -8,14 +9,18 @@ import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
 import org.gotti.wurmunlimited.modloader.interfaces.ServerStartedListener;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmMod;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Paths;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener {
     protected static final Logger logger = Logger.getLogger(UpkeepCosts.class.getName());
-    protected String NO_UPKEEP = "Upkeep is not enabled on this server, upkeep costs will have no effect.";
-    protected String FREE_DEEDS = "Deeds are free on this server, costs will have no effect.";
     public Long tile_upkeep;
     public Long tile_cost;
     public Long perimeter_cost;
@@ -25,6 +30,7 @@ public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener
     public Long epic_guard_cost;
     public Long epic_guard_upkeep;
     public Long minimum_upkeep;
+    ResourceBundle messages;
 
     @Override
     public void configure(Properties properties) {
@@ -49,12 +55,13 @@ public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener
 
     @Override
     public void onServerStarted() {
+        lateConfigure();
         ServerEntry local = Servers.localServer;
         if (!local.isUpkeep()) {
-            logger.info(NO_UPKEEP);
+            logger.info(messages.getString("no_upkeep"));
         }
         if (local.isFreeDeeds()) {
-            logger.info(FREE_DEEDS);
+            logger.info(messages.getString("free_deeds"));
         }
         if (tile_cost != null) {
             Villages.TILE_COST = tile_cost;
@@ -101,6 +108,68 @@ public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener
         }
 
         logValues();
+    }
+
+    File getFile () {
+        return new File(Paths.get(ServerDirInfo.getFileDBPath(), "mods", "upkeepcosts", "upkeepcosts.properties").toUri());
+    }
+
+    void lateConfigure () {
+        System.out.println("Late configure");
+        messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCosts");
+        try {
+            File file = getFile();
+            boolean created = file.getParentFile().mkdirs();
+            if (!created) {
+                created = file.createNewFile();
+            }
+
+            if (created) {
+                saveUpkeep();
+                return;
+            }
+
+            FileInputStream stream = new FileInputStream(file.toString());
+            Properties properties = new Properties();
+            properties.load(stream);
+            configure(properties);
+        } catch (IOException ex) {
+            logger.warning(messages.getString("load_properties_error"));
+            ex.printStackTrace();
+        }
+    }
+
+    void saveUpkeep () {
+        File file = getFile();
+        Properties properties = new Properties();
+
+        try {
+            boolean created = file.createNewFile();
+            if (!created) {
+                FileInputStream stream = new FileInputStream(file.toString());
+                properties.load(stream);
+            }
+        } catch (IOException ex) {
+            logger.warning(messages.getString("load_properties_error"));
+            ex.printStackTrace();
+        }
+        for (Field field : this.getClass().getFields()) {
+            if (!(field.getType().isAssignableFrom(Long.class))) {
+                continue;
+            }
+            try {
+                properties.setProperty(field.getName(), field.get(this).toString());
+            } catch (IllegalAccessException ex) {
+                logger.warning(messages.getString("error"));
+                ex.printStackTrace();
+            }
+        }
+        try (FileOutputStream stream = new FileOutputStream(file.toString())) {
+            properties.store(stream, "");
+        } catch (IOException ex) {
+            logger.warning(messages.getString("save_properties_error"));
+            ex.printStackTrace();
+        }
     }
 
     void negative (String property) {

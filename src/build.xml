@@ -3,6 +3,7 @@
     <target name="jar">
         <jar destfile="../out/jar/mods/upkeepcosts/upkeepcosts.jar">
             <fileset dir="../out/production/NoMinimumUpkeep" includes="**/UpkeepCosts.class" />
+            <zipfileset file="../out/production/NoMinimumUpkeep/locale/UpkeepCosts.properties" prefix="mod/wurmonline/mods/upkeepcosts" />
         </jar>
         <copy file="upkeepcosts.properties" tofile="../out/jar/mods/upkeepcosts.properties" />
 
@@ -13,6 +14,10 @@
         <propertyfile file="../out/jarui/mods/upkeepcosts.properties">
             <entry key="classname" value="mod.wurmonline.mods.upkeepcosts.UpkeepCostsUI" />
         </propertyfile>
+
+        <copy todir="C:/Steam/steamapps/common/Wurm Unlimited Dedicated Server/">
+            <fileset dir="../out/jar" />
+        </copy>
 
         <copy todir="C:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher">
             <fileset dir="../out/jarui" />
