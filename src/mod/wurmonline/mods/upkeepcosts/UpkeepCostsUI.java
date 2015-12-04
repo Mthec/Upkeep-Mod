@@ -20,12 +20,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 
 public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
     ServerGuiController controller;
     UpkeepPropertySheet upkeepPropertySheet;
+    boolean blockLateConfigure = false;
 
     public UpkeepCostsUI () {
         messages = LocaleHelper.getBundle("UpkeepCosts");
@@ -34,6 +34,7 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
     @Override
     public Region getRegion(ServerGuiController guiController) {
         controller = guiController;
+        blockLateConfigure = true;
         try {
             FXMLLoader fx = new FXMLLoader(UpkeepCostsUI.class.getResource("UpkeepCosts.fxml"), LocaleHelper.getBundle("UIWindow"));
             fx.setClassLoader(this.getClass().getClassLoader());
@@ -73,7 +74,11 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
     }
 
     @Override
-    void lateConfigure () {}
+    void lateConfigure () {
+        if (!blockLateConfigure) {
+            super.lateConfigure();
+        }
+    }
 
     @FXML
     ScrollPane container;
@@ -132,7 +137,6 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
 
     @FXML
     void initialize () {
-        System.out.println("Initializing");
         ButtonType check = saveCheck();
         if (check == ButtonType.CANCEL) {
             return;

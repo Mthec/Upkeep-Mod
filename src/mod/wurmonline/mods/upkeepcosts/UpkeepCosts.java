@@ -30,7 +30,7 @@ public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener
     public Long epic_guard_cost;
     public Long epic_guard_upkeep;
     public Long minimum_upkeep;
-    ResourceBundle messages;
+    ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCosts");;
 
     @Override
     public void configure(Properties properties) {
@@ -115,8 +115,6 @@ public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener
     }
 
     void lateConfigure () {
-        System.out.println("Late configure");
-        messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCosts");
         try {
             File file = getFile();
             boolean created = file.getParentFile().mkdirs();

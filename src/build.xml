@@ -9,6 +9,7 @@
 
         <jar destfile="../out/jarui/mods/upkeepcosts/upkeepcosts.jar">
             <fileset dir="../out/production/NoMinimumUpkeep" includes="**/Upkeep*" excludes="locale/**" />
+            <zipfileset file="../out/production/NoMinimumUpkeep/locale/UpkeepCosts.properties" prefix="mod/wurmonline/mods/upkeepcosts" />
         </jar>
         <copy file="upkeepcosts.properties" tofile="../out/jarui/mods/upkeepcosts.properties" />
         <propertyfile file="../out/jarui/mods/upkeepcosts.properties">
