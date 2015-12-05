@@ -19,6 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -149,20 +150,25 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
                 created = file.createNewFile();
             }
 
+            FileInputStream stream;
+            Properties properties = new Properties();
+
             if (created) {
+                stream = new FileInputStream(Paths.get("mods", "upkeepcosts.properties").toString());
+                properties.load(stream);
+                configure(properties);
                 upkeepPropertySheet = new UpkeepPropertySheet(this);
                 upkeepPropertySheet.setAllToChanged();
                 saveUpkeep();
                 container.setContent(upkeepPropertySheet);
-                return;
             }
-
-            FileInputStream stream = new FileInputStream(file.toString());
-            Properties properties = new Properties();
-            properties.load(stream);
-            configure(properties);
-            upkeepPropertySheet = new UpkeepPropertySheet(this);
-            container.setContent(upkeepPropertySheet);
+            else {
+                stream = new FileInputStream(file.toString());
+                properties.load(stream);
+                configure(properties);
+                upkeepPropertySheet = new UpkeepPropertySheet(this);
+                container.setContent(upkeepPropertySheet);
+            }
         } catch (IOException ex) {
             logger.warning(messages.getString("load_properties_error"));
             ex.printStackTrace();
