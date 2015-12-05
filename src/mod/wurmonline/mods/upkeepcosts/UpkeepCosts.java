@@ -5,7 +5,10 @@ import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Change;
 import com.wurmonline.server.villages.Villages;
+import javassist.*;
+import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
+import org.gotti.wurmunlimited.modloader.interfaces.PreInitable;
 import org.gotti.wurmunlimited.modloader.interfaces.ServerStartedListener;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmMod;
 
@@ -19,7 +22,7 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener {
+public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerStartedListener {
     protected static final Logger logger = Logger.getLogger(UpkeepCosts.class.getName());
     public Long tile_upkeep;
     public Long tile_cost;
@@ -187,5 +190,20 @@ public class UpkeepCosts implements WurmMod, Configurable, ServerStartedListener
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
                 Villages.MINIMUM_UPKEEP_STRING));
+    }
+
+    @Override
+    public void preInit() {
+        // Note for Future - VillageFoundationQuestion.getFoundingCharge shows settlement form discount.
+        // i.e. 10s for form, money goes into upkeep.
+        try {
+            ClassPool pool = HookManager.getInstance().getClassPool();
+            CtClass question = pool.getCtClass("com.wurmonline.server.questions.VillageFoundationQuestion");
+            CtMethod getFoundingCharge = question.getDeclaredMethod("getFoundingCharge");
+            getFoundingCharge.setBody("return com.wurmonline.server.Servers.localServer.isFreeDeeds()?0L:this.getFoundingCost() - (this.deed.getTemplateId() == 862?0L:70000L);");
+        } catch (NotFoundException | CannotCompileException ex) {
+            ex.printStackTrace();
+            System.exit(-1);
+        }
     }
 }
