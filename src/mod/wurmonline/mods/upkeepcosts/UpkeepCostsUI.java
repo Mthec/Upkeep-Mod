@@ -66,12 +66,6 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
     }
 
     void logValues () {
-        String into = "3 silver";
-        try {
-            into = new Change((Long)VillageFoundationQuestion.class.getField("MINIMUM_LEFT_UPKEEP").get(VillageFoundationQuestion.class)).getChangeString();
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            ex.printStackTrace();
-        }
         logger.info(MessageFormat.format(messages.getString("all_values"),
                 Villages.TILE_COST_STRING,
                 Villages.TILE_UPKEEP_STRING,
@@ -80,7 +74,8 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
                 Villages.MINIMUM_UPKEEP_STRING,
-                into));
+                VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP,
+                VillageFoundationQuestion.NAME_CHANGE_COST));
     }
 
     @Override

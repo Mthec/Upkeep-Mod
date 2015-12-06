@@ -3,12 +3,14 @@
     <target name="jar">
         <jar destfile="../out/jar/mods/upkeepcosts/upkeepcosts.jar">
             <fileset dir="../out/production/NoMinimumUpkeep" includes="**/UpkeepCosts.class" />
+            <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageFoundationQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/locale/UpkeepCosts.properties" prefix="mod/wurmonline/mods/upkeepcosts" />
         </jar>
         <copy file="upkeepcosts.properties" tofile="../out/jar/mods/upkeepcosts.properties" />
 
         <jar destfile="../out/jarui/mods/upkeepcosts/upkeepcosts.jar">
             <fileset dir="../out/production/NoMinimumUpkeep" includes="**/Upkeep*" excludes="locale/**" />
+            <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageFoundationQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/locale/UpkeepCosts.properties" prefix="mod/wurmonline/mods/upkeepcosts" />
         </jar>
         <copy file="upkeepcosts.properties" tofile="../out/jarui/mods/upkeepcosts.properties" />
