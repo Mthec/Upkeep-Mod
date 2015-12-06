@@ -1,6 +1,8 @@
 package mod.wurmonline.mods.upkeepcosts;
 
 import com.ibm.icu.text.MessageFormat;
+import com.wurmonline.server.economy.Change;
+import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.villages.Villages;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -64,6 +66,12 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
     }
 
     void logValues () {
+        String into = "3 silver";
+        try {
+            into = new Change((Long)VillageFoundationQuestion.class.getField("MINIMUM_LEFT_UPKEEP").get(VillageFoundationQuestion.class)).getChangeString();
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
         logger.info(MessageFormat.format(messages.getString("all_values"),
                 Villages.TILE_COST_STRING,
                 Villages.TILE_UPKEEP_STRING,
@@ -71,7 +79,8 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
                 Villages.PERIMETER_UPKEEP_STRING,
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
-                Villages.MINIMUM_UPKEEP_STRING));
+                Villages.MINIMUM_UPKEEP_STRING,
+                into));
     }
 
     @Override

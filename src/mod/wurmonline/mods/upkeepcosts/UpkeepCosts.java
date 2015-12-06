@@ -4,13 +4,18 @@ import com.wurmonline.server.ServerDirInfo;
 import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Change;
+import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.villages.Villages;
 import javassist.*;
+import javassist.bytecode.*;
+import org.gotti.wurmunlimited.modloader.classhooks.CodeReplacer;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
+import org.gotti.wurmunlimited.modloader.classhooks.LocalNameLookup;
 import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
 import org.gotti.wurmunlimited.modloader.interfaces.PreInitable;
 import org.gotti.wurmunlimited.modloader.interfaces.ServerStartedListener;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmMod;
+import sun.invoke.util.BytecodeDescriptor;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -33,6 +38,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public Long epic_guard_cost;
     public Long epic_guard_upkeep;
     public Long minimum_upkeep;
+    public Long into_upkeep;
     ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCosts");;
 
     @Override
@@ -43,7 +49,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             }
             try {
                 field.set(this, Long.valueOf(properties.getProperty(field.getName())));
-                if ((Long)field.get(this) < 0) {
+                if ((Long) field.get(this) < 0) {
                     field.set(this, null);
                     negative(field.getName());
                 }
@@ -108,6 +114,14 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         if (minimum_upkeep != null) {
             Villages.MINIMUM_UPKEEP = minimum_upkeep;
             Villages.MINIMUM_UPKEEP_STRING = (new Change(Villages.MINIMUM_UPKEEP)).getChangeString();
+        }
+
+        if (into_upkeep != null) {
+            try {
+                VillageFoundationQuestion.class.getField("MINIMUM_LEFT_UPKEEP").set(VillageFoundationQuestion.class, into_upkeep);
+            } catch (IllegalAccessException | NoSuchFieldException ex) {
+                ex.printStackTrace();
+            }
         }
 
         logValues();
@@ -182,14 +196,21 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     }
 
     void logValues () {
-        logger.info(String.format("Upkeep costs are as follows: Tile %s, %s - Perimeter %s, %s - Guards %s, %s - Minimum %s",
+        String into = "3 silver";
+        try {
+            into = new Change((Long)VillageFoundationQuestion.class.getField("MINIMUM_LEFT_UPKEEP").get(VillageFoundationQuestion.class)).getChangeString();
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
+        logger.info(String.format("Upkeep costs are as follows: Tile %s, %s - Perimeter %s, %s - Guards %s, %s - Minimum %s - Into Upkeep %s",
                 Villages.TILE_COST_STRING,
                 Villages.TILE_UPKEEP_STRING,
                 Villages.PERIMETER_COST_STRING,
                 Villages.PERIMETER_UPKEEP_STRING,
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
-                Villages.MINIMUM_UPKEEP_STRING));
+                Villages.MINIMUM_UPKEEP_STRING,
+                into));
     }
 
     @Override
@@ -199,9 +220,34 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         try {
             ClassPool pool = HookManager.getInstance().getClassPool();
             CtClass question = pool.getCtClass("com.wurmonline.server.questions.VillageFoundationQuestion");
+            CtField leftUpkeep = question.getField("MINIMUM_LEFT_UPKEEP");
+            leftUpkeep.setModifiers(Modifier.setPublic(Modifier.STATIC));
+
             CtMethod getFoundingCharge = question.getDeclaredMethod("getFoundingCharge");
-            getFoundingCharge.setBody("return com.wurmonline.server.Servers.localServer.isFreeDeeds()?0L:this.getFoundingCost() - (this.deed.getTemplateId() == 862?0L:70000L);");
-        } catch (NotFoundException | CannotCompileException ex) {
+
+
+            //LocalVariableAttribute va = (LocalVariableAttribute) getFoundingCharge.getMethodInfo().getAttribute("LocalAttributeTable");
+
+
+
+            getFoundingCharge.setBody("return com.wurmonline.server.Servers.localServer.isFreeDeeds()?0L:this.getFoundingCost() + this.MINIMUM_LEFT_UPKEEP - (this.deed.getTemplateId() == 862?0L:100000L);");
+
+            CtMethod parseQuestion5 = question.getDeclaredMethod("parseVillageFoundationQuestion5");
+            parseQuestion5.insertAt(26, true, "long left = this.deed.getTemplateId() == 862?this.MINIMUM_LEFT_UPKEEP:0L;");
+            CodeAttribute codeAttribute = parseQuestion5.getMethodInfo().getCodeAttribute();
+            Bytecode bytecode = new Bytecode(codeAttribute.getConstPool());
+            bytecode.addLdc2w(30000);
+            byte[] search = bytecode.get();
+            bytecode = new Bytecode(codeAttribute.getConstPool());
+            bytecode.addGetstatic(question, "MINIMUM_LEFT_UPKEEP", Descriptor.of(CtClass.longType));
+
+            byte[] replace = bytecode.get();
+            new CodeReplacer(codeAttribute).replaceCode(search, replace);
+            //parseQuestion5.insertAt(54, true, "com.wurmonline.server.villages.Villages.getVillage(this.villageName).plan.updateGuardPlan(0, this.MINIMUM_LEFT_UPKEEP, this.selectedGuards);");
+            parseQuestion5.getMethodInfo().rebuildStackMap(pool);
+
+            question.writeFile();
+        } catch (NotFoundException | CannotCompileException | IOException | BadBytecode ex) {
             ex.printStackTrace();
             System.exit(-1);
         }

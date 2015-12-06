@@ -27,6 +27,7 @@ public class UpkeepPropertySheet extends VBox implements MiscConstants {
         list.add(new UpkeepItem(UpkeepPropertyType.EPIC_GUARD_COST, "", messages.getString("epic_guard_cost"), messages.getString("epic_guard_cost_description"), true, upkeep.epic_guard_cost));
         list.add(new UpkeepItem(UpkeepPropertyType.EPIC_GUARD_UPKEEP, "", messages.getString("epic_guard_upkeep"), messages.getString("epic_guard_upkeep_description"), true, upkeep.epic_guard_upkeep));
         list.add(new UpkeepItem(UpkeepPropertyType.MINIMUM_UPKEEP, "", messages.getString("minimum_upkeep"), messages.getString("minimum_upkeep_description"), true, upkeep.minimum_upkeep));
+        list.add(new UpkeepItem(UpkeepPropertyType.INTO_UPKEEP, "", messages.getString("into_upkeep"), messages.getString("into_upkeep_description"), true, upkeep.into_upkeep));
 
         PropertySheet propertySheet = new PropertySheet(list);
         VBox.setVgrow(propertySheet, Priority.ALWAYS);
@@ -108,6 +109,7 @@ public class UpkeepPropertySheet extends VBox implements MiscConstants {
         NORMAL_GUARD_UPKEEP,
         EPIC_GUARD_COST,
         EPIC_GUARD_UPKEEP,
-        MINIMUM_UPKEEP
+        MINIMUM_UPKEEP,
+        INTO_UPKEEP
     }
 }
