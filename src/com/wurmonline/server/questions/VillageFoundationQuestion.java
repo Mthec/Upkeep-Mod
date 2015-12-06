@@ -1637,7 +1637,7 @@ public final class VillageFoundationQuestion extends Question implements Village
                 Village k = Villages.getVillage(this.deed.getData2());
                 if(k.mayChangeName()) {
                     buf.append("input{maxchars=\"40\";id=\"vname\";text=\"").append(this.villageName).append("\"}");
-                    buf.append("text{type=\"bold\";color=\"255,50,0\";text=\"NOTE: Changing name will").append(Servers.localServer.isFreeDeeds() ? "" : " cost 5 silver,").append(" remove all faith bonuses, and lock the name for 6 months.\"}");
+                    buf.append("text{type=\"bold\";color=\"255,50,0\";text=\"NOTE: Changing name will").append(Servers.localServer.isFreeDeeds() ? "" : " cost " + new Change(NAME_CHANGE_COST).getChangeString() + ",").append(" remove all faith bonuses, and lock the name for 6 months.\"}");
                 } else {
                     buf.append("text{text=\"").append(this.villageName).append("\"}");
                     buf.append("passthrough{id=\"vname\";text=\"").append(this.villageName).append("\"}");

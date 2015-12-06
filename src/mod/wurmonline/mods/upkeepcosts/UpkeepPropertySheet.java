@@ -111,7 +111,7 @@ public class UpkeepPropertySheet extends VBox implements MiscConstants {
         EPIC_GUARD_COST,
         EPIC_GUARD_UPKEEP,
         MINIMUM_UPKEEP,
-        NAME_CHANGE,
-        INTO_UPKEEP
+        INTO_UPKEEP,
+        NAME_CHANGE
     }
 }

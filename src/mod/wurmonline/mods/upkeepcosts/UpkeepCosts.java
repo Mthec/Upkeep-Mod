@@ -203,8 +203,8 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
                 Villages.MINIMUM_UPKEEP_STRING,
-                VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP,
-                VillageFoundationQuestion.NAME_CHANGE_COST));
+                new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
+                new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString()));
     }
 
     @Override

@@ -74,8 +74,8 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
                 Villages.MINIMUM_UPKEEP_STRING,
-                VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP,
-                VillageFoundationQuestion.NAME_CHANGE_COST));
+                new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
+                new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString()));
     }
 
     @Override
@@ -89,39 +89,21 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
     ScrollPane container;
 
     @FXML
+    @Override
     void saveUpkeep () {
         if (upkeepPropertySheet.haveChanges()) {
-            File file = getFile();
-            Properties properties = new Properties();
-
-            try {
-                boolean created = file.createNewFile();
-                if (!created) {
-                    FileInputStream stream = new FileInputStream(file.toString());
-                    properties.load(stream);
-                }
-            } catch (IOException ex) {
-                logger.warning(messages.getString("load_properties_error"));
-                ex.printStackTrace();
-            }
             for (Field field : this.getClass().getFields()) {
                 if (!(field.getType().isAssignableFrom(Long.class))) {
                     continue;
                 }
                 try {
                     field.set(this, upkeepPropertySheet.list.get(UpkeepPropertySheet.UpkeepPropertyType.valueOf(field.getName().toUpperCase()).ordinal()).getValue());
-                    properties.setProperty(field.getName(), field.get(this).toString());
                 } catch (IllegalAccessException ex) {
                     logger.warning(messages.getString("error"));
                     ex.printStackTrace();
                 }
             }
-            try (FileOutputStream stream = new FileOutputStream(file.toString())) {
-                properties.store(stream, "");
-            } catch (IOException ex) {
-                logger.warning(messages.getString("save_properties_error"));
-                ex.printStackTrace();
-            }
+            super.saveUpkeep();
             upkeepPropertySheet.clearChanges();
             if (controller.serverIsRunning()) {
                 onServerStarted();
