@@ -6,6 +6,7 @@ import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Change;
 import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.villages.Villages;
+import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -216,7 +217,12 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             CtClass question = pool.getCtClass("com.wurmonline.server.questions.VillageFoundationQuestion");
             question.detach();
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageFoundationQuestion.class"));
-        } catch (NotFoundException | IOException ex) {
+
+            CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");
+            guardPlan.getDeclaredMethod("getCostForGuards").insertAt(2, true, "long cost = (long)numGuards * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;");
+            guardPlan.writeFile();
+
+        } catch (NotFoundException | CannotCompileException | IOException ex) {
             ex.printStackTrace();
             System.exit(-1);
         }
