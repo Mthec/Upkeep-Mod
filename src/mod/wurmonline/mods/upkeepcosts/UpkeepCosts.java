@@ -219,7 +219,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageFoundationQuestion.class"));
 
             CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");
-            guardPlan.getDeclaredMethod("getCostForGuards").insertAt(2, true, "long cost = (long)numGuards * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;");
+            guardPlan.getDeclaredMethod("getCostForGuards").setBody("return (long)$1 * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;");
             guardPlan.writeFile();
 
         } catch (NotFoundException | CannotCompileException | IOException ex) {
