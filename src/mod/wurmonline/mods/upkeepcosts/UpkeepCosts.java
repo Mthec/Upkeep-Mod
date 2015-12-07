@@ -179,7 +179,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             }
         }
         try (FileOutputStream stream = new FileOutputStream(file.toString())) {
-            properties.store(stream, "");
+            properties.store(stream, messages.getString("properties_comment"));
         } catch (IOException ex) {
             logger.warning(messages.getString("save_properties_error"));
             ex.printStackTrace();
