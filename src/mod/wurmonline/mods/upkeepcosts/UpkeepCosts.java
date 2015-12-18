@@ -7,6 +7,7 @@ import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Change;
 import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.utils.DbUtilities;
+import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Villages;
 import javassist.*;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -218,7 +219,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         if (!createdDb) {
             Connection dbcon = null;
             PreparedStatement ps = null;
-            ResultSet rs;
+            ResultSet rs = null;
 
             try {
                 dbcon = DbConnector.getZonesDbCon();
@@ -241,7 +242,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             } catch (SQLException ex) {
                 logger.log(Level.WARNING, ex.getMessage(), ex);
             } finally {
-                DbUtilities.closeDatabaseObjects(ps, null);
+                DbUtilities.closeDatabaseObjects(ps, rs);
                 DbConnector.returnConnection(dbcon);
             }
             createdDb = true;
