@@ -289,16 +289,22 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "            ;" +
                     "        }" +
                     "double upkeepD = this.calculateUpkeep(true);" +
-                    "if (this.output) {" +
-                    "System.out.println(\"Village upkeep - \" + this.getVillage().getName() + \" paid \" + ((upkeepD < 1.0D) ? \"0\" : Double.toString(upkeepD)) + \" this turn.  Upkeep buffer is now \" + Double.toString(this.upkeepBuffer));" +
-                    "} else {System.out.println(\"test\");}" +
+                    "if (upkeepD < 0.0D) {" +
+                    "    logger.severe(\"Why is upkeep less than 0.0?\");" +
+                    "}" +
                     "if (upkeepD < 1.0D) {" +
                     "    this.upkeepBuffer += upkeepD;" +
+                    "    upkeepD = 0.0D;" +
                     "}" +
-                    "if (this.upkeepBuffer < 1.0D) {" +
-                    "    return false;" +
-                    "} else {" +
+                    "while (this.upkeepBuffer >= 1.0D) {" +
                     "    this.upkeepBuffer -= 1.0D;" +
+                    "    upkeepD += 1.0D;" +
+                    "}" +
+                    "if (this.output) {" +
+                    "    System.out.println(\"Village upkeep - \" + this.getVillage().getName() + \" paid \" + Double.toString(upkeepD) + \" this turn.  Upkeep buffer is now \" + Double.toString(this.upkeepBuffer));" +
+                    "}" +
+                    "if (upkeepD == 0.0D) {" +
+                    "    return false;" +
                     "}" +
                     "        long upkeep = (long)upkeepD;" +
                     "        if(this.moneyLeft - upkeep <= 0L) {" +
