@@ -7,7 +7,6 @@ import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Change;
 import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.utils.DbUtilities;
-import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Villages;
 import javassist.*;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -46,6 +45,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public Long name_change;
     ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCosts");
     private boolean createdDb = false;
+    boolean output = false;
 
     @Override
     public void configure(Properties properties) {
@@ -268,6 +268,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             getVillageId.setBody("{return this.villageId;}");
             getVillageId.setModifiers(Modifier.PUBLIC);
             guardPlan.addMethod(getVillageId);
+            CtField output = new CtField(CtClass.booleanType, "output", guardPlan);
+            output.setModifiers(Modifier.setPublic(Modifier.STATIC));
+            guardPlan.addField(output, CtField.Initializer.constant(false));
 
             CtMethod getTimeLeft = guardPlan.getDeclaredMethod("getTimeLeft");
             getTimeLeft.insertAfter("if ($_ != 0L) {" +
@@ -286,6 +289,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "            ;" +
                     "        }" +
                     "double upkeepD = this.calculateUpkeep(true);" +
+                    "if (this.output) {" +
+                    "System.out.println(\"Village upkeep - \" + this.getVillage().getName() + \" paid \" + ((upkeepD < 1.0D) ? \"0\" : Double.toString(upkeepD)) + \" this turn.  Upkeep buffer is now \" + Double.toString(this.upkeepBuffer));" +
+                    "} else {System.out.println(\"test\");}" +
                     "if (upkeepD < 1.0D) {" +
                     "    this.upkeepBuffer += upkeepD;" +
                     "}" +
@@ -431,7 +437,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 try {
                     dbcon = DbConnector.getZonesDbCon();
                     ps = dbcon.prepareStatement("DELETE FROM UPKEEP_BUFFER WHERE VILLAGEID=?");
-                    ps.setInt(1, (Integer)proxy.getClass().getSuperclass().getDeclaredMethod("getVillageId").invoke(proxy));
+                    ps.setInt(1, (Integer) proxy.getClass().getSuperclass().getDeclaredMethod("getVillageId").invoke(proxy));
                     ps.executeUpdate();
                 } catch (SQLException ex) {
                     logger.log(Level.WARNING, ex.getMessage(), ex);

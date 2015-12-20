@@ -3,6 +3,7 @@ package mod.wurmonline.mods.upkeepcosts;
 import com.ibm.icu.text.MessageFormat;
 import com.wurmonline.server.economy.Change;
 import com.wurmonline.server.questions.VillageFoundationQuestion;
+import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Villages;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,19 +14,22 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
 import mod.wurmonline.serverlauncher.LocaleHelper;
+import mod.wurmonline.serverlauncher.ServerController;
 import mod.wurmonline.serverlauncher.gui.ServerGuiController;
+import org.gotti.wurmunlimited.modloader.interfaces.WurmArgsMod;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmUIMod;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Level;
 
-public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
+public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod, WurmArgsMod {
     ServerGuiController controller;
     UpkeepPropertySheet upkeepPropertySheet;
     boolean blockLateConfigure = false;
@@ -82,6 +86,12 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
     void lateConfigure () {
         if (!blockLateConfigure) {
             super.lateConfigure();
+        }
+        try {
+            GuardPlan.class.getDeclaredField("output").setBoolean(GuardPlan.class, true);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            ex.printStackTrace();
+            System.exit(-1);
         }
     }
 
@@ -158,6 +168,20 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod {
         } catch (IOException ex) {
             logger.warning(messages.getString("load_properties_error"));
             ex.printStackTrace();
+        }
+    }
+
+    @Override
+    public Set<String> getArgs() {
+        Set<String> set = new HashSet<>();
+        set.add("upkeep_output");
+        return set;
+    }
+
+    @Override
+    public void parseArgs(ServerController controller) {
+        if (Boolean.valueOf(controller.arguments.getOptionValue("upkeep_output"))) {
+            output = true;
         }
     }
 }
