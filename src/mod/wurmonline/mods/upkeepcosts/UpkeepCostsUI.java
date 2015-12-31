@@ -16,6 +16,7 @@ import javafx.scene.layout.Region;
 import mod.wurmonline.serverlauncher.LocaleHelper;
 import mod.wurmonline.serverlauncher.ServerController;
 import mod.wurmonline.serverlauncher.gui.ServerGuiController;
+import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmArgsMod;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmUIMod;
 
@@ -88,7 +89,7 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod, WurmArgsMod
             super.lateConfigure();
         }
         try {
-            GuardPlan.class.getDeclaredField("output").setBoolean(GuardPlan.class, true);
+            GuardPlan.class.getDeclaredField("output").setBoolean(GuardPlan.class, output);
         } catch (IllegalAccessException | NoSuchFieldException ex) {
             ex.printStackTrace();
             System.exit(-1);
@@ -180,8 +181,7 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod, WurmArgsMod
 
     @Override
     public void parseArgs(ServerController controller) {
-        if (Boolean.valueOf(controller.arguments.getOptionValue("upkeep_output"))) {
-            output = true;
-        }
+        String value = controller.arguments.getOptionValue("upkeep_output");
+        output = value != null && value.equals("true");
     }
 }
