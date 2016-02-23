@@ -33,6 +33,7 @@ import com.wurmonline.server.zones.Zones;
 import com.wurmonline.shared.util.StringUtilities;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -787,7 +788,7 @@ public final class VillageFoundationQuestion extends Question implements Village
         }
     }
 
-    private long getExpandMoneyNeededFromBank(long moneyNeeded, Village village) {
+    static long getExpandMoneyNeededFromBank(long moneyNeeded, Village village) {
         long moneyAvailInPlan = village.getAvailablePlanMoney();
         return moneyNeeded > moneyAvailInPlan?moneyNeeded - moneyAvailInPlan:0L;
     }
@@ -893,7 +894,7 @@ public final class VillageFoundationQuestion extends Question implements Village
 
                     boolean iox1 = true;
                     if(!this.permanent && moneyNeeded > 0L) {
-                        long builder1 = this.getExpandMoneyNeededFromBank(moneyNeeded, oldvill);
+                        long builder1 = getExpandMoneyNeededFromBank(moneyNeeded, oldvill);
                         if(builder1 > 0L) {
                             if(Servers.localServer.testServer) {
                                 this.getResponder().getCommunicator().sendNormalServerMessage("We need " + moneyNeeded + ". " + builder1 + " must be taken from the bank.");
@@ -1018,9 +1019,10 @@ public final class VillageFoundationQuestion extends Question implements Village
         Map decliners1 = Villages.canFoundVillage(this.selectedWest, this.selectedEast, this.selectedNorth, this.selectedSouth, this.tokenx, this.tokeny, this.initialPerimeter, true, oldvill1, this.getResponder());
         if(!decliners1.isEmpty()) {
             this.getResponder().getCommunicator().sendSafeServerMessage("You cannot found the settlement here:");
+            Iterator focusZoneReject1 = decliners1.keySet().iterator();
 
-            for (Object o : decliners1.keySet()) {
-                Village checkFocusZones2 = (Village) o;
+            while(focusZoneReject1.hasNext()) {
+                Village checkFocusZones2 = (Village)focusZoneReject1.next();
                 String reason = (String) decliners1.get(checkFocusZones2);
                 if (reason.startsWith("has perimeter")) {
                     this.getResponder().getCommunicator().sendSafeServerMessage(checkFocusZones2.getName() + " " + reason);
@@ -1806,7 +1808,7 @@ public final class VillageFoundationQuestion extends Question implements Village
                     Change availc = new Change(avail);
                     buf.append("text{type=\"italic\";text=\"This change will cost ").append(cfull.getChangeString()).append(".\"}");
                     buf.append("text{type=\"italic\";text=\"Up to ").append(availc.getChangeString()).append(" can be taken from the settlement upkeep funds.\"}");
-                    long leftc = this.getExpandMoneyNeededFromBank(fullcost, toCharge);
+                    long leftc = getExpandMoneyNeededFromBank(fullcost, toCharge);
                     if(leftc > 0L) {
                         Change restc = new Change(leftc);
                         buf.append("text{type=\"italic\";text=\"").append(restc.getChangeString()).append(" will be taken from your bank account.\"}");

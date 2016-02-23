@@ -43,6 +43,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public Long minimum_upkeep;
     public Long into_upkeep;
     public Long name_change;
+    public Long free_tiles;
+    // TODO - Decide what to do about Long vs. Integer.  configure
+    public Integer free_perimeter;
     ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCosts");
     private boolean createdDb = false;
     boolean output = false;
@@ -88,6 +91,15 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             Villages.TILE_UPKEEP_STRING = (new Change(Villages.TILE_UPKEEP)).getChangeString();
         }
 
+        if (free_tiles != null) {
+            try {
+                Villages.class.getDeclaredField("FREE_TILES").set(Villages.class, free_tiles);
+            } catch (IllegalAccessException | NoSuchFieldException ex) {
+                logger.warning(messages.getString("free_tiles_not_set"));
+                ex.printStackTrace();
+            }
+        }
+
         if (perimeter_cost != null) {
             Villages.PERIMETER_COST = perimeter_cost;
             Villages.PERIMETER_COST_STRING = (new Change(Villages.PERIMETER_COST)).getChangeString();
@@ -96,6 +108,15 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         if (perimeter_upkeep != null) {
             Villages.PERIMETER_UPKEEP = perimeter_upkeep;
             Villages.PERIMETER_UPKEEP_STRING = (new Change(Villages.PERIMETER_UPKEEP)).getChangeString();
+        }
+
+        if (free_perimeter != null) {
+            try {
+                Villages.class.getDeclaredField("FREE_PERIMETER").set(Villages.class, free_perimeter);
+            } catch (IllegalAccessException | NoSuchFieldException ex) {
+                logger.warning(messages.getString("free_perimeter_not_set"));
+                ex.printStackTrace();
+            }
         }
         
         if (local.isChallengeOrEpicServer()) {
@@ -259,10 +280,10 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageFoundationQuestion.class"));
 
             CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
-            CtField freeTiles = new CtField(CtClass.longType, "freeTiles", villages);
+            CtField freeTiles = new CtField(CtClass.longType, "FREE_TILES", villages);
             freeTiles.setModifiers(Modifier.PUBLIC);
             villages.addField(freeTiles, "0L");
-            CtField freePerimeter = new CtField(CtClass.intType, "freePerimeter", villages);
+            CtField freePerimeter = new CtField(CtClass.intType, "FREE_PERIMETER", villages);
             freePerimeter.setModifiers(Modifier.PUBLIC);
             villages.addField(freePerimeter, "5");
 
@@ -294,9 +315,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "        } else {\n" +
                     "            try {\n" +
                     "                Village sv = this.getVillage();\n" +
-                    "                long tiles = (long)sv.getNumTiles() - Villages.freeTiles;" +
+                    "                long tiles = (long)sv.getNumTiles() - Villages.FREE_TILES;" +
                     "                long cost = tiles > 0L ? tiles : 0L * Villages.TILE_UPKEEP;\n" +
-                    "                long perimeter = (long)(sv.getPerimeterDiameterX() * sv.getPerimeterDiameterY() - (sv.getDiameterX() + Villages.freePerimeter + Villages.freePerimeter) * (sv.getDiameterY() + Villages.freePerimeter + Villages.freePerimeter));\" +" +
+                    "                long perimeter = (long)(sv.getPerimeterDiameterX() * sv.getPerimeterDiameterY() - (sv.getDiameterX() + Villages.FREE_PERIMETER + Villages.FREE_PERIMETER) * (sv.getDiameterY() + Villages.FREE_PERIMETER + Villages.FREE_PERIMETER));\" +" +
                     "                cost += perimeter > 0L ? perimeter : 0L * Villages.PERIMETER_UPKEEP;\n" +
                     "                cost += getCostForGuards(this.hiredGuardNumber);\n" +
                     "                if(sv.isCapital()) {\n" +
@@ -378,7 +399,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "            long var12 = this.getTimeLeft();" +
                     "            if(var12 < 3600000L) {" +
                     "                try {" +
-                    "                    this.getVillage().broadCastAlert(\"The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.\");" +
+                    "                    this.getVillage().broadCastAlert(\"The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.\", (byte)2);" +
                     "                    this.getVillage().broadCastAlert(\"Any traders who are citizens of \" + this.getVillage().getName() + \" will disband without refund.\");" +
                     "                } catch (com.wurmonline.server.villages.NoSuchVillageException var9) {" +
                     "                    logger.log(java.util.logging.Level.WARNING, \"No Village? \" + this.villageId, var9);" +
@@ -388,7 +409,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "                    this.lastSentWarning = System.currentTimeMillis();" +
                     "" +
                     "                    try {" +
-                    "                        this.getVillage().broadCastAlert(\"The village is disbanding within 24 hours. You may add upkeep money to the village coffers at the token.\");" +
+                    "                        this.getVillage().broadCastAlert(\"The village is disbanding within 24 hours. You may add upkeep money to the village coffers at the token.\", (byte)2);" +
                     "                        this.getVillage().broadCastAlert(\"Any traders who are citizens of \" + this.getVillage().getName() + \" will disband without refund.\");" +
                     "                    } catch (com.wurmonline.server.villages.NoSuchVillageException var8) {" +
                     "                        logger.log(java.util.logging.Level.WARNING, \"No Village? \" + this.villageId, var8);" +
@@ -398,7 +419,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "                this.lastSentWarning = System.currentTimeMillis();" +
                     "" +
                     "                try {" +
-                    "                    this.getVillage().broadCastAlert(\"The village is disbanding within one week. Due to the low morale this gives, the guards have ceased their general maintenance of structures.\");" +
+                    "                    this.getVillage().broadCastAlert(\"The village is disbanding within one week. Due to the low morale this gives, the guards have ceased their general maintenance of structures.\", (byte)4);" +
                     "                    this.getVillage().broadCastAlert(\"Any traders who are citizens of \" + this.getVillage().getName() + \" will disband without refund.\");" +
                     "                } catch (com.wurmonline.server.villages.NoSuchVillageException var7) {" +
                     "                    logger.log(java.util.logging.Level.WARNING, \"No Village? \" + this.villageId, var7);" +
