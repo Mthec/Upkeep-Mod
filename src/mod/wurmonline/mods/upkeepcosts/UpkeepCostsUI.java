@@ -69,19 +69,6 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod, WurmArgsMod
         logger.warning(MessageFormat.format(messages.getString("invalid"), property));
     }
 
-    void logValues () {
-        logger.info(MessageFormat.format(messages.getString("all_values"),
-                Villages.TILE_COST_STRING,
-                Villages.TILE_UPKEEP_STRING,
-                Villages.PERIMETER_COST_STRING,
-                Villages.PERIMETER_UPKEEP_STRING,
-                Villages.GUARD_COST_STRING,
-                Villages.GUARD_UPKEEP_STRING,
-                Villages.MINIMUM_UPKEEP_STRING,
-                new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
-                new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString()));
-    }
-
     @Override
     void lateConfigure () {
         if (!blockLateConfigure) {

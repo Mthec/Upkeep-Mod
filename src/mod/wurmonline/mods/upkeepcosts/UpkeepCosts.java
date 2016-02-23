@@ -1,5 +1,6 @@
 package mod.wurmonline.mods.upkeepcosts;
 
+import com.ibm.icu.text.MessageFormat;
 import com.wurmonline.server.DbConnector;
 import com.wurmonline.server.ServerDirInfo;
 import com.wurmonline.server.ServerEntry;
@@ -236,7 +237,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             ex.printStackTrace();
         }
 
-        logger.info(String.format("Upkeep costs are as follows: Tile %s, %s, %s tiles - Perimeter %s, %s, %s tiles - Guards %s, %s - Minimum %s - Into Upkeep %s - Name change %s",
+        logger.info(MessageFormat.format(messages.getString("all_values"),
                 Villages.TILE_COST_STRING,
                 Villages.TILE_UPKEEP_STRING,
                 FREE_TILES,
