@@ -294,6 +294,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             question.detach();
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageFoundationQuestion.class"));
 
+            // TODO - Minimum drain.  It's in GuardPlan.
+
+            // TODO - How to handle minimum.
             CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
             CtField freeTiles = new CtField(CtClass.longType, "FREE_TILES", villages);
             freeTiles.setModifiers(Modifier.PUBLIC);
