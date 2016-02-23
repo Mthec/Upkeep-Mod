@@ -45,8 +45,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public Long into_upkeep;
     public Long name_change;
     public Long free_tiles;
-    // TODO - Decide what to do about Long vs. Integer.  configure
-    public Integer free_perimeter;
+    public Long free_perimeter;
     ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCosts");
     private boolean createdDb = false;
     boolean output = false;
@@ -333,7 +332,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "                Village sv = this.getVillage();\n" +
                     "                long tiles = (long)sv.getNumTiles() - Villages.FREE_TILES;" +
                     "                long cost = tiles > 0L ? tiles : 0L * Villages.TILE_UPKEEP;\n" +
-                    "                long perimeter = (long)(sv.getPerimeterDiameterX() * sv.getPerimeterDiameterY() - (sv.getDiameterX() + Villages.FREE_PERIMETER + Villages.FREE_PERIMETER) * (sv.getDiameterY() + Villages.FREE_PERIMETER + Villages.FREE_PERIMETER));\" +" +
+                    "                long perimeter = ((long)sv.getPerimeterDiameterX() * (long)sv.getPerimeterDiameterY() - ((long)sv.getDiameterX() + Villages.FREE_PERIMETER + Villages.FREE_PERIMETER) * ((long)sv.getDiameterY() + Villages.FREE_PERIMETER + Villages.FREE_PERIMETER));\" +" +
                     "                cost += perimeter > 0L ? perimeter : 0L * Villages.PERIMETER_UPKEEP;\n" +
                     "                cost += getCostForGuards(this.hiredGuardNumber);\n" +
                     "                if(sv.isCapital()) {\n" +

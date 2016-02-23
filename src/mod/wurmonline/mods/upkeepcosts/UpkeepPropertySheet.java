@@ -20,8 +20,10 @@ public class UpkeepPropertySheet extends VBox implements MiscConstants {
         list = FXCollections.observableArrayList();
         list.add(new UpkeepItem(UpkeepPropertyType.TILE_COST, "", messages.getString("tile_cost"), messages.getString("tile_cost_description"), true, upkeep.tile_cost));
         list.add(new UpkeepItem(UpkeepPropertyType.TILE_UPKEEP, "", messages.getString("tile_upkeep"), messages.getString("tile_upkeep_description"), true, upkeep.tile_upkeep));
+        list.add(new UpkeepItem(UpkeepPropertyType.FREE_TILES, "", messages.getString("free_tiles"), messages.getString("free_tiles_description"), true, upkeep.free_tiles));
         list.add(new UpkeepItem(UpkeepPropertyType.PERIMETER_COST, "", messages.getString("perimeter_cost"), messages.getString("perimeter_cost_description"), true, upkeep.perimeter_cost));
         list.add(new UpkeepItem(UpkeepPropertyType.PERIMETER_UPKEEP, "", messages.getString("perimeter_upkeep"), messages.getString("perimeter_upkeep_description"), true, upkeep.perimeter_upkeep));
+        list.add(new UpkeepItem(UpkeepPropertyType.FREE_PERIMETER, "", messages.getString("free_perimeter"), messages.getString("free_perimeter_description"), true, upkeep.free_perimeter));
         list.add(new UpkeepItem(UpkeepPropertyType.NORMAL_GUARD_COST, "", messages.getString("normal_guard_cost"), messages.getString("normal_guard_cost_description"), true, upkeep.normal_guard_cost));
         list.add(new UpkeepItem(UpkeepPropertyType.NORMAL_GUARD_UPKEEP, "", messages.getString("normal_guard_upkeep"), messages.getString("normal_guard_upkeep_description"), true, upkeep.normal_guard_upkeep));
         list.add(new UpkeepItem(UpkeepPropertyType.EPIC_GUARD_COST, "", messages.getString("epic_guard_cost"), messages.getString("epic_guard_cost_description"), true, upkeep.epic_guard_cost));
@@ -104,8 +106,10 @@ public class UpkeepPropertySheet extends VBox implements MiscConstants {
     enum UpkeepPropertyType {
         TILE_COST,
         TILE_UPKEEP,
+        FREE_TILES,
         PERIMETER_COST,
         PERIMETER_UPKEEP,
+        FREE_PERIMETER,
         NORMAL_GUARD_COST,
         NORMAL_GUARD_UPKEEP,
         EPIC_GUARD_COST,
