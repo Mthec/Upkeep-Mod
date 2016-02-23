@@ -223,11 +223,26 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     }
 
     void logValues () {
-        logger.info(String.format("Upkeep costs are as follows: Tile %s, %s - Perimeter %s, %s - Guards %s, %s - Minimum %s - Into Upkeep %s - Name change %s",
+        String FREE_TILES = "?";
+        try {
+            FREE_TILES = String.valueOf(Villages.class.getDeclaredField("FREE_TILES").getLong(Villages.class));
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
+        String FREE_PERIMETER = "?";
+        try {
+            FREE_PERIMETER = String.valueOf(Villages.class.getDeclaredField("FREE_PERIMETER").getInt(Villages.class));
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
+
+        logger.info(String.format("Upkeep costs are as follows: Tile %s, %s, %s tiles - Perimeter %s, %s, %s tiles - Guards %s, %s - Minimum %s - Into Upkeep %s - Name change %s",
                 Villages.TILE_COST_STRING,
                 Villages.TILE_UPKEEP_STRING,
+                FREE_TILES,
                 Villages.PERIMETER_COST_STRING,
                 Villages.PERIMETER_UPKEEP_STRING,
+                FREE_PERIMETER,
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
                 Villages.MINIMUM_UPKEEP_STRING,
