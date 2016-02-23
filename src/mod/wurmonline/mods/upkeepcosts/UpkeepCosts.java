@@ -213,8 +213,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
                 new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString()));
     }
-    
-    
+
     void createOrPass () {
         if (!createdDb) {
             Connection dbcon = null;
@@ -259,11 +258,20 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             question.detach();
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageFoundationQuestion.class"));
 
+            CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
+            CtField freeTiles = new CtField(CtClass.longType, "freeTiles", villages);
+            freeTiles.setModifiers(Modifier.PUBLIC);
+            villages.addField(freeTiles, "0L");
+            CtField freePerimeter = new CtField(CtClass.intType, "freePerimeter", villages);
+            freePerimeter.setModifiers(Modifier.PUBLIC);
+            villages.addField(freePerimeter, "5");
+
             CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");
             guardPlan.getDeclaredMethod("getCostForGuards").setBody("return (long)$1 * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;");
             CtField upkeepBufferField = new CtField(CtClass.doubleType, "upkeepBuffer", guardPlan);
             upkeepBufferField.setModifiers(Modifier.PUBLIC);
             guardPlan.addField(upkeepBufferField, "0.0D");
+
             CtMethod getVillageId = new CtMethod(CtPrimitiveType.intType, "getVillageId", null, guardPlan);
             getVillageId.setBody("{return this.villageId;}");
             getVillageId.setModifiers(Modifier.PUBLIC);
@@ -279,6 +287,33 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "} else {" +                    
                     "    return (long)((double)this.moneyLeft / this.calculateUpkeep(true) * 500000.0D);" +
                     "}}");
+
+            CtMethod getMonthlyCost = guardPlan.getDeclaredMethod("getMonthlyCost");
+            getMonthlyCost.setBody("if(!Servers.localServer.isUpkeep()) {\n" +
+                    "            return 0L;\n" +
+                    "        } else {\n" +
+                    "            try {\n" +
+                    "                Village sv = this.getVillage();\n" +
+                    "                long tiles = (long)sv.getNumTiles() - Villages.freeTiles;" +
+                    "                long cost = tiles > 0L ? tiles : 0L * Villages.TILE_UPKEEP;\n" +
+                    "                long perimeter = (long)(sv.getPerimeterDiameterX() * sv.getPerimeterDiameterY() - (sv.getDiameterX() + Villages.freePerimeter + Villages.freePerimeter) * (sv.getDiameterY() + Villages.freePerimeter + Villages.freePerimeter));\" +" +
+                    "                cost += perimeter > 0L ? perimeter : 0L * Villages.PERIMETER_UPKEEP;\n" +
+                    "                cost += getCostForGuards(this.hiredGuardNumber);\n" +
+                    "                if(sv.isCapital()) {\n" +
+                    "                    cost = (long)((float)cost * 0.5F);\n" +
+                    "                }\n" +
+                    "\n" +
+                    "                if(sv.hasToomanyCitizens()) {\n" +
+                    "                    cost *= 2L;\n" +
+                    "                }\n" +
+                    "\n" +
+                    "                return Math.max(Villages.MINIMUM_UPKEEP, cost);\n" +
+                    "            } catch (NoSuchVillageException var4) {\n" +
+                    "                logger.log(Level.WARNING, \"Guardplan for village \" + this.villageId + \": Village not found. Deleting.\", var4);\n" +
+                    "                this.delete();\n" +
+                    "                return 10000L;\n" +
+                    "            }\n" +
+                    "        }");
 
             CtMethod pollUpkeep = guardPlan.getDeclaredMethod("pollUpkeep");
             pollUpkeep.setBody("{try {" +

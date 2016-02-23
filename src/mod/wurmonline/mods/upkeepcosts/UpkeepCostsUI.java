@@ -16,7 +16,6 @@ import javafx.scene.layout.Region;
 import mod.wurmonline.serverlauncher.LocaleHelper;
 import mod.wurmonline.serverlauncher.ServerController;
 import mod.wurmonline.serverlauncher.gui.ServerGuiController;
-import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmArgsMod;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmUIMod;
 
