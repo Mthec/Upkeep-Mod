@@ -46,7 +46,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public Long name_change;
     public Long free_tiles;
     public Long free_perimeter;
-    ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCosts");
+    ResourceBundle messages = ResourceBundle.getBundle("UpkeepCostsBundle");
     private boolean createdDb = false;
     boolean output = false;
 
@@ -328,15 +328,15 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "}}");
 
             CtMethod getMonthlyCost = guardPlan.getDeclaredMethod("getMonthlyCost");
-            getMonthlyCost.setBody("if(!Servers.localServer.isUpkeep()) {\n" +
+            getMonthlyCost.setBody("if(!com.wurmonline.server.Servers.localServer.isUpkeep()) {\n" +
                     "            return 0L;\n" +
                     "        } else {\n" +
                     "            try {\n" +
-                    "                Village sv = this.getVillage();\n" +
-                    "                long tiles = (long)sv.getNumTiles() - Villages.FREE_TILES;" +
-                    "                long cost = tiles > 0L ? tiles : 0L * Villages.TILE_UPKEEP;\n" +
-                    "                long perimeter = ((long)sv.getPerimeterDiameterX() * (long)sv.getPerimeterDiameterY() - ((long)sv.getDiameterX() + Villages.FREE_PERIMETER + Villages.FREE_PERIMETER) * ((long)sv.getDiameterY() + Villages.FREE_PERIMETER + Villages.FREE_PERIMETER));\" +" +
-                    "                cost += perimeter > 0L ? perimeter : 0L * Villages.PERIMETER_UPKEEP;\n" +
+                    "                com.wurmonline.server.villages.Village sv = this.getVillage();\n" +
+                    "                long tiles = (long)sv.getNumTiles() - com.wurmonline.server.villages.Villages.FREE_TILES;" +
+                    "                long cost = tiles > 0L ? tiles : 0L * com.wurmonline.server.villages.Villages.TILE_UPKEEP;\n" +
+                    "                long perimeter = ((long)sv.getPerimeterDiameterX() * (long)sv.getPerimeterDiameterY() - ((long)sv.getDiameterX() + com.wurmonline.server.villages.Villages.FREE_PERIMETER + com.wurmonline.server.villages.Villages.FREE_PERIMETER) * ((long)sv.getDiameterY() + com.wurmonline.server.villages.Villages.FREE_PERIMETER + com.wurmonline.server.villages.Villages.FREE_PERIMETER));\n" +
+                    "                cost += perimeter > 0L ? perimeter : 0L * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP;\n" +
                     "                cost += getCostForGuards(this.hiredGuardNumber);\n" +
                     "                if(sv.isCapital()) {\n" +
                     "                    cost = (long)((float)cost * 0.5F);\n" +
@@ -346,9 +346,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "                    cost *= 2L;\n" +
                     "                }\n" +
                     "\n" +
-                    "                return Math.max(Villages.MINIMUM_UPKEEP, cost);\n" +
-                    "            } catch (NoSuchVillageException var4) {\n" +
-                    "                logger.log(Level.WARNING, \"Guardplan for village \" + this.villageId + \": Village not found. Deleting.\", var4);\n" +
+                    "                return Math.max(com.wurmonline.server.villages.Villages.MINIMUM_UPKEEP, cost);\n" +
+                    "            } catch (com.wurmonline.server.villages.NoSuchVillageException var4) {\n" +
+                    "                logger.log(java.util.logging.Level.WARNING, \"Guardplan for village \" + this.villageId + \": Village not found. Deleting.\", var4);\n" +
                     "                this.delete();\n" +
                     "                return 10000L;\n" +
                     "            }\n" +

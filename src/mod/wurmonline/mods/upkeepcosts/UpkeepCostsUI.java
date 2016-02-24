@@ -35,7 +35,7 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod, WurmArgsMod
     boolean blockLateConfigure = false;
 
     public UpkeepCostsUI () {
-        messages = LocaleHelper.getBundle("UpkeepCosts");
+        this.messages = LocaleHelper.getBundle("UpkeepCosts");
     }
 
     @Override

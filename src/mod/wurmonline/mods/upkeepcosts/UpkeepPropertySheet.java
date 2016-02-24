@@ -11,7 +11,7 @@ import org.controlsfx.control.PropertySheet;
 
 import java.util.*;
 
-public class UpkeepPropertySheet extends VBox implements MiscConstants {
+public class UpkeepPropertySheet extends VBox {
     ObservableList<PropertySheet.Item> list;
     private Set<Enum> changedProperties = new HashSet<>();
     private ResourceBundle messages = LocaleHelper.getBundle("UpkeepCosts");
