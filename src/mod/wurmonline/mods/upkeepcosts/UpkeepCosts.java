@@ -53,6 +53,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     @Override
     public void configure(Properties properties) {
         for (Field field : this.getClass().getFields()) {
+            // TODO - Shouldn't be passing tests.  Needs to be long.class.
             if (!(field.getType().isAssignableFrom(Long.class))) {
                 continue;
             }
@@ -212,7 +213,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         }
         String FREE_PERIMETER = "?";
         try {
-            FREE_PERIMETER = String.valueOf(Villages.class.getDeclaredField("FREE_PERIMETER").getInt(Villages.class));
+            FREE_PERIMETER = String.valueOf(Villages.class.getDeclaredField("FREE_PERIMETER").getLong(Villages.class));
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
@@ -279,10 +280,10 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
 
             CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
             CtField freeTiles = new CtField(CtClass.longType, "FREE_TILES", villages);
-            freeTiles.setModifiers(Modifier.PUBLIC);
+            freeTiles.setModifiers(Modifier.setPublic(Modifier.STATIC));
             villages.addField(freeTiles, "0L");
             CtField freePerimeter = new CtField(CtClass.longType, "FREE_PERIMETER", villages);
-            freePerimeter.setModifiers(Modifier.PUBLIC);
+            freePerimeter.setModifiers(Modifier.setPublic(Modifier.STATIC));
             villages.addField(freePerimeter, "0L");
 
             CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");
