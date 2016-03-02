@@ -53,7 +53,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public UpkeepCosts() {
         setDefaults();
     }
-    
+
     protected void setDefaults() {
         tile_cost = 100;
         tile_upkeep = 20;
@@ -183,6 +183,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         }
     }
 
+    // TODO - How to prevent writing intentionally blank values.
     void saveUpkeep () {
         File file = getFile();
         Properties properties = new Properties();
