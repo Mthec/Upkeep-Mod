@@ -1,10 +1,7 @@
 package mod.wurmonline.mods.upkeepcosts;
 
 import com.ibm.icu.text.MessageFormat;
-import com.wurmonline.server.economy.Change;
-import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.villages.GuardPlan;
-import com.wurmonline.server.villages.Villages;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.ButtonBar;

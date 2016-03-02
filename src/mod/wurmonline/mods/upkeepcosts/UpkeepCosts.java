@@ -33,19 +33,19 @@ import java.util.logging.Logger;
 
 public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerStartedListener {
     protected static final Logger logger = Logger.getLogger(UpkeepCosts.class.getName());
-    public Long tile_upkeep;
-    public Long tile_cost;
-    public Long perimeter_cost;
-    public Long perimeter_upkeep;
-    public Long normal_guard_cost;
-    public Long normal_guard_upkeep;
-    public Long epic_guard_cost;
-    public Long epic_guard_upkeep;
-    public Long minimum_upkeep;
-    public Long into_upkeep;
-    public Long name_change;
-    public Long free_tiles;
-    public Long free_perimeter;
+    public long tile_cost = 100;
+    public long tile_upkeep = 20;
+    public long perimeter_cost = 50;
+    public long perimeter_upkeep = 5;
+    public long normal_guard_cost = 20000;
+    public long normal_guard_upkeep = 10000;
+    public long epic_guard_cost = 30000;
+    public long epic_guard_upkeep = 30000;
+    public long minimum_upkeep = 10000;
+    public long into_upkeep = 30000;
+    public long name_change = 50000;
+    public long free_tiles = 0;
+    public long free_perimeter = 5;
     ResourceBundle messages = ResourceBundle.getBundle("UpkeepCostsBundle");
     private boolean createdDb = false;
     boolean output = false;
@@ -57,8 +57,12 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 continue;
             }
             try {
-                field.set(this, Long.valueOf(properties.getProperty(field.getName())));
-                if ((Long) field.get(this) < 0) {
+                String property = properties.getProperty(field.getName());
+                if (property.equals("")) {
+                    continue;
+                }
+                field.set(this, Long.valueOf(property));
+                if ((long) field.get(this) < 0) {
                     field.set(this, null);
                     negative(field.getName());
                 }
@@ -81,75 +85,54 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         if (local.isFreeDeeds()) {
             logger.info(messages.getString("free_deeds"));
         }
-        if (tile_cost != null) {
-            Villages.TILE_COST = tile_cost;
-            Villages.TILE_COST_STRING = (new Change(Villages.TILE_COST)).getChangeString();
+
+        Villages.TILE_COST = tile_cost;
+        Villages.TILE_COST_STRING = (new Change(Villages.TILE_COST)).getChangeString();
+
+        Villages.TILE_UPKEEP = tile_upkeep;
+        Villages.TILE_UPKEEP_STRING = (new Change(Villages.TILE_UPKEEP)).getChangeString();
+
+        try {
+            Villages.class.getDeclaredField("FREE_TILES").set(Villages.class, free_tiles);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            logger.warning(messages.getString("free_tiles_not_set"));
+            ex.printStackTrace();
         }
 
-        if (tile_upkeep != null) {
-            Villages.TILE_UPKEEP = tile_upkeep;
-            Villages.TILE_UPKEEP_STRING = (new Change(Villages.TILE_UPKEEP)).getChangeString();
+        Villages.PERIMETER_COST = perimeter_cost;
+        Villages.PERIMETER_COST_STRING = (new Change(Villages.PERIMETER_COST)).getChangeString();
+
+
+
+        Villages.PERIMETER_UPKEEP = perimeter_upkeep;
+        Villages.PERIMETER_UPKEEP_STRING = (new Change(Villages.PERIMETER_UPKEEP)).getChangeString();
+
+        try {
+            Villages.class.getDeclaredField("FREE_PERIMETER").set(Villages.class, free_perimeter);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            logger.warning(messages.getString("free_perimeter_not_set"));
+            ex.printStackTrace();
         }
 
-        if (free_tiles != null) {
-            try {
-                Villages.class.getDeclaredField("FREE_TILES").set(Villages.class, free_tiles);
-            } catch (IllegalAccessException | NoSuchFieldException ex) {
-                logger.warning(messages.getString("free_tiles_not_set"));
-                ex.printStackTrace();
-            }
-        }
-
-        if (perimeter_cost != null) {
-            Villages.PERIMETER_COST = perimeter_cost;
-            Villages.PERIMETER_COST_STRING = (new Change(Villages.PERIMETER_COST)).getChangeString();
-        }
-
-        if (perimeter_upkeep != null) {
-            Villages.PERIMETER_UPKEEP = perimeter_upkeep;
-            Villages.PERIMETER_UPKEEP_STRING = (new Change(Villages.PERIMETER_UPKEEP)).getChangeString();
-        }
-
-        if (free_perimeter != null) {
-            try {
-                Villages.class.getDeclaredField("FREE_PERIMETER").set(Villages.class, free_perimeter);
-            } catch (IllegalAccessException | NoSuchFieldException ex) {
-                logger.warning(messages.getString("free_perimeter_not_set"));
-                ex.printStackTrace();
-            }
-        }
-        
         if (local.isChallengeOrEpicServer()) {
-            if (epic_guard_cost != null) {
-                Villages.GUARD_COST = epic_guard_cost;
-            }
-            if (epic_guard_upkeep != null) {
-                Villages.GUARD_UPKEEP = epic_guard_upkeep;
-            }
+            Villages.GUARD_COST = epic_guard_cost;
+            Villages.GUARD_UPKEEP = epic_guard_upkeep;
         }
         else {
-            if (normal_guard_cost != null) {
-                Villages.GUARD_COST = normal_guard_cost;
-            }
-            if (normal_guard_upkeep != null) {
-                Villages.GUARD_UPKEEP = normal_guard_upkeep;
-            }
+            Villages.GUARD_COST = normal_guard_cost;
+            Villages.GUARD_UPKEEP = normal_guard_upkeep;
         }
+
         Villages.GUARD_COST_STRING = (new Change(Villages.GUARD_COST)).getChangeString();
         Villages.GUARD_UPKEEP_STRING = (new Change(Villages.GUARD_UPKEEP)).getChangeString();
 
-        if (minimum_upkeep != null) {
-            Villages.MINIMUM_UPKEEP = minimum_upkeep;
-            Villages.MINIMUM_UPKEEP_STRING = (new Change(Villages.MINIMUM_UPKEEP)).getChangeString();
-        }
 
-        if (into_upkeep != null) {
-            VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP = into_upkeep;
-        }
+        Villages.MINIMUM_UPKEEP = minimum_upkeep;
+        Villages.MINIMUM_UPKEEP_STRING = (new Change(Villages.MINIMUM_UPKEEP)).getChangeString();
 
-        if (name_change != null) {
-            VillageFoundationQuestion.NAME_CHANGE_COST = name_change;
-        }
+        VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP = into_upkeep;
+
+        VillageFoundationQuestion.NAME_CHANGE_COST = name_change;
 
         logValues();
     }
