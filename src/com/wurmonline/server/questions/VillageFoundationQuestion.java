@@ -147,6 +147,26 @@ public final class VillageFoundationQuestion extends Question implements Village
         return this.tokeny;
     }
 
+    public long getChargeableTiles() {
+        try {
+            return (long)this.tiles - Villages.class.getDeclaredField("FREE_TILES").getLong(Villages.class);
+        } catch(NoSuchFieldException | IllegalAccessException ex) {
+            logger.warning("Free tiles not available, reason follows:");
+            ex.printStackTrace();
+            return (long)this.tiles;
+        }
+    }
+
+    public long getChargeablePerimeter() {
+        try {
+            return (long)this.perimeterTiles - Villages.class.getDeclaredField("FREE_PERIMETER").getLong(Villages.class);
+        } catch(NoSuchFieldException | IllegalAccessException ex) {
+            logger.warning("Free tiles not available, reason follows:");
+            ex.printStackTrace();
+            return (long)this.tiles;
+        }
+    }
+
     public boolean isSurfaced() {
         return this.surfaced;
     }
@@ -762,10 +782,12 @@ public final class VillageFoundationQuestion extends Question implements Village
                 Village nsv = Villages.getVillage(this.deed.getData2());
                 long moneyNeeded = 0L;
                 long moneyToRefund = 0L;
+                long free_tiles = (long)this.tiles - this.getChargeableTiles();
                 int diffDeed = this.tiles - nsv.getNumTiles();
+                long free_perimeter = (long)this.perimeterTiles - this.getChargeablePerimeter();
                 int diffPerim = this.perimeterTiles - nsv.getPerimeterNonFreeTiles();
-                long costDeedDiff = (long)diffDeed * Villages.TILE_COST;
-                long costPerimDiff = (long)diffPerim * Villages.PERIMETER_COST;
+                long costDeedDiff = ((long)diffDeed - free_tiles) * Villages.TILE_COST;
+                long costPerimDiff = ((long)diffPerim - free_perimeter) * Villages.PERIMETER_COST;
                 long costTotalDiff = costDeedDiff + costPerimDiff;
                 if(costTotalDiff > moneyToRefund) {
                     moneyNeeded += costTotalDiff;
@@ -794,8 +816,8 @@ public final class VillageFoundationQuestion extends Question implements Village
     }
 
     private long getFoundingCost() {
-        long moneyNeeded = (long)this.tiles * Villages.TILE_COST;
-        moneyNeeded += (long)this.perimeterTiles * Villages.PERIMETER_COST;
+        long moneyNeeded = this.getChargeableTiles() * Villages.TILE_COST;
+        moneyNeeded += this.getChargeablePerimeter() * Villages.PERIMETER_COST;
         moneyNeeded += (long)this.selectedGuards * Villages.GUARD_COST;
         return moneyNeeded;
     }
@@ -1241,11 +1263,11 @@ public final class VillageFoundationQuestion extends Question implements Village
         buf.append("text{text=\"You selected a size of ").append(this.diameterX).append(" by ").append(this.diameterY).append(".\"}");
         if(!this.expanding) {
             if(!Servers.localServer.isFreeDeeds()) {
-                buf.append("text{text=\"The Purchase price for these tiles are ").append((new Change((long) this.tiles * Villages.TILE_COST)).getChangeString()).append(".\"}");
+                buf.append("text{text=\"The Purchase price for these tiles are ").append((new Change(this.getChargeableTiles() * Villages.TILE_COST)).getChangeString()).append(".\"}");
             }
 
             if(Servers.localServer.isUpkeep()) {
-                buf.append("text{text=\"The Monthly upkeep is ").append((new Change((long) this.tiles * Villages.TILE_UPKEEP)).getChangeString()).append(".\"}");
+                buf.append("text{text=\"The Monthly upkeep is ").append((new Change(this.getChargeableTiles() * Villages.TILE_UPKEEP)).getChangeString()).append(".\"}");
             }
 
             buf.append("text{text=\"\"}");
@@ -1253,12 +1275,13 @@ public final class VillageFoundationQuestion extends Question implements Village
             try {
                 Village nsv = Villages.getVillage(this.deed.getData2());
                 int diff = this.tiles - nsv.getNumTiles();
+                long free = this.tiles - this.getChargeableTiles();
                 if(diff > 0 && !Servers.localServer.isFreeDeeds()) {
-                    buf.append("text{text=\"The initial cost for the tiles will be ").append((new Change((long) diff * Villages.TILE_COST)).getChangeString()).append(".\"}");
+                    buf.append("text{text=\"The initial cost for the tiles will be ").append((new Change(((long) diff - free) * Villages.TILE_COST)).getChangeString()).append(".\"}");
                 }
 
                 if(Servers.localServer.isUpkeep()) {
-                    buf.append("text{text=\"The new monthly upkeep cost for the tiles will be ").append((new Change((long) this.tiles * Villages.TILE_UPKEEP)).getChangeString()).append(".\"}");
+                    buf.append("text{text=\"The new monthly upkeep cost for the tiles will be ").append((new Change(this.getChargeableTiles() * Villages.TILE_UPKEEP)).getChangeString()).append(".\"}");
                 }
 
                 buf.append("text{text=\"\"}");
@@ -1267,7 +1290,7 @@ public final class VillageFoundationQuestion extends Question implements Village
             }
         }
 
-        this.totalUpkeep = (long)this.tiles * Villages.TILE_UPKEEP;
+        this.totalUpkeep = this.getChargeableTiles() * Villages.TILE_UPKEEP;
     }
 
     private void addChangeNameCost(StringBuilder buf) {
@@ -1282,11 +1305,11 @@ public final class VillageFoundationQuestion extends Question implements Village
             buf.append("text{text=\"You have selected a perimeter of 5").append(Servers.localServer.isFreeDeeds() ? "" : " free").append(" tiles plus ").append(this.initialPerimeter).append(" additional tiles from your settlement boundary.\"}");
             if(this.initialPerimeter > 0) {
                 if(!Servers.localServer.isFreeDeeds()) {
-                    buf.append("text{text=\"The initial cost for the perimeter tiles will be ").append((new Change((long) this.perimeterTiles * Villages.PERIMETER_COST)).getChangeString()).append(".\"}");
+                    buf.append("text{text=\"The initial cost for the perimeter tiles will be ").append((new Change(this.getChargeablePerimeter() * Villages.PERIMETER_COST)).getChangeString()).append(".\"}");
                 }
 
                 if(Servers.localServer.isUpkeep()) {
-                    buf.append("text{text=\"The monthly upkeep cost for the perimeter tiles will be ").append((new Change((long) this.perimeterTiles * Villages.PERIMETER_UPKEEP)).getChangeString()).append(".\"}");
+                    buf.append("text{text=\"The monthly upkeep cost for the perimeter tiles will be ").append((new Change(this.getChargeablePerimeter() * Villages.PERIMETER_UPKEEP)).getChangeString()).append(".\"}");
                 }
             }
 
@@ -1296,13 +1319,14 @@ public final class VillageFoundationQuestion extends Question implements Village
                 Village nsv = Villages.getVillage(this.deed.getData2());
                 buf.append("text{text=\"You selected a perimeter size of ").append(this.initialPerimeter).append(" outside of the free ").append(5).append(" tiles.\"}");
                 int diff = this.perimeterTiles - nsv.getPerimeterNonFreeTiles();
+                long free = this.perimeterTiles - this.getChargeablePerimeter();
                 if(diff > 0 && !Servers.localServer.isFreeDeeds()) {
-                    buf.append("text{text=\"The additional cost for the extra perimeter tiles will be ").append((new Change((long) diff * Villages.PERIMETER_COST)).getChangeString()).append(".\"}");
+                    buf.append("text{text=\"The additional cost for the extra perimeter tiles will be ").append((new Change(((long) diff - free) * Villages.PERIMETER_COST)).getChangeString()).append(".\"}");
                 }
 
                 if(Servers.localServer.isUpkeep()) {
                     if(this.initialPerimeter > 0) {
-                        buf.append("text{text=\"The new monthly upkeep cost for the perimeter tiles will be ").append((new Change((long) this.perimeterTiles * Villages.PERIMETER_UPKEEP)).getChangeString()).append(".\"}");
+                        buf.append("text{text=\"The new monthly upkeep cost for the perimeter tiles will be ").append((new Change(this.getChargeablePerimeter() * Villages.PERIMETER_UPKEEP)).getChangeString()).append(".\"}");
                     } else if(diff < 0) {
                         buf.append("text{text=\"The monthly upkeep cost for perimeter tiles will go away now.\"}");
                     }
@@ -1314,7 +1338,7 @@ public final class VillageFoundationQuestion extends Question implements Village
             }
         }
 
-        this.totalUpkeep += (long)this.perimeterTiles * Villages.PERIMETER_UPKEEP;
+        this.totalUpkeep += this.getChargeablePerimeter() * Villages.PERIMETER_UPKEEP;
     }
 
     private void addCitizenMultiplier(StringBuilder buf) {

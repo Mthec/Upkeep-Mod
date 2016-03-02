@@ -45,7 +45,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public long into_upkeep = 30000;
     public long name_change = 50000;
     public long free_tiles = 0;
-    public long free_perimeter = 5;
+    public long free_perimeter = 0;
     ResourceBundle messages = ResourceBundle.getBundle("UpkeepCostsBundle");
     private boolean createdDb = false;
     boolean output = false;
@@ -281,9 +281,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             CtField freeTiles = new CtField(CtClass.longType, "FREE_TILES", villages);
             freeTiles.setModifiers(Modifier.PUBLIC);
             villages.addField(freeTiles, "0L");
-            CtField freePerimeter = new CtField(CtClass.intType, "FREE_PERIMETER", villages);
+            CtField freePerimeter = new CtField(CtClass.longType, "FREE_PERIMETER", villages);
             freePerimeter.setModifiers(Modifier.PUBLIC);
-            villages.addField(freePerimeter, "5");
+            villages.addField(freePerimeter, "0L");
 
             CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");
             guardPlan.getDeclaredMethod("getCostForGuards").setBody("return (long)$1 * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;");
@@ -315,7 +315,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "                com.wurmonline.server.villages.Village sv = this.getVillage();\n" +
                     "                long tiles = (long)sv.getNumTiles() - com.wurmonline.server.villages.Villages.FREE_TILES;" +
                     "                long cost = tiles > 0L ? tiles : 0L * com.wurmonline.server.villages.Villages.TILE_UPKEEP;\n" +
-                    "                long perimeter = ((long)sv.getPerimeterDiameterX() * (long)sv.getPerimeterDiameterY() - ((long)sv.getDiameterX() + com.wurmonline.server.villages.Villages.FREE_PERIMETER + com.wurmonline.server.villages.Villages.FREE_PERIMETER) * ((long)sv.getDiameterY() + com.wurmonline.server.villages.Villages.FREE_PERIMETER + com.wurmonline.server.villages.Villages.FREE_PERIMETER));\n" +
+                    "                long perimeter = (long)sv.getPerimeterNonFreeTiles() - com.wurmonline.server.villages.Villages.FREE_PERIMETER;" +
                     "                cost += perimeter > 0L ? perimeter : 0L * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP;\n" +
                     "                cost += getCostForGuards(this.hiredGuardNumber);\n" +
                     "                if(sv.isCapital()) {\n" +
