@@ -102,8 +102,6 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         Villages.PERIMETER_COST = perimeter_cost;
         Villages.PERIMETER_COST_STRING = (new Change(Villages.PERIMETER_COST)).getChangeString();
 
-
-
         Villages.PERIMETER_UPKEEP = perimeter_upkeep;
         Villages.PERIMETER_UPKEEP_STRING = (new Change(Villages.PERIMETER_UPKEEP)).getChangeString();
 
