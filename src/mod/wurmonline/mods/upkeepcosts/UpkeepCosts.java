@@ -53,18 +53,18 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     @Override
     public void configure(Properties properties) {
         for (Field field : this.getClass().getFields()) {
-            // TODO - Shouldn't be passing tests.  Needs to be long.class.
-            if (!(field.getType().isAssignableFrom(Long.class))) {
+            if (!(field.getType().isAssignableFrom(long.class))) {
                 continue;
             }
             try {
                 String property = properties.getProperty(field.getName());
-                if (property.equals("")) {
+                if (property == null || property.equals("")) {
                     continue;
                 }
                 long value = Long.valueOf(property);
                 if (value < 0) {
                     negative(field.getName());
+                    continue;
                 }
                 field.set(this, value);
             } catch (IllegalAccessException ex) {
