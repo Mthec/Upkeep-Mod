@@ -33,23 +33,43 @@ import java.util.logging.Logger;
 
 public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerStartedListener {
     protected static final Logger logger = Logger.getLogger(UpkeepCosts.class.getName());
-    public long tile_cost = 100;
-    public long tile_upkeep = 20;
-    public long perimeter_cost = 50;
-    public long perimeter_upkeep = 5;
-    public long normal_guard_cost = 20000;
-    public long normal_guard_upkeep = 10000;
-    public long epic_guard_cost = 30000;
-    public long epic_guard_upkeep = 30000;
-    public long minimum_upkeep = 10000;
-    public long into_upkeep = 30000;
-    public long name_change = 50000;
-    public long free_tiles = 0;
-    public long free_perimeter = 0;
+    public long tile_cost;
+    public long tile_upkeep;
+    public long perimeter_cost;
+    public long perimeter_upkeep;
+    public long normal_guard_cost;
+    public long normal_guard_upkeep;
+    public long epic_guard_cost;
+    public long epic_guard_upkeep;
+    public long minimum_upkeep;
+    public long into_upkeep;
+    public long name_change;
+    public long free_tiles;
+    public long free_perimeter;
     ResourceBundle messages = ResourceBundle.getBundle("UpkeepCostsBundle");
     private boolean createdDb = false;
     boolean output = false;
 
+    public UpkeepCosts() {
+        setDefaults();
+    }
+    
+    protected void setDefaults() {
+        tile_cost = 100;
+        tile_upkeep = 20;
+        perimeter_cost = 50;
+        perimeter_upkeep = 5;
+        normal_guard_cost = 20000;
+        normal_guard_upkeep = 10000;
+        epic_guard_cost = 30000;
+        epic_guard_upkeep = 30000;
+        minimum_upkeep = 10000;
+        into_upkeep = 30000;
+        name_change = 50000;
+        free_tiles = 0;
+        free_perimeter = 0;
+    }
+    
     @Override
     public void configure(Properties properties) {
         for (Field field : this.getClass().getFields()) {
@@ -178,7 +198,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             ex.printStackTrace();
         }
         for (Field field : this.getClass().getFields()) {
-            if (!(field.getType().isAssignableFrom(Long.class))) {
+            if (!(field.getType().isAssignableFrom(long.class))) {
                 continue;
             }
             try {

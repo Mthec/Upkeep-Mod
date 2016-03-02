@@ -118,11 +118,13 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod, WurmArgsMod
 
     @FXML
     void initialize () {
+        // TODO - Won't be caught in time.
         ButtonType check = saveCheck();
         if (check == ButtonType.CANCEL) {
             return;
         }
 
+        setDefaults();
         try {
             File file = getFile();
             boolean created = file.getParentFile().mkdirs();
