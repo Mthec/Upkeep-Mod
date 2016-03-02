@@ -61,11 +61,11 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 if (property.equals("")) {
                     continue;
                 }
-                field.set(this, Long.valueOf(property));
-                if ((long) field.get(this) < 0) {
-                    field.set(this, null);
+                long value = Long.valueOf(property);
+                if (value < 0) {
                     negative(field.getName());
                 }
+                field.set(this, value);
             } catch (IllegalAccessException ex) {
                 ex.printStackTrace();
                 System.exit(-1);
@@ -277,7 +277,6 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
 
             // TODO - Minimum drain.  It's in GuardPlan.
 
-            // TODO - How to handle minimum.
             CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
             CtField freeTiles = new CtField(CtClass.longType, "FREE_TILES", villages);
             freeTiles.setModifiers(Modifier.PUBLIC);
