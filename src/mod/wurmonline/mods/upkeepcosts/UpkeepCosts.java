@@ -379,7 +379,8 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             guardPlan.getDeclaredField("minMoneyDrained").setModifiers(Modifier.setPublic(Modifier.STATIC));
             CtMethod getMoneyDrained = guardPlan.getDeclaredMethod("getMoneyDrained");
             // TODO - Spaces
-            getMoneyDrained.setBody("{try {\n" +
+            getMoneyDrained.setBody(
+                "{try {\n" +
                 "    if(this.getVillage().isPermanent) {\n" +
                 "        return 0L;\n" +
                 "    }\n" +
@@ -394,12 +395,12 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             guardPlan.getDeclaredField("drainCumulateFigure").setModifiers(Modifier.setPublic(Modifier.STATIC));
             CtMethod drainMoney = guardPlan.getDeclaredMethod("drainMoney");
             drainMoney.setBody(
-                    "{        long moneyToDrain = this.getMoneyDrained();\n" +
-                    "        this.drainGuardPlan(this.moneyLeft - moneyToDrain);\n" +
-                    "        this.drainModifier = Math.min(this.maxDrainModifier, this.drainCumulateFigure + this.drainModifier);\n" +
-                    "        this.saveDrainMod();\n" +
-                    "        return moneyToDrain;\n" +
-                    "    }");
+                    "{long moneyToDrain = this.getMoneyDrained();\n" +
+                    "this.drainGuardPlan(this.moneyLeft - moneyToDrain);\n" +
+                    "this.drainModifier = Math.min(this.maxDrainModifier, this.drainCumulateFigure + this.drainModifier);\n" +
+                    "this.saveDrainMod();\n" +
+                    "return moneyToDrain;\n" +
+                    "}");
 
 
             CtMethod getVillageId = new CtMethod(CtPrimitiveType.intType, "getVillageId", null, guardPlan);
@@ -420,30 +421,30 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
 
             CtMethod getMonthlyCost = guardPlan.getDeclaredMethod("getMonthlyCost");
             getMonthlyCost.setBody("if(!com.wurmonline.server.Servers.localServer.isUpkeep()) {\n" +
-                    "            return 0L;\n" +
-                    "        } else {\n" +
-                    "            try {\n" +
-                    "                com.wurmonline.server.villages.Village sv = this.getVillage();\n" +
-                    "                long tiles = (long)sv.getNumTiles() - com.wurmonline.server.villages.Villages.FREE_TILES;" +
-                    "                long cost = tiles > 0L ? tiles : 0L * com.wurmonline.server.villages.Villages.TILE_UPKEEP;\n" +
-                    "                long perimeter = (long)sv.getPerimeterNonFreeTiles() - com.wurmonline.server.villages.Villages.FREE_PERIMETER;" +
-                    "                cost += perimeter > 0L ? perimeter : 0L * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP;\n" +
-                    "                cost += getCostForGuards(this.hiredGuardNumber);\n" +
-                    "                if(sv.isCapital()) {\n" +
-                    "                    cost = (long)((float)cost * 0.5F);\n" +
-                    "                }\n" +
+                    "    return 0L;\n" +
+                    "} else {\n" +
+                    "    try {\n" +
+                    "        com.wurmonline.server.villages.Village sv = this.getVillage();\n" +
+                    "        long tiles = (long)sv.getNumTiles() - com.wurmonline.server.villages.Villages.FREE_TILES;" +
+                    "        long cost = tiles > 0L ? tiles : 0L * com.wurmonline.server.villages.Villages.TILE_UPKEEP;\n" +
+                    "        long perimeter = (long)sv.getPerimeterNonFreeTiles() - com.wurmonline.server.villages.Villages.FREE_PERIMETER;" +
+                    "        cost += perimeter > 0L ? perimeter : 0L * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP;\n" +
+                    "        cost += getCostForGuards(this.hiredGuardNumber);\n" +
+                    "        if(sv.isCapital()) {\n" +
+                    "            cost = (long)((float)cost * 0.5F);\n" +
+                    "        }\n" +
                     "\n" +
-                    "                if(sv.hasToomanyCitizens()) {\n" +
-                    "                    cost *= 2L;\n" +
-                    "                }\n" +
+                    "        if(sv.hasToomanyCitizens()) {\n" +
+                    "            cost *= 2L;\n" +
+                    "        }\n" +
                     "\n" +
-                    "                return Math.max(com.wurmonline.server.villages.Villages.MINIMUM_UPKEEP, cost);\n" +
-                    "            } catch (com.wurmonline.server.villages.NoSuchVillageException var4) {\n" +
-                    "                logger.log(java.util.logging.Level.WARNING, \"Guardplan for village \" + this.villageId + \": Village not found. Deleting.\", var4);\n" +
-                    "                this.delete();\n" +
-                    "                return 10000L;\n" +
-                    "            }\n" +
-                    "        }");
+                    "        return Math.max(com.wurmonline.server.villages.Villages.MINIMUM_UPKEEP, cost);\n" +
+                    "    } catch (com.wurmonline.server.villages.NoSuchVillageException var4) {\n" +
+                    "        logger.log(java.util.logging.Level.WARNING, \"Guardplan for village \" + this.villageId + \": Village not found. Deleting.\", var4);\n" +
+                    "        this.delete();\n" +
+                    "        return 10000L;\n" +
+                    "    }\n" +
+                    "}");
 
             CtMethod pollUpkeep = guardPlan.getDeclaredMethod("pollUpkeep");
             pollUpkeep.setBody("{try {" +
