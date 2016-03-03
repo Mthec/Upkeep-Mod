@@ -87,7 +87,7 @@ public class UpkeepCostsUI extends UpkeepCosts implements WurmUIMod, WurmArgsMod
     void saveUpkeep () {
         if (upkeepPropertySheet.haveChanges()) {
             for (Field field : this.getClass().getFields()) {
-                if (!(field.getType().isAssignableFrom(long.class))) {
+                if (!(field.getType().isAssignableFrom(long.class)) && !(field.getType().isAssignableFrom(float.class))) {
                     continue;
                 }
                 try {

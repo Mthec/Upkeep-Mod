@@ -32,6 +32,11 @@ public class UpkeepPropertySheet extends VBox {
         list.add(new UpkeepItem(UpkeepPropertyType.MINIMUM_UPKEEP, "", messages.getString("minimum_upkeep"), messages.getString("minimum_upkeep_description"), true, upkeep.minimum_upkeep));
         list.add(new UpkeepItem(UpkeepPropertyType.INTO_UPKEEP, "", messages.getString("into_upkeep"), messages.getString("into_upkeep_description"), true, upkeep.into_upkeep));
         list.add(new UpkeepItem(UpkeepPropertyType.NAME_CHANGE, "", messages.getString("name_change"), messages.getString("name_change_description"), true, upkeep.name_change));
+        // Draining
+        list.add(new UpkeepItem(UpkeepPropertyType.MIN_DRAIN, messages.getString("drain_category"), messages.getString("min_drain"), messages.getString("min_drain_description"), true, upkeep.min_drain));
+        list.add(new UpkeepItem(UpkeepPropertyType.MAX_DRAIN_MODIFIER, messages.getString("drain_category"), messages.getString("max_drain_modifier"), messages.getString("max_drain_modifier_description"), true, upkeep.max_drain_modifier));
+        list.add(new UpkeepItem(UpkeepPropertyType.DRAIN_MODIFIER_INCREMENT, messages.getString("drain_category"), messages.getString("drain_modifier_increment"), messages.getString("drain_modifier_increment_description"), true, upkeep.drain_modifier_increment));
+
 
         PropertySheet propertySheet = new PropertySheet(list);
         VBox.setVgrow(propertySheet, Priority.ALWAYS);
@@ -57,15 +62,16 @@ public class UpkeepPropertySheet extends VBox {
         private String name;
         private String description;
         private boolean editable = true;
-        private Long value;
+        private Number value;
 
-        UpkeepItem(UpkeepPropertyType aType, String aCategory, String aName, String aDescription, boolean aEditable, Long aValue) {
+        UpkeepItem(UpkeepPropertyType aType, String aCategory, String aName, String aDescription, boolean aEditable, Number aValue) {
             type = aType;
             category = aCategory;
             name = aName;
             description = aDescription;
             editable = aEditable;
             value = aValue;
+            assert aValue instanceof Long || aValue instanceof Float;
         }
 
         public UpkeepPropertyType getPropertyType() {
@@ -100,7 +106,7 @@ public class UpkeepPropertySheet extends VBox {
             if(!value.equals(aValue)) {
                 changedProperties.add(type);
             }
-            value = (Long)aValue;
+            value = (Number)aValue;
         }
     }
 
@@ -117,6 +123,9 @@ public class UpkeepPropertySheet extends VBox {
         EPIC_GUARD_UPKEEP,
         MINIMUM_UPKEEP,
         INTO_UPKEEP,
-        NAME_CHANGE
+        NAME_CHANGE,
+        MIN_DRAIN,
+        MAX_DRAIN_MODIFIER,
+        DRAIN_MODIFIER_INCREMENT,
     }
 }

@@ -8,8 +8,10 @@ import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Change;
 import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.utils.DbUtilities;
+import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Villages;
 import javassist.*;
+import javassist.Modifier;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
 import org.gotti.wurmunlimited.modloader.interfaces.PreInitable;
@@ -20,7 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -46,6 +48,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public long name_change;
     public long free_tiles;
     public long free_perimeter;
+    public long min_drain;
+    public float max_drain_modifier;
+    public float drain_modifier_increment;
     ResourceBundle messages = ResourceBundle.getBundle("UpkeepCostsBundle");
     private boolean createdDb = false;
     boolean output = false;
@@ -68,25 +73,39 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         name_change = 50000;
         free_tiles = 0;
         free_perimeter = 0;
+        min_drain = 7500;
+        max_drain_modifier = 5.0F;
+        drain_modifier_increment = 0.5F;
     }
     
     @Override
     public void configure(Properties properties) {
         for (Field field : this.getClass().getFields()) {
-            if (!(field.getType().isAssignableFrom(long.class))) {
-                continue;
-            }
             try {
-                String property = properties.getProperty(field.getName());
-                if (property == null || property.equals("")) {
-                    continue;
+                if ((field.getType().isAssignableFrom(long.class))) {
+                    String property = properties.getProperty(field.getName());
+                    if (property == null || property.equals("")) {
+                        continue;
+                    }
+                    long value = Long.valueOf(property);
+                    if (value < 0) {
+                        negative(field.getName());
+                        continue;
+                    }
+                    field.set(this, value);
                 }
-                long value = Long.valueOf(property);
-                if (value < 0) {
-                    negative(field.getName());
-                    continue;
+                else if ((field.getType().isAssignableFrom(float.class))) {
+                    String property = properties.getProperty(field.getName());
+                    if (property == null || property.equals("")) {
+                        continue;
+                    }
+                    float value = Float.valueOf(property);
+                    if (value < 0.0F) {
+                        negative(field.getName());
+                        continue;
+                    }
+                    field.set(this, value);
                 }
-                field.set(this, value);
             } catch (IllegalAccessException ex) {
                 ex.printStackTrace();
                 System.exit(-1);
@@ -153,6 +172,28 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
 
         VillageFoundationQuestion.NAME_CHANGE_COST = name_change;
 
+        // Draining
+        try {
+            GuardPlan.class.getDeclaredField("minMoneyDrained").set(GuardPlan.class, min_drain);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            logger.warning(messages.getString("min_drain_not_set"));
+            ex.printStackTrace();
+        }
+
+        try {
+            GuardPlan.class.getDeclaredField("maxDrainModifier").set(GuardPlan.class, max_drain_modifier);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            logger.warning(messages.getString("max_drain_modifier_not_set"));
+            ex.printStackTrace();
+        }
+
+        try {
+            GuardPlan.class.getDeclaredField("drainCumulateFigure").set(GuardPlan.class, drain_modifier_increment);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            logger.warning(messages.getString("drain_modifier_increment_not_set"));
+            ex.printStackTrace();
+        }
+
         logValues();
     }
 
@@ -183,7 +224,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         }
     }
 
-    // TODO - How to prevent writing intentionally blank values.
+    // TODO - How to prevent writing to intentionally blank values.
     void saveUpkeep () {
         File file = getFile();
         Properties properties = new Properties();
@@ -199,7 +240,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             ex.printStackTrace();
         }
         for (Field field : this.getClass().getFields()) {
-            if (!(field.getType().isAssignableFrom(long.class))) {
+            if (!(field.getType().isAssignableFrom(long.class)) && !(field.getType().isAssignableFrom(float.class))) {
                 continue;
             }
             try {
@@ -238,6 +279,25 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
+        String minMoneyDrained = "?";
+        try {
+            minMoneyDrained = String.valueOf(GuardPlan.class.getDeclaredField("minMoneyDrained").getLong(Villages.class));
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
+        String maxDrainModifier = "?";
+        try {
+            maxDrainModifier = String.valueOf(GuardPlan.class.getDeclaredField("maxDrainModifier").getFloat(Villages.class));
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
+        String drainCumulateFigure = "?";
+        try {
+            drainCumulateFigure = String.valueOf(GuardPlan.class.getDeclaredField("drainCumulateFigure").getFloat(Villages.class));
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
+
 
         logger.info(MessageFormat.format(messages.getString("all_values"),
                 Villages.TILE_COST_STRING,
@@ -250,7 +310,10 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 Villages.GUARD_UPKEEP_STRING,
                 Villages.MINIMUM_UPKEEP_STRING,
                 new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
-                new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString()));
+                new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString(),
+                new Change(Long.valueOf(minMoneyDrained)).getChangeShortString(),
+                maxDrainModifier,
+                drainCumulateFigure));
     }
 
     void createOrPass () {
@@ -297,8 +360,6 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             question.detach();
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageFoundationQuestion.class"));
 
-            // TODO - Minimum drain.  It's in GuardPlan.
-
             CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
             CtField freeTiles = new CtField(CtClass.longType, "FREE_TILES", villages);
             freeTiles.setModifiers(Modifier.setPublic(Modifier.STATIC));
@@ -307,11 +368,39 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             freePerimeter.setModifiers(Modifier.setPublic(Modifier.STATIC));
             villages.addField(freePerimeter, "0L");
 
+
             CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");
             guardPlan.getDeclaredMethod("getCostForGuards").setBody("return (long)$1 * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;");
             CtField upkeepBufferField = new CtField(CtClass.doubleType, "upkeepBuffer", guardPlan);
             upkeepBufferField.setModifiers(Modifier.PUBLIC);
             guardPlan.addField(upkeepBufferField, "0.0D");
+
+            // Draining
+            guardPlan.getDeclaredField("minMoneyDrained").setModifiers(Modifier.setPublic(Modifier.STATIC));
+            CtMethod getMoneyDrained = guardPlan.getDeclaredMethod("getMoneyDrained");
+            // TODO - Spaces
+            getMoneyDrained.setBody("{try {\n" +
+                "    if(this.getVillage().isPermanent) {\n" +
+                "        return 0L;\n" +
+                "    }\n" +
+                "} catch (com.wurmonline.server.villages.NoSuchVillageException var2) {\n" +
+                "    logger.log(java.util.logging.Level.WARNING, this.villageId + \", \" + var2.getMessage(), var2);\n" +
+                "    return 0L;\n" +
+                "}\n" +
+                "return (long)Math.min((float)this.moneyLeft, (1.0F + this.drainModifier) * Math.max((float)this.minMoneyDrained, (float)this.getMonthlyCost() * 0.15F));\n" +
+                "}");
+
+            guardPlan.getDeclaredField("maxDrainModifier").setModifiers(Modifier.setPublic(Modifier.STATIC));
+            guardPlan.getDeclaredField("drainCumulateFigure").setModifiers(Modifier.setPublic(Modifier.STATIC));
+            CtMethod drainMoney = guardPlan.getDeclaredMethod("drainMoney");
+            drainMoney.setBody(
+                    "{        long moneyToDrain = this.getMoneyDrained();\n" +
+                    "        this.drainGuardPlan(this.moneyLeft - moneyToDrain);\n" +
+                    "        this.drainModifier = Math.min(this.maxDrainModifier, this.drainCumulateFigure + this.drainModifier);\n" +
+                    "        this.saveDrainMod();\n" +
+                    "        return moneyToDrain;\n" +
+                    "    }");
+
 
             CtMethod getVillageId = new CtMethod(CtPrimitiveType.intType, "getVillageId", null, guardPlan);
             getVillageId.setBody("{return this.villageId;}");
