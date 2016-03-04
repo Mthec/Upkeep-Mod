@@ -1,6 +1,5 @@
 package mod.wurmonline.mods.upkeepcosts;
 
-import com.ibm.icu.text.MessageFormat;
 import com.wurmonline.server.DbConnector;
 import com.wurmonline.server.ServerDirInfo;
 import com.wurmonline.server.ServerEntry;
@@ -51,7 +50,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public long min_drain;
     public float max_drain_modifier;
     public float drain_modifier_increment;
-    ResourceBundle messages = ResourceBundle.getBundle("UpkeepCostsBundle");
+    ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCostsBundle");
     private boolean createdDb = false;
     boolean output = false;
 
@@ -299,7 +298,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         }
 
 
-        logger.info(MessageFormat.format(messages.getString("all_values"),
+        logger.info(String.format(messages.getString("all_values"),
                 Villages.TILE_COST_STRING,
                 Villages.TILE_UPKEEP_STRING,
                 FREE_TILES,
@@ -311,7 +310,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 Villages.MINIMUM_UPKEEP_STRING,
                 new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
                 new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString(),
-                new Change(Long.valueOf(minMoneyDrained)).getChangeShortString(),
+                new Change(Long.valueOf(minMoneyDrained)).getChangeString(),
                 maxDrainModifier,
                 drainCumulateFigure));
     }
