@@ -1,7 +1,3 @@
-import com.ibm.icu.text.MessageFormat;
-import com.ibm.icu.text.PluralRules;
-import com.ibm.icu.util.ULocale;
-import com.wurmonline.server.DbConnector;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.utils.SimpleArgumentParser;
 import javassist.Loader;
@@ -10,18 +6,15 @@ import org.gotti.wurmunlimited.modloader.ModLoader;
 import org.gotti.wurmunlimited.modloader.ServerHook;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.WurmArgsMod;
-import org.gotti.wurmunlimited.modloader.interfaces.WurmLoadDumpMod;
-import org.gotti.wurmunlimited.modloader.interfaces.WurmMod;
+import org.gotti.wurmunlimited.modloader.interfaces.WurmServerMod;
 import org.junit.After;
 import org.junit.Before;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Properties;
 
 public class ServerSetup {
     ServerConsoleController controller;
@@ -69,11 +62,11 @@ public class ServerSetup {
         acceptedArgs.add("servername");
         acceptedArgs.add("adminpwd");
 
-        List<WurmMod> mods = new ArrayList<>();
+        List<WurmServerMod> mods = new ArrayList<>();
         try {
             mods = new ModLoader().loadModsFromModDir(Paths.get("mods"));
             ServerHook.createServerHook().addMods(mods);
-            for (WurmMod mod : mods) {
+            for (WurmServerMod mod : mods) {
                 if (mod instanceof WurmArgsMod) {
                     WurmArgsMod argMod = (WurmArgsMod)mod;
                     acceptedArgs.addAll(argMod.getArgs());
@@ -95,8 +88,9 @@ public class ServerSetup {
                 System.exit(1);
             }
         }
-        
-        controller.setMods(mods);
+
+        // TODO
+        //controller.setMods(mods);
     }
 
     @After

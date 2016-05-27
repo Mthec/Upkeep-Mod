@@ -10,7 +10,6 @@ import com.wurmonline.server.utils.DbUtilities;
 import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Villages;
 import javassist.*;
-import javassist.Modifier;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
 import org.gotti.wurmunlimited.modloader.interfaces.PreInitable;
@@ -21,7 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.reflect.*;
+import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -173,21 +172,21 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
 
         // Draining
         try {
-            GuardPlan.class.getDeclaredField("minMoneyDrained").set(GuardPlan.class, min_drain);
+            GuardPlan.class.getDeclaredField("minMoneyDrained").setLong(GuardPlan.class, min_drain);
         } catch (IllegalAccessException | NoSuchFieldException ex) {
             logger.warning(messages.getString("min_drain_not_set"));
             ex.printStackTrace();
         }
 
         try {
-            GuardPlan.class.getDeclaredField("maxDrainModifier").set(GuardPlan.class, max_drain_modifier);
+            GuardPlan.class.getDeclaredField("maxDrainModifier").setFloat(GuardPlan.class, max_drain_modifier);
         } catch (IllegalAccessException | NoSuchFieldException ex) {
             logger.warning(messages.getString("max_drain_modifier_not_set"));
             ex.printStackTrace();
         }
 
         try {
-            GuardPlan.class.getDeclaredField("drainCumulateFigure").set(GuardPlan.class, drain_modifier_increment);
+            GuardPlan.class.getDeclaredField("drainCumulateFigure").setFloat(GuardPlan.class, drain_modifier_increment);
         } catch (IllegalAccessException | NoSuchFieldException ex) {
             logger.warning(messages.getString("drain_modifier_increment_not_set"));
             ex.printStackTrace();
@@ -286,13 +285,13 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         }
         String maxDrainModifier = "?";
         try {
-            maxDrainModifier = String.valueOf(GuardPlan.class.getDeclaredField("maxDrainModifier").getFloat(Villages.class));
+            maxDrainModifier = String.valueOf(GuardPlan.class.getDeclaredField("maxDrainModifier").getFloat(GuardPlan.class));
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
         String drainCumulateFigure = "?";
         try {
-            drainCumulateFigure = String.valueOf(GuardPlan.class.getDeclaredField("drainCumulateFigure").getFloat(Villages.class));
+            drainCumulateFigure = String.valueOf(GuardPlan.class.getDeclaredField("drainCumulateFigure").getFloat(GuardPlan.class));
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
@@ -358,6 +357,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             CtClass question = pool.getCtClass("com.wurmonline.server.questions.VillageFoundationQuestion");
             question.detach();
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageFoundationQuestion.class"));
+            CtClass question2 = pool.getCtClass("com.wurmonline.server.questions.VillageUpkeep");
+            question2.detach();
+            pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageUpkeep.class"));
 
             CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
             CtField freeTiles = new CtField(CtClass.longType, "FREE_TILES", villages);
@@ -387,7 +389,8 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 "    logger.log(java.util.logging.Level.WARNING, this.villageId + \", \" + var2.getMessage(), var2);\n" +
                 "    return 0L;\n" +
                 "}\n" +
-                "return (long)Math.min((float)this.moneyLeft, (1.0F + this.drainModifier) * Math.max((float)this.minMoneyDrained, (float)this.getMonthlyCost() * 0.15F));\n" +
+                "logger.log(java.util.logging.Level.WARNING, Long.toString(com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"minMoneyDrained\").getLong(com.wurmonline.server.villages.GuardPlan.class)));" +
+                "return (long)Math.min((float)this.moneyLeft, (1.0F + this.drainModifier) * Math.max((float)com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"minMoneyDrained\").getLong(com.wurmonline.server.villages.GuardPlan.class), (float)this.getMonthlyCost() * 0.15F));\n" +
                 "}");
 
             guardPlan.getDeclaredField("maxDrainModifier").setModifiers(Modifier.setPublic(Modifier.STATIC));
@@ -396,11 +399,10 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             drainMoney.setBody(
                     "{long moneyToDrain = this.getMoneyDrained();\n" +
                     "this.drainGuardPlan(this.moneyLeft - moneyToDrain);\n" +
-                    "this.drainModifier = Math.min(this.maxDrainModifier, this.drainCumulateFigure + this.drainModifier);\n" +
+                    "this.drainModifier = Math.min(com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"maxDrainModifier\").getFloat(com.wurmonline.server.villages.GuardPlan.class), com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"drainCumulateFigure\").getFloat(com.wurmonline.server.villages.GuardPlan.class) + this.drainModifier);\n" +
                     "this.saveDrainMod();\n" +
                     "return moneyToDrain;\n" +
                     "}");
-
 
             CtMethod getVillageId = new CtMethod(CtPrimitiveType.intType, "getVillageId", null, guardPlan);
             getVillageId.setBody("{return this.villageId;}");
@@ -618,6 +620,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 }
                 return method.invoke(proxy, args);
             });
+
         } catch (NotFoundException | CannotCompileException | IOException ex) {
             ex.printStackTrace();
             System.exit(-1);
