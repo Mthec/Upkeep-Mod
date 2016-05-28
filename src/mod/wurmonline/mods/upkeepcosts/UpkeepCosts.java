@@ -389,7 +389,6 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 "    logger.log(java.util.logging.Level.WARNING, this.villageId + \", \" + var2.getMessage(), var2);\n" +
                 "    return 0L;\n" +
                 "}\n" +
-                "logger.log(java.util.logging.Level.WARNING, Long.toString(com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"minMoneyDrained\").getLong(com.wurmonline.server.villages.GuardPlan.class)));" +
                 "return (long)Math.min((float)this.moneyLeft, (1.0F + this.drainModifier) * Math.max((float)com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"minMoneyDrained\").getLong(com.wurmonline.server.villages.GuardPlan.class), (float)this.getMonthlyCost() * 0.15F));\n" +
                 "}");
 
@@ -427,9 +426,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     "    try {\n" +
                     "        com.wurmonline.server.villages.Village sv = this.getVillage();\n" +
                     "        long tiles = (long)sv.getNumTiles() - com.wurmonline.server.villages.Villages.FREE_TILES;" +
-                    "        long cost = tiles > 0L ? tiles : 0L * com.wurmonline.server.villages.Villages.TILE_UPKEEP;\n" +
+                    "        long cost = (tiles > 0L ? tiles : 0L) * com.wurmonline.server.villages.Villages.TILE_UPKEEP;\n" +
                     "        long perimeter = (long)sv.getPerimeterNonFreeTiles() - com.wurmonline.server.villages.Villages.FREE_PERIMETER;" +
-                    "        cost += perimeter > 0L ? perimeter : 0L * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP;\n" +
+                    "        cost += (perimeter > 0L ? perimeter : 0L) * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP;\n" +
                     "        cost += getCostForGuards(this.hiredGuardNumber);\n" +
                     "        if(sv.isCapital()) {\n" +
                     "            cost = (long)((float)cost * 0.5F);\n" +
