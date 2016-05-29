@@ -14,7 +14,7 @@ import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
 import org.gotti.wurmunlimited.modloader.interfaces.Configurable;
 import org.gotti.wurmunlimited.modloader.interfaces.PreInitable;
 import org.gotti.wurmunlimited.modloader.interfaces.ServerStartedListener;
-import org.gotti.wurmunlimited.modloader.interfaces.WurmMod;
+import org.gotti.wurmunlimited.modloader.interfaces.WurmServerMod;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,7 +31,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerStartedListener {
+public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, ServerStartedListener {
     protected static final Logger logger = Logger.getLogger(UpkeepCosts.class.getName());
     public long tile_cost;
     public long tile_upkeep;
