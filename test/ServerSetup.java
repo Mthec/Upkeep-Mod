@@ -1,28 +1,16 @@
-import com.wurmonline.server.Servers;
-import com.wurmonline.server.utils.SimpleArgumentParser;
-import javassist.Loader;
 import mod.wurmonline.serverlauncher.ServerConsoleController;
-import org.gotti.wurmunlimited.modloader.ModLoader;
-import org.gotti.wurmunlimited.modloader.ServerHook;
-import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
-import org.gotti.wurmunlimited.modloader.interfaces.WurmArgsMod;
-import org.gotti.wurmunlimited.modloader.interfaces.WurmServerMod;
-import org.junit.After;
-import org.junit.Before;
-
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
+import org.gotti.wurmunlimited.serverlauncher.ServerLauncher2;
+import org.junit.BeforeClass;
 
 public class ServerSetup {
     ServerConsoleController controller;
 
-    @Before
-    public void setUp() {
+    @BeforeClass
+    public static void setUp () throws Exception {
 
-        try {
+        ServerLauncher2.main(new String[0]);
+
+        /*try {
             Loader loader = HookManager.getInstance().getLoader();
             loader.delegateLoadingOf("javafx.");
             loader.delegateLoadingOf("com.sun.");
@@ -90,11 +78,11 @@ public class ServerSetup {
         }
 
         // TODO
-        //controller.setMods(mods);
+        //controller.setMods(mods);*/
     }
 
-    @After
-    public void tearDown() {
-        controller.shutdown(0, null);
-    }
+    //@AfterClass
+    //public void tearDown() {
+    //    controller.shutdown(0, null);
+    //}
 }
