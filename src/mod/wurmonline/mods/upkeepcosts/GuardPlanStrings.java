@@ -11,4 +11,11 @@ public class GuardPlanStrings {
             "}\n" +
             "return (long)Math.min((float)this.moneyLeft, (1.0F + this.drainModifier) * Math.max((float)com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"minMoneyDrained\").getLong(this), (float)this.getMonthlyCost() * 0.15F));\n" +
             "}";
+
+    public static String drainMoney = "{long moneyToDrain = this.getMoneyDrained();\n" +
+            "this.drainGuardPlan(this.moneyLeft - moneyToDrain);\n" +
+            "this.drainModifier = Math.min(com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"maxDrainModifier\").getFloat(com.wurmonline.server.villages.GuardPlan.class), com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"drainCumulateFigure\").getFloat(com.wurmonline.server.villages.GuardPlan.class) + this.drainModifier);\n" +
+            "this.saveDrainMod();\n" +
+            "return moneyToDrain;\n" +
+            "}";
 }

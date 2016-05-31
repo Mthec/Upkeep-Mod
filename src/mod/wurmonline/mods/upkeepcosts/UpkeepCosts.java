@@ -384,13 +384,7 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
             guardPlan.getDeclaredField("maxDrainModifier").setModifiers(Modifier.setPublic(Modifier.STATIC));
             guardPlan.getDeclaredField("drainCumulateFigure").setModifiers(Modifier.setPublic(Modifier.STATIC));
             CtMethod drainMoney = guardPlan.getDeclaredMethod("drainMoney");
-            drainMoney.setBody(
-                    "{long moneyToDrain = this.getMoneyDrained();\n" +
-                    "this.drainGuardPlan(this.moneyLeft - moneyToDrain);\n" +
-                    "this.drainModifier = Math.min(com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"maxDrainModifier\").getFloat(com.wurmonline.server.villages.GuardPlan.class), com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"drainCumulateFigure\").getFloat(com.wurmonline.server.villages.GuardPlan.class) + this.drainModifier);\n" +
-                    "this.saveDrainMod();\n" +
-                    "return moneyToDrain;\n" +
-                    "}");
+            drainMoney.setBody(GuardPlanStrings.drainMoney);
 
             CtMethod getVillageId = new CtMethod(CtPrimitiveType.intType, "getVillageId", null, guardPlan);
             getVillageId.setBody("{return this.villageId;}");
