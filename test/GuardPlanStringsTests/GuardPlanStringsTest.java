@@ -3,9 +3,12 @@ package GuardPlanStringsTests;
 import javassist.*;
 import org.junit.Before;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class GuardPlanStringsTest {
     static Class GuardPlan;
-    String methodToTest;
+    Map<String, String> methodsToTest = new HashMap<>();
 
     @Before
     public void createGuardPlan() throws Exception {
@@ -41,9 +44,15 @@ class GuardPlanStringsTest {
         CtMethod getMonthlyCost = CtMethod.make("public long getMonthlyCost() {return 1L;}", guardPlan);
         guardPlan.addMethod(getMonthlyCost);
 
-        CtMethod methodToAdd = CtMethod.make("public long getMoneyDrained() {return;}", guardPlan);
-        methodToAdd.setBody(methodToTest);
-        guardPlan.addMethod(methodToAdd);
+        methodsToTest.forEach((def, body) -> {
+                try {
+                    CtMethod methodToAdd = CtMethod.make(def + "() {return;}", guardPlan);
+                    methodToAdd.setBody(body);
+                    guardPlan.addMethod(methodToAdd);
+                } catch (CannotCompileException ex) {
+                    ex.printStackTrace();
+                }
+        });
 
         GuardPlan = guardPlan.toClass();
     }

@@ -5,8 +5,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class getMoneyDrained extends GuardPlanStringsTest {
-    getMoneyDrained() {
-        methodToTest = GuardPlanStrings.getMoneyDrained;
+    public getMoneyDrained() {
+        methodsToTest.put("public long getMoneyDrained", GuardPlanStrings.getMoneyDrained);
     }
 
     @Test
