@@ -2,13 +2,11 @@ package GuardPlanStringsTests;
 
 import mod.wurmonline.mods.upkeepcosts.GuardPlanStrings;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 public class getMoneyDrained extends GuardPlanStringsTest {
-    @Before
-    public void setUp() throws Exception {
-        this.createGuardPlan(GuardPlanStrings.getMoneyDrained);
+    getMoneyDrained() {
+        methodToTest = GuardPlanStrings.getMoneyDrained;
     }
 
     @Test

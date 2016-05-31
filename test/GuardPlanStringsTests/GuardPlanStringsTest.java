@@ -3,11 +3,12 @@ package GuardPlanStringsTests;
 import javassist.*;
 import org.junit.Before;
 
-public class GuardPlanStringsTest {
+class GuardPlanStringsTest {
     static Class GuardPlan;
+    String methodToTest;
 
     @Before
-    public void createGuardPlan(String method) throws Exception {
+    public void createGuardPlan() throws Exception {
         ClassPool pool = ClassPool.getDefault();
 
         CtClass village = pool.makeClass("test.Village");
@@ -41,7 +42,7 @@ public class GuardPlanStringsTest {
         guardPlan.addMethod(getMonthlyCost);
 
         CtMethod methodToAdd = CtMethod.make("public long getMoneyDrained() {return;}", guardPlan);
-        methodToAdd.setBody(method);
+        methodToAdd.setBody(methodToTest);
         guardPlan.addMethod(methodToAdd);
 
         GuardPlan = guardPlan.toClass();
