@@ -9,12 +9,20 @@ import java.util.Map;
 class GuardPlanStringsTest {
     static Class GuardPlan;
     static Map<String, String> methodsToTest = new HashMap<>();
+    Object gPlan;
 
     @Before
     public void setUp() throws Exception {
         if (GuardPlan == null) {
             createGuardPlan();
         }
+        // Reset values
+        gPlan = GuardPlan.newInstance();
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 10000L);
+        GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, 1000L);
+        GuardPlan.getDeclaredField("minMoneyDrained").setLong(gPlan, 300L);
+        GuardPlan.getDeclaredField("drainModifier").setFloat(gPlan, 0.0f);
+        gPlan.getClass().getDeclaredMethod("setIsPermanent", boolean.class).invoke(gPlan, false);
     }
 
     private void createGuardPlan() throws Exception {
@@ -38,18 +46,20 @@ class GuardPlanStringsTest {
         guardPlan.addField(logger);
         CtField villageId = CtField.make("long villageId = 0L;", guardPlan);
         guardPlan.addField(villageId);
-        CtField moneyLeft = CtField.make("long moneyLeft = 10000L;", guardPlan);
+        CtField moneyLeft = CtField.make("public long moneyLeft;", guardPlan);
         guardPlan.addField(moneyLeft);
-        CtField drainModifier = CtField.make("float drainModifier = 0.0f;", guardPlan);
+        CtField drainModifier = CtField.make("public float drainModifier;", guardPlan);
         guardPlan.addField(drainModifier);
-        CtField minMoneyDrained = CtField.make("public static long minMoneyDrained = 30L;", guardPlan);
+        CtField minMoneyDrained = CtField.make("public static long minMoneyDrained;", guardPlan);
         guardPlan.addField(minMoneyDrained);
+        CtField monthlyCost = CtField.make("public long monthlyCost;", guardPlan);
+        guardPlan.addField(monthlyCost);
         // Extra testing method
         guardPlan.addMethod(CtMethod.make("public void setIsPermanent(boolean value) {this.village.isPermanent = value; return;}", guardPlan));
 
         CtMethod getVillage = CtMethod.make("test.Village getVillage() {return this.village;}", guardPlan);
         guardPlan.addMethod(getVillage);
-        CtMethod getMonthlyCost = CtMethod.make("public long getMonthlyCost() {return 1L;}", guardPlan);
+        CtMethod getMonthlyCost = CtMethod.make("public long getMonthlyCost() {return this.monthlyCost;}", guardPlan);
         guardPlan.addMethod(getMonthlyCost);
 
         methodsToTest.forEach((def, body) -> {
