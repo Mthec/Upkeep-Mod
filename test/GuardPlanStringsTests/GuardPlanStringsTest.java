@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 class GuardPlanStringsTest {
-    static Class GuardPlan;
+    static Class<?> GuardPlan;
     static Map<String, String> methodsToTest = new HashMap<>();
     Object gPlan;
 
