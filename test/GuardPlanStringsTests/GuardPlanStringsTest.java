@@ -50,12 +50,12 @@ class GuardPlanStringsTest {
         village.addConstructor(ct);
         village.addField(CtField.make("public boolean isPermanent = false;", village));
         village.addField(CtField.make("public long numTiles;", village));
-        village.addField(CtField.make("public long perimeterNonFree;", village));
+        village.addField(CtField.make("public long perimeterNonFreeTiles;", village));
         village.addField(CtField.make("public boolean tooManyCitizens;", village));
         village.addField(CtField.make("public boolean isCapital;", village));
 
         village.addMethod(CtMethod.make("public long getNumTiles() {return this.numTiles;}", village));
-        village.addMethod(CtMethod.make("public long getPerimeterNonFreeTiles() {return this.perimeterNonFree;}", village));
+        village.addMethod(CtMethod.make("public long getPerimeterNonFreeTiles() {return this.perimeterNonFreeTiles;}", village));
         village.addMethod(CtMethod.make("public boolean hasToomanyCitizens() {return this.tooManyCitizens;}", village));
         village.addMethod(CtMethod.make("public boolean isCapital() {return this.isCapital;}", village));
         // Needs to be constructed at least once to be usable?

@@ -22,4 +22,12 @@ public class getMonthlyCost extends GuardPlanStringsTest {
         Village.getDeclaredField("numTiles").setLong(village, 10L);
         Assert.assertEquals(100L, GuardPlan.getDeclaredMethod("getMonthlyCost").invoke(gPlan));
     }
+
+    @Test
+    public void testPerimeterUpkeep() throws Exception {
+        Villages.getDeclaredField("PERIMETER_UPKEEP").setLong(null, 10L);
+        Object village = GuardPlan.getDeclaredField("village").get(gPlan);
+        Village.getDeclaredField("perimeterNonFreeTiles").setLong(village, 10L);
+        Assert.assertEquals(100L, GuardPlan.getDeclaredMethod("getMonthlyCost").invoke(gPlan));
+    }
 }

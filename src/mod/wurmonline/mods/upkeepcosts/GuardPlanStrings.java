@@ -25,9 +25,9 @@ public class GuardPlanStrings {
             "    try {\n" +
             "        com.wurmonline.server.villages.Village sv = this.getVillage();\n" +
             "        long tiles = (long)sv.getNumTiles() - com.wurmonline.server.villages.Villages.FREE_TILES;" +
-            "        long cost = (tiles > 0L ? tiles : 0L) * com.wurmonline.server.villages.Villages.TILE_UPKEEP;\n" +
+            "        long cost = tiles > 0L ? tiles * com.wurmonline.server.villages.Villages.TILE_UPKEEP : 0L;\n" +
             "        long perimeter = (long)sv.getPerimeterNonFreeTiles() - com.wurmonline.server.villages.Villages.FREE_PERIMETER;" +
-            "        cost += (perimeter > 0L ? perimeter : 0L) * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP;\n" +
+            "        cost += perimeter > 0L ? perimeter * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP : 0L;\n" +
             "        cost += getCostForGuards(this.hiredGuardNumber);\n" +
             "        if(sv.isCapital()) {\n" +
             "            cost = (long)((float)cost * 0.5F);\n" +
