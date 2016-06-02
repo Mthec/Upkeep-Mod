@@ -8,17 +8,23 @@ import java.util.Map;
 
 class GuardPlanStringsTest {
     static Class GuardPlan;
-    Map<String, String> methodsToTest = new HashMap<>();
+    static Map<String, String> methodsToTest = new HashMap<>();
 
     @Before
-    public void createGuardPlan() throws Exception {
+    public void setUp() throws Exception {
+        if (GuardPlan == null) {
+            createGuardPlan();
+        }
+    }
+
+    private void createGuardPlan() throws Exception {
         ClassPool pool = ClassPool.getDefault();
 
         CtClass village = pool.makeClass("test.Village");
         new CtNewConstructor();
         CtConstructor ct = CtNewConstructor.make("public Village(){}", village);
         village.addConstructor(ct);
-        CtField isPermanent = new CtField(CtClass.booleanType, "isPermanent", village);
+        CtField isPermanent = CtField.make("public boolean isPermanent = false;", village);
         isPermanent.setModifiers(Modifier.PUBLIC);
         village.addField(isPermanent, "false");
         // Needs to be constructed at least once to be usable?
@@ -38,6 +44,8 @@ class GuardPlanStringsTest {
         guardPlan.addField(drainModifier);
         CtField minMoneyDrained = CtField.make("public static long minMoneyDrained = 30L;", guardPlan);
         guardPlan.addField(minMoneyDrained);
+        // Extra testing method
+        guardPlan.addMethod(CtMethod.make("public void setIsPermanent(boolean value) {this.village.isPermanent = value; return;}", guardPlan));
 
         CtMethod getVillage = CtMethod.make("test.Village getVillage() {return this.village;}", guardPlan);
         guardPlan.addMethod(getVillage);
