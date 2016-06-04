@@ -12,6 +12,7 @@ abstract class GuardPlanStringsTest {
     static Class<?> GuardPlan;
     static Class<?> LocalServer;
     static Map<String, String> methodsToTest = new HashMap<>();
+    static Map<String, String> insertAftersToTest = new HashMap<>();
     Object gPlan;
     Object gVillage;
 
@@ -123,6 +124,14 @@ abstract class GuardPlanStringsTest {
                 } catch (CannotCompileException ex) {
                     ex.printStackTrace();
                 }
+        });
+
+        insertAftersToTest.forEach((name, insert) -> {
+            try {
+                guardPlan.getDeclaredMethod(name).insertAfter(insert);
+            } catch (CannotCompileException | NotFoundException ex) {
+                ex.printStackTrace();
+            }
         });
 
         GuardPlan = guardPlan.toClass();
