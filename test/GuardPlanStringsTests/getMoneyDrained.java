@@ -9,16 +9,20 @@ public class getMoneyDrained extends GuardPlanStringsTest {
         methodsToTest.put("public long getMoneyDrained", GuardPlanStrings.getMoneyDrained);
     }
 
+    private long call() throws Exception {
+        return (long)GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan);
+    }
+
     @Test
     public void testPermanentVillage() throws Exception {
-        gPlan.getClass().getDeclaredMethod("setIsPermanent", boolean.class).invoke(gPlan, true);
-        Assert.assertEquals(0L, GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Village.getDeclaredField("isPermanent").setBoolean(gVillage, true);
+        Assert.assertEquals(0L, call());
     }
 
     @Test
     public void testNotPermanentVillage() throws Exception {
-        gPlan.getClass().getDeclaredMethod("setIsPermanent", boolean.class).invoke(gPlan, false);
-        Assert.assertNotEquals(0L, GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Village.getDeclaredField("isPermanent").setBoolean(gVillage, false);
+        Assert.assertNotEquals(0L, call());
     }
 
     @Test
@@ -29,7 +33,7 @@ public class getMoneyDrained extends GuardPlanStringsTest {
         long minMoneyDrained = GuardPlan.getDeclaredField("minMoneyDrained").getLong(gPlan);
         assert moneyLeft < minMoneyDrained;
         assert moneyLeft < monthlyCost * 0.15;
-        Assert.assertEquals(moneyLeft, GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Assert.assertEquals(moneyLeft, call());
     }
 
     @Test
@@ -40,9 +44,9 @@ public class getMoneyDrained extends GuardPlanStringsTest {
         long minMoneyDrained = GuardPlan.getDeclaredField("minMoneyDrained").getLong(gPlan);
         assert monthlyCost * 0.15 > minMoneyDrained;
         assert monthlyCost * 0.15 < moneyLeft;
-        Assert.assertEquals((long)(monthlyCost * 0.15 * 1.0), GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Assert.assertEquals((long)(monthlyCost * 0.15 * 1.0), call());
         GuardPlan.getDeclaredField("drainModifier").setFloat(gPlan, 0.5f);
-        Assert.assertEquals((long)(monthlyCost * 0.15 * 1.5), GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Assert.assertEquals((long)(monthlyCost * 0.15 * 1.5), call());
     }
 
     @Test
@@ -53,7 +57,7 @@ public class getMoneyDrained extends GuardPlanStringsTest {
         GuardPlan.getDeclaredField("minMoneyDrained").setLong(gPlan, minMoneyDrained);
         assert minMoneyDrained > monthlyCost * 0.15;
         assert minMoneyDrained < moneyLeft;
-        Assert.assertEquals(minMoneyDrained, GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Assert.assertEquals(minMoneyDrained, call());
     }
 
     @Test
@@ -64,7 +68,7 @@ public class getMoneyDrained extends GuardPlanStringsTest {
         GuardPlan.getDeclaredField("minMoneyDrained").setLong(gPlan, minMoneyDrained);
         assert minMoneyDrained < monthlyCost * 0.15;
         assert minMoneyDrained < moneyLeft;
-        Assert.assertEquals((long)(monthlyCost * 0.15), GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Assert.assertEquals((long)(monthlyCost * 0.15), call());
     }
 
     @Test
@@ -74,13 +78,13 @@ public class getMoneyDrained extends GuardPlanStringsTest {
 
         long monthlyCost = 1000L;
         GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, monthlyCost);
-        Assert.assertEquals((long)(monthlyCost * 0.15), GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Assert.assertEquals((long)(monthlyCost * 0.15), call());
         monthlyCost = 250000L;
         GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, monthlyCost);
-        Assert.assertEquals((long)(monthlyCost * 0.15), GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Assert.assertEquals((long)(monthlyCost * 0.15), call());
         monthlyCost = 50000000L;
         GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, monthlyCost);
-        Assert.assertEquals((long)(monthlyCost * 0.15), GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan));
+        Assert.assertEquals((long)(monthlyCost * 0.15), call());
 
     }
 }
