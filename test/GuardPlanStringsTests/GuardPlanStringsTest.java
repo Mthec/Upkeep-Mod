@@ -6,10 +6,11 @@ import org.junit.Before;
 import java.util.HashMap;
 import java.util.Map;
 
-class GuardPlanStringsTest {
+abstract class GuardPlanStringsTest {
     static Class<?> Village;
     static Class<?> Villages;
     static Class<?> GuardPlan;
+    static Class<?> LocalServer;
     static Map<String, String> methodsToTest = new HashMap<>();
     Object gPlan;
     Object gVillage;
@@ -31,8 +32,11 @@ class GuardPlanStringsTest {
         GuardPlan.getDeclaredField("drainModifier").setFloat(gPlan, 0.0f);
 
         gVillage = GuardPlan.getDeclaredField("village").get(gPlan);
-        // TODO
-        gPlan.getClass().getDeclaredMethod("setIsPermanent", boolean.class).invoke(gPlan, false);
+        Village.getDeclaredField("isPermanent").setBoolean(gVillage, false);
+        Village.getDeclaredField("numTiles").setLong(gVillage, 110L);
+        Village.getDeclaredField("perimeterNonFreeTiles").setLong(gVillage, 0L);
+        Village.getDeclaredField("tooManyCitizens").setBoolean(gVillage, false);
+        Village.getDeclaredField("isCapital").setBoolean(gVillage, false);
 
         Villages.getDeclaredField("FREE_TILES").setLong(null, 0L);
         Villages.getDeclaredField("TILE_UPKEEP").setLong(null, 0L);
@@ -40,10 +44,11 @@ class GuardPlanStringsTest {
         Villages.getDeclaredField("PERIMETER_UPKEEP").setLong(null, 0L);
         Villages.getDeclaredField("MINIMUM_UPKEEP").setLong(null, 0L);
         Villages.getDeclaredField("GUARD_UPKEEP").setLong(null, 0L);
+
+        LocalServer.getDeclaredField("isUpkeep").setBoolean(null, true);
     }
 
     private void createVillage(ClassPool pool) throws Exception {
-        // TODO - Reset
         CtClass village = pool.makeClass("com.wurmonline.server.villages.Village");
         new CtNewConstructor();
         CtConstructor ct = CtNewConstructor.make("public Village(){}", village);
@@ -94,8 +99,6 @@ class GuardPlanStringsTest {
         guardPlan.addField(monthlyCost);
         guardPlan.addField(CtField.make("public long hiredGuardNumber;", guardPlan));
         guardPlan.addField(CtField.make("public long costForGuards;", guardPlan));
-        // Extra testing method
-        guardPlan.addMethod(CtMethod.make("public void setIsPermanent(boolean value) {this.village.isPermanent = value; return;}", guardPlan));
 
         CtMethod getVillage = CtMethod.make("com.wurmonline.server.villages.Village getVillage() {return this.village;}", guardPlan);
         guardPlan.addMethod(getVillage);
@@ -132,9 +135,10 @@ class GuardPlanStringsTest {
         CtConstructor ct = CtNewConstructor.make("public Server(){}", localServer);
         localServer.addConstructor(ct);
         Servers.addField(CtField.make("public static test.Server localServer = new test.Server();", Servers));
-        localServer.addMethod(CtMethod.make("public boolean isUpkeep() {return true;}", localServer));
+        localServer.addField(CtField.make("public static boolean isUpkeep = true;", localServer));
+        localServer.addMethod(CtMethod.make("public boolean isUpkeep() {return isUpkeep;}", localServer));
 
         Servers.toClass();
-        localServer.toClass();
+        LocalServer = localServer.toClass();
     }
 }
