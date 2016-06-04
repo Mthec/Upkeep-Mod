@@ -70,12 +70,12 @@ abstract class GuardPlanStringsTest {
     private void createVillages(ClassPool pool) throws Exception {
         CtClass villages = pool.makeClass("com.wurmonline.server.villages.Villages");
 
-        villages.addField(CtField.make("public static long FREE_TILES = 100L;", villages));
-        villages.addField(CtField.make("public static long TILE_UPKEEP = 100L;", villages));
-        villages.addField(CtField.make("public static long FREE_PERIMETER = 100L;", villages));
-        villages.addField(CtField.make("public static long PERIMETER_UPKEEP = 100L;", villages));
-        villages.addField(CtField.make("public static long MINIMUM_UPKEEP = 100L;", villages));
-        villages.addField(CtField.make("public static long GUARD_UPKEEP = 100L;", villages));
+        villages.addField(CtField.make("public static long FREE_TILES = 0L;", villages));
+        villages.addField(CtField.make("public static long TILE_UPKEEP = 0L;", villages));
+        villages.addField(CtField.make("public static long FREE_PERIMETER = 0L;", villages));
+        villages.addField(CtField.make("public static long PERIMETER_UPKEEP = 0L;", villages));
+        villages.addField(CtField.make("public static long MINIMUM_UPKEEP = 0L;", villages));
+        villages.addField(CtField.make("public static long GUARD_UPKEEP = 0L;", villages));
         // Needs to be constructed at least once to be usable?
         Villages = villages.toClass();
     }
