@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class getMoneyDrained extends GuardPlanStringsTest {
     public getMoneyDrained() {
-        methodsToTest.put("public long getMoneyDrained", GuardPlanStrings.getMoneyDrained);
+        methodsToTest.put("public long getMoneyDrained()", GuardPlanStrings.getMoneyDrained);
     }
 
     private long call() throws Exception {

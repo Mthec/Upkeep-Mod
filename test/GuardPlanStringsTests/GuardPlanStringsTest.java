@@ -15,6 +15,7 @@ abstract class GuardPlanStringsTest {
     static Map<String, String> insertAftersToTest = new HashMap<>();
     Object gPlan;
     Object gVillage;
+    String className;
 
     @Before
     public void setUp() throws Exception {
@@ -111,7 +112,7 @@ abstract class GuardPlanStringsTest {
         guardPlan.addMethod(getVillage);
         CtMethod getMonthlyCost = CtMethod.make("public long getMonthlyCost() {return this.monthlyCost;}", guardPlan);
         guardPlan.addMethod(getMonthlyCost);
-        CtMethod getCostForGuards = CtMethod.make("long getCostForGuards(long guards) {return guards * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;}", guardPlan);
+        CtMethod getCostForGuards = CtMethod.make("long getCostForGuards(int guards) {return guards * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;}", guardPlan);
         guardPlan.addMethod(getCostForGuards);
         CtMethod delete = CtMethod.make("void delete() {return;}", guardPlan);
         guardPlan.addMethod(delete);
@@ -126,9 +127,9 @@ abstract class GuardPlanStringsTest {
                 try {
                     CtMethod methodToAdd;
                     try {
-                        methodToAdd = guardPlan.getDeclaredMethod(def.split(" ")[2]);
+                        methodToAdd = guardPlan.getDeclaredMethod(def.split(" ")[2].split("\\(")[0]);
                     } catch (NotFoundException ex) {
-                        methodToAdd = CtMethod.make(def + "() {return;}", guardPlan);
+                        methodToAdd = CtMethod.make(def + " {return;}", guardPlan);
                         guardPlan.addMethod(methodToAdd);
                     }
 

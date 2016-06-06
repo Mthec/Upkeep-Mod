@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class pollUpkeep extends GuardPlanStringsTest {
     public pollUpkeep() {
-        methodsToTest.put("pollUpkeep", GuardPlanStrings.pollUpkeep);
+        methodsToTest.put("public boolean pollUpkeep()", GuardPlanStrings.pollUpkeep);
     }
 
     private boolean call() throws Exception{

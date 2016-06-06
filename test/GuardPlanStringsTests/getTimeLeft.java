@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class getTimeLeft extends GuardPlanStringsTest {
     public getTimeLeft() {
-        insertAftersToTest.put("getTimeLeft", GuardPlanStrings.getTimeLeft);
+        insertAftersToTest.put("public long getTimeLeft()", GuardPlanStrings.getTimeLeft);
     }
 
     private long call() throws Exception{
