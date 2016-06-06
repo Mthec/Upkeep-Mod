@@ -25,21 +25,32 @@ public class drainMoney extends GuardPlanStringsTest {
 
     @Test
     public void testDrainGuardPlanCalled() throws Exception {
-
+        long moneyLeft = GuardPlan.getDeclaredField("moneyLeft").getLong(gPlan);
+        long moneyDrained = (long)GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan);
+        call();
+        Assert.assertEquals(moneyLeft - moneyDrained, GuardPlan.getDeclaredField("guardPlanDrained").getLong(gPlan));
     }
 
     @Test
     public void testSaveDrainModCalled() throws Exception {
-
-    }
-
-    @Test
-    public void testDrainIncrements() throws Exception {
-
+        call();
+        Assert.assertTrue(GuardPlan.getDeclaredField("savedDrainMod").getBoolean(gPlan));
     }
 
     @Test
     public void testDrainAmount() throws Exception {
+        Assert.assertEquals((long)GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan), call());
+    }
 
+    @Test
+    public void testDrainIncrements() throws Exception {
+        long drainCost = (long)GuardPlan.getDeclaredMethod("getMoneyDrained").invoke(gPlan);
+        GuardPlan.getDeclaredField("drainCumulateFigure").setFloat(gPlan, 0.5f);
+        GuardPlan.getDeclaredField("maxDrainModifier").setFloat(gPlan, 5.0f);
+        Assert.assertEquals(drainCost, call());
+        long newDrainCost = (long)(drainCost * 1.5);
+        Assert.assertEquals(newDrainCost, call());
+        newDrainCost = (long)(drainCost * 2.0);
+        Assert.assertEquals(newDrainCost, call());
     }
 }
