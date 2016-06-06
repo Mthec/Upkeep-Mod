@@ -131,7 +131,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         Villages.TILE_UPKEEP_STRING = (new Change(Villages.TILE_UPKEEP)).getChangeString();
 
         try {
-            Villages.class.getDeclaredField("FREE_TILES").set(Villages.class, free_tiles);
+            Villages.class.getDeclaredField("FREE_TILES").set(null, free_tiles);
         } catch (IllegalAccessException | NoSuchFieldException ex) {
             logger.warning(messages.getString("free_tiles_not_set"));
             ex.printStackTrace();
@@ -144,7 +144,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         Villages.PERIMETER_UPKEEP_STRING = (new Change(Villages.PERIMETER_UPKEEP)).getChangeString();
 
         try {
-            Villages.class.getDeclaredField("FREE_PERIMETER").set(Villages.class, free_perimeter);
+            Villages.class.getDeclaredField("FREE_PERIMETER").set(null, free_perimeter);
         } catch (IllegalAccessException | NoSuchFieldException ex) {
             logger.warning(messages.getString("free_perimeter_not_set"));
             ex.printStackTrace();
@@ -172,21 +172,21 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
 
         // Draining
         try {
-            GuardPlan.class.getDeclaredField("minMoneyDrained").setLong(GuardPlan.class, min_drain);
+            GuardPlan.class.getDeclaredField("minMoneyDrained").setLong(null, min_drain);
         } catch (IllegalAccessException | NoSuchFieldException ex) {
             logger.warning(messages.getString("min_drain_not_set"));
             ex.printStackTrace();
         }
 
         try {
-            GuardPlan.class.getDeclaredField("maxDrainModifier").setFloat(GuardPlan.class, max_drain_modifier);
+            GuardPlan.class.getDeclaredField("maxDrainModifier").setFloat(null, max_drain_modifier);
         } catch (IllegalAccessException | NoSuchFieldException ex) {
             logger.warning(messages.getString("max_drain_modifier_not_set"));
             ex.printStackTrace();
         }
 
         try {
-            GuardPlan.class.getDeclaredField("drainCumulateFigure").setFloat(GuardPlan.class, drain_modifier_increment);
+            GuardPlan.class.getDeclaredField("drainCumulateFigure").setFloat(null, drain_modifier_increment);
         } catch (IllegalAccessException | NoSuchFieldException ex) {
             logger.warning(messages.getString("drain_modifier_increment_not_set"));
             ex.printStackTrace();
@@ -267,31 +267,31 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     void logValues () {
         String FREE_TILES = "?";
         try {
-            FREE_TILES = String.valueOf(Villages.class.getDeclaredField("FREE_TILES").getLong(Villages.class));
+            FREE_TILES = String.valueOf(Villages.class.getDeclaredField("FREE_TILES").getLong(null));
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
         String FREE_PERIMETER = "?";
         try {
-            FREE_PERIMETER = String.valueOf(Villages.class.getDeclaredField("FREE_PERIMETER").getLong(Villages.class));
+            FREE_PERIMETER = String.valueOf(Villages.class.getDeclaredField("FREE_PERIMETER").getLong(null));
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
         String minMoneyDrained = "?";
         try {
-            minMoneyDrained = String.valueOf(GuardPlan.class.getDeclaredField("minMoneyDrained").getLong(Villages.class));
+            minMoneyDrained = String.valueOf(GuardPlan.class.getDeclaredField("minMoneyDrained").getLong(null));
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
         String maxDrainModifier = "?";
         try {
-            maxDrainModifier = String.valueOf(GuardPlan.class.getDeclaredField("maxDrainModifier").getFloat(GuardPlan.class));
+            maxDrainModifier = String.valueOf(GuardPlan.class.getDeclaredField("maxDrainModifier").getFloat(null));
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
         String drainCumulateFigure = "?";
         try {
-            drainCumulateFigure = String.valueOf(GuardPlan.class.getDeclaredField("drainCumulateFigure").getFloat(GuardPlan.class));
+            drainCumulateFigure = String.valueOf(GuardPlan.class.getDeclaredField("drainCumulateFigure").getFloat(null));
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
