@@ -15,7 +15,6 @@ abstract class GuardPlanStringsTest {
     static Map<String, String> insertAftersToTest = new HashMap<>();
     Object gPlan;
     Object gVillage;
-    String className;
 
     @Before
     public void setUp() throws Exception {
@@ -104,7 +103,7 @@ abstract class GuardPlanStringsTest {
         guardPlan.addField(minMoneyDrained);
         CtField monthlyCost = CtField.make("public long monthlyCost;", guardPlan);
         guardPlan.addField(monthlyCost);
-        guardPlan.addField(CtField.make("public long hiredGuardNumber;", guardPlan));
+        guardPlan.addField(CtField.make("public int hiredGuardNumber;", guardPlan));
         guardPlan.addField(CtField.make("public long costForGuards;", guardPlan));
         guardPlan.addField(CtField.make("public float drainCumulateFigure;", guardPlan));
 

@@ -107,7 +107,7 @@ public class getMonthlyCost extends GuardPlanStringsTest {
 
     @Test
     public void testGuardCostAdded() throws Exception {
-        GuardPlan.getDeclaredField("hiredGuardNumber").setLong(gPlan, 2L);
+        GuardPlan.getDeclaredField("hiredGuardNumber").setInt(gPlan, 2);
         Villages.getDeclaredField("GUARD_UPKEEP").setLong(null, 10L);
         Assert.assertEquals(20L, call());
     }
