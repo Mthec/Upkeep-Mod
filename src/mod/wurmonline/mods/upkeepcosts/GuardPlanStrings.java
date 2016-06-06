@@ -14,7 +14,7 @@ public class GuardPlanStrings {
 
     public static String drainMoney = "{long moneyToDrain = this.getMoneyDrained();\n" +
             "this.drainGuardPlan(this.moneyLeft - moneyToDrain);\n" +
-            "this.drainModifier = Math.min(com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"maxDrainModifier\").getFloat(com.wurmonline.server.villages.GuardPlan.class), com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"drainCumulateFigure\").getFloat(com.wurmonline.server.villages.GuardPlan.class) + this.drainModifier);\n" +
+            "this.drainModifier = Math.min(com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"maxDrainModifier\").getFloat(this), com.wurmonline.server.villages.GuardPlan.class.getDeclaredField(\"drainCumulateFigure\").getFloat(this) + this.drainModifier);\n" +
             "this.saveDrainMod();\n" +
             "return moneyToDrain;\n" +
             "}";

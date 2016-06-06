@@ -11,12 +11,35 @@ public class drainMoney extends GuardPlanStringsTest {
     }
 
     private long call() throws Exception{
-        return (long)GuardPlan.getDeclaredMethod("drainMoney").invoke(GuardPlan.newInstance());
+        return (long)GuardPlan.getDeclaredMethod("drainMoney").invoke(gPlan);
     }
 
     @Test
-    public void test() throws Exception {
-        GuardPlan.getDeclaredField("minMoneyDrained").setLong(null, 50);
-        Assert.assertEquals(50L, call());
+    public void testMaxDrain() throws Exception {
+        float maxDrainModifier = 9.0f;
+        GuardPlan.getDeclaredField("drainCumulateFigure").setFloat(gPlan, 10.0f);
+        GuardPlan.getDeclaredField("maxDrainModifier").setFloat(gPlan, maxDrainModifier);
+        call();
+        Assert.assertEquals(maxDrainModifier, GuardPlan.getDeclaredField("drainModifier").getFloat(gPlan), 0.0001f);
+    }
+
+    @Test
+    public void testDrainGuardPlanCalled() throws Exception {
+
+    }
+
+    @Test
+    public void testSaveDrainModCalled() throws Exception {
+
+    }
+
+    @Test
+    public void testDrainIncrements() throws Exception {
+
+    }
+
+    @Test
+    public void testDrainAmount() throws Exception {
+
     }
 }

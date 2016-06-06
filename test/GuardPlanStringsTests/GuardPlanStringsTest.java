@@ -31,6 +31,10 @@ abstract class GuardPlanStringsTest {
         GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, 1000L);
         GuardPlan.getDeclaredField("minMoneyDrained").setLong(gPlan, 300L);
         GuardPlan.getDeclaredField("drainModifier").setFloat(gPlan, 0.0f);
+        GuardPlan.getDeclaredField("maxDrainModifier").setFloat(gPlan, 5.0f);
+        GuardPlan.getDeclaredField("guardPlanDrained").setLong(gPlan, 0L);
+        GuardPlan.getDeclaredField("savedDrainMod").setBoolean(gPlan, false);
+        GuardPlan.getDeclaredField("drainCumulateFigure").setFloat(gPlan, 0.0f);
 
         gVillage = GuardPlan.getDeclaredField("village").get(gPlan);
         Village.getDeclaredField("isPermanent").setBoolean(gVillage, false);
@@ -94,12 +98,14 @@ abstract class GuardPlanStringsTest {
         guardPlan.addField(moneyLeft);
         CtField drainModifier = CtField.make("public float drainModifier;", guardPlan);
         guardPlan.addField(drainModifier);
+        guardPlan.addField(CtField.make("public float maxDrainModifier;", guardPlan));
         CtField minMoneyDrained = CtField.make("public static long minMoneyDrained;", guardPlan);
         guardPlan.addField(minMoneyDrained);
         CtField monthlyCost = CtField.make("public long monthlyCost;", guardPlan);
         guardPlan.addField(monthlyCost);
         guardPlan.addField(CtField.make("public long hiredGuardNumber;", guardPlan));
         guardPlan.addField(CtField.make("public long costForGuards;", guardPlan));
+        guardPlan.addField(CtField.make("public float drainCumulateFigure;", guardPlan));
 
         CtMethod getVillage = CtMethod.make("com.wurmonline.server.villages.Village getVillage() {return this.village;}", guardPlan);
         guardPlan.addMethod(getVillage);
@@ -109,6 +115,12 @@ abstract class GuardPlanStringsTest {
         guardPlan.addMethod(getCostForGuards);
         CtMethod delete = CtMethod.make("void delete() {return;}", guardPlan);
         guardPlan.addMethod(delete);
+
+        // From DbGuardPlan
+        guardPlan.addField(CtField.make("public long guardPlanDrained;", guardPlan));
+        guardPlan.addMethod(CtMethod.make("void drainGuardPlan(long moneyLeft) {this.guardPlanDrained = moneyLeft;return;}", guardPlan));
+        guardPlan.addField(CtField.make("public boolean savedDrainMod;", guardPlan));
+        guardPlan.addMethod(CtMethod.make("void saveDrainMod() {this.savedDrainMod = true;return;}", guardPlan));
 
         methodsToTest.forEach((def, body) -> {
                 try {
