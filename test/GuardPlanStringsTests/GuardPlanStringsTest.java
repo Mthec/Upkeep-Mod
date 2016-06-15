@@ -35,6 +35,7 @@ abstract class GuardPlanStringsTest {
         GuardPlan.getDeclaredField("guardPlanDrained").setLong(gPlan, 0L);
         GuardPlan.getDeclaredField("savedDrainMod").setBoolean(gPlan, false);
         GuardPlan.getDeclaredField("drainCumulateFigure").setFloat(gPlan, 0.0f);
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, 0.0D);
 
         gVillage = GuardPlan.getDeclaredField("village").get(gPlan);
         Village.getDeclaredField("isPermanent").setBoolean(gVillage, false);
@@ -106,7 +107,9 @@ abstract class GuardPlanStringsTest {
         guardPlan.addField(CtField.make("public int hiredGuardNumber;", guardPlan));
         guardPlan.addField(CtField.make("public long costForGuards;", guardPlan));
         guardPlan.addField(CtField.make("public float drainCumulateFigure;", guardPlan));
+        guardPlan.addField(CtField.make("public double calculatedUpkeep;", guardPlan));
 
+        // TODO - One line.
         CtMethod getVillage = CtMethod.make("com.wurmonline.server.villages.Village getVillage() {return this.village;}", guardPlan);
         guardPlan.addMethod(getVillage);
         CtMethod getMonthlyCost = CtMethod.make("public long getMonthlyCost() {return this.monthlyCost;}", guardPlan);
@@ -115,6 +118,18 @@ abstract class GuardPlanStringsTest {
         guardPlan.addMethod(getCostForGuards);
         CtMethod delete = CtMethod.make("void delete() {return;}", guardPlan);
         guardPlan.addMethod(delete);
+        guardPlan.addMethod(CtMethod.make("public double calculateUpkeep(boolean calculateFraction) {return this.calculatedUpkeep;}", guardPlan));
+        guardPlan.addMethod(CtMethod.make("public final long getTimeLeft() {\n" +
+                "        try {\n" +
+                "            if(this.getVillage().isPermanent || !com.wurmonline.server.Servers.localServer.isUpkeep()) {\n" +
+                "                return 29030400000L;\n" +
+                "            }\n" +
+                "        } catch (com.wurmonline.server.villages.NoSuchVillageException var2) {\n" +
+                "            logger.log(java.util.logging.Level.WARNING, this.villageId + \", \" + var2.getMessage(), var2);\n" +
+                "        }\n" +
+                "\n" +
+                "        return (long)((double)this.moneyLeft / Math.max(1.0D, this.calculateUpkeep(false)) * 500000.0D);\n" +
+                "    }", guardPlan));
 
         // From DbGuardPlan
         guardPlan.addField(CtField.make("public long guardPlanDrained;", guardPlan));

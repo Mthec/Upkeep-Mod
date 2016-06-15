@@ -45,12 +45,11 @@ public class GuardPlanStrings {
             "    }\n" +
             "}";
 
-    public static String getTimeLeft = "if ($_ != 0L) {" +
-            "if ($_ == 29030400000L) {" +
+    public static String getTimeLeft = "if ($_ == 29030400000L) {" +
             "    return 29030400000L;" +
             "} else {" +
-            "    return (long)((double)this.moneyLeft / this.calculateUpkeep(true) * 500000.0D);" +
-            "}}";
+            "    return (long)((double)this.moneyLeft / this.calculateUpkeep(false) * 500000.0D);" +
+            "}";
 
     public static String getCostForGuards = "return (long)$1 * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;";
 
