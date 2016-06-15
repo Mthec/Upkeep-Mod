@@ -57,8 +57,7 @@ abstract class GuardPlanStringsTest {
     private void createVillage(ClassPool pool) throws Exception {
         CtClass village = pool.makeClass("com.wurmonline.server.villages.Village");
         new CtNewConstructor();
-        CtConstructor ct = CtNewConstructor.make("public Village(){}", village);
-        village.addConstructor(ct);
+        village.addConstructor(CtNewConstructor.make("public Village(){}", village));
         village.addField(CtField.make("public boolean isPermanent = false;", village));
         village.addField(CtField.make("public long numTiles;", village));
         village.addField(CtField.make("public long perimeterNonFreeTiles;", village));
@@ -89,47 +88,34 @@ abstract class GuardPlanStringsTest {
     private void createGuardPlan(ClassPool pool) throws Exception {
         CtClass guardPlan = pool.makeClass("com.wurmonline.server.villages.GuardPlan");
 
-        CtField village_instance = CtField.make("public com.wurmonline.server.villages.Village village = new com.wurmonline.server.villages.Village();", guardPlan);
-        guardPlan.addField(village_instance);
-        CtField logger = CtField.make("private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(com.wurmonline.server.villages.GuardPlan.class.getName());", guardPlan);
-        guardPlan.addField(logger);
-        CtField villageId = CtField.make("long villageId = 0L;", guardPlan);
-        guardPlan.addField(villageId);
-        CtField moneyLeft = CtField.make("public long moneyLeft;", guardPlan);
-        guardPlan.addField(moneyLeft);
-        CtField drainModifier = CtField.make("public float drainModifier;", guardPlan);
-        guardPlan.addField(drainModifier);
+        guardPlan.addField(CtField.make("public com.wurmonline.server.villages.Village village = new com.wurmonline.server.villages.Village();", guardPlan));
+        guardPlan.addField(CtField.make("private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(com.wurmonline.server.villages.GuardPlan.class.getName());", guardPlan));
+        guardPlan.addField(CtField.make("long villageId = 0L;", guardPlan));
+        guardPlan.addField(CtField.make("public long moneyLeft;", guardPlan));
+        guardPlan.addField(CtField.make("public float drainModifier;", guardPlan));
         guardPlan.addField(CtField.make("public float maxDrainModifier;", guardPlan));
-        CtField minMoneyDrained = CtField.make("public static long minMoneyDrained;", guardPlan);
-        guardPlan.addField(minMoneyDrained);
-        CtField monthlyCost = CtField.make("public long monthlyCost;", guardPlan);
-        guardPlan.addField(monthlyCost);
+        guardPlan.addField(CtField.make("public static long minMoneyDrained;", guardPlan));
+        guardPlan.addField(CtField.make("public long monthlyCost;", guardPlan));
         guardPlan.addField(CtField.make("public int hiredGuardNumber;", guardPlan));
         guardPlan.addField(CtField.make("public long costForGuards;", guardPlan));
         guardPlan.addField(CtField.make("public float drainCumulateFigure;", guardPlan));
         guardPlan.addField(CtField.make("public double calculatedUpkeep;", guardPlan));
 
-        // TODO - One line.
-        CtMethod getVillage = CtMethod.make("com.wurmonline.server.villages.Village getVillage() {return this.village;}", guardPlan);
-        guardPlan.addMethod(getVillage);
-        CtMethod getMonthlyCost = CtMethod.make("public long getMonthlyCost() {return this.monthlyCost;}", guardPlan);
-        guardPlan.addMethod(getMonthlyCost);
-        CtMethod getCostForGuards = CtMethod.make("long getCostForGuards(int guards) {return guards * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;}", guardPlan);
-        guardPlan.addMethod(getCostForGuards);
-        CtMethod delete = CtMethod.make("void delete() {return;}", guardPlan);
-        guardPlan.addMethod(delete);
+        guardPlan.addMethod(CtMethod.make("com.wurmonline.server.villages.Village getVillage() {return this.village;}", guardPlan));
+        guardPlan.addMethod(CtMethod.make("public long getMonthlyCost() {return this.monthlyCost;}", guardPlan));
+        guardPlan.addMethod(CtMethod.make("long getCostForGuards(int guards) {return guards * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;}", guardPlan));
+        guardPlan.addMethod(CtMethod.make("void delete() {return;}", guardPlan));
         guardPlan.addMethod(CtMethod.make("public double calculateUpkeep(boolean calculateFraction) {return this.calculatedUpkeep;}", guardPlan));
         guardPlan.addMethod(CtMethod.make("public final long getTimeLeft() {\n" +
-                "        try {\n" +
-                "            if(this.getVillage().isPermanent || !com.wurmonline.server.Servers.localServer.isUpkeep()) {\n" +
-                "                return 29030400000L;\n" +
-                "            }\n" +
-                "        } catch (com.wurmonline.server.villages.NoSuchVillageException var2) {\n" +
-                "            logger.log(java.util.logging.Level.WARNING, this.villageId + \", \" + var2.getMessage(), var2);\n" +
-                "        }\n" +
-                "\n" +
-                "        return (long)((double)this.moneyLeft / Math.max(1.0D, this.calculateUpkeep(false)) * 500000.0D);\n" +
-                "    }", guardPlan));
+                "try {\n" +
+                "if(this.getVillage().isPermanent || !com.wurmonline.server.Servers.localServer.isUpkeep()) {\n" +
+                "    return 29030400000L;\n" +
+                "}\n" +
+                "} catch (com.wurmonline.server.villages.NoSuchVillageException var2) {\n" +
+                "    logger.log(java.util.logging.Level.WARNING, this.villageId + \", \" + var2.getMessage(), var2);\n" +
+                "}\n" +
+                "return (long)((double)this.moneyLeft / Math.max(1.0D, this.calculateUpkeep(false)) * 500000.0D);\n" +
+                "}", guardPlan));
 
         // From DbGuardPlan
         guardPlan.addField(CtField.make("public long guardPlanDrained;", guardPlan));
@@ -164,12 +150,11 @@ abstract class GuardPlanStringsTest {
         GuardPlan = guardPlan.toClass();
     }
 
-    public void createOther(ClassPool pool) throws Exception {
+    private void createOther(ClassPool pool) throws Exception {
         CtClass Servers = pool.makeClass("com.wurmonline.server.Servers");
         CtClass localServer = pool.makeClass("test.Server");
         new CtNewConstructor();
-        CtConstructor ct = CtNewConstructor.make("public Server(){}", localServer);
-        localServer.addConstructor(ct);
+        localServer.addConstructor(CtNewConstructor.make("public Server(){}", localServer));
         Servers.addField(CtField.make("public static test.Server localServer = new test.Server();", Servers));
         localServer.addField(CtField.make("public static boolean isUpkeep = true;", localServer));
         localServer.addMethod(CtMethod.make("public boolean isUpkeep() {return isUpkeep;}", localServer));
