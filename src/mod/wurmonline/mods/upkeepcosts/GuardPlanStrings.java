@@ -54,12 +54,12 @@ public class GuardPlanStrings {
     public static String getCostForGuards = "return (long)$1 * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;";
 
     public static String pollUpkeep = "{try {" +
-            "            if(this.getVillage().isPermanent) {" +
-            "                return false;" +
-            "            }" +
-            "        } catch (com.wurmonline.server.villages.NoSuchVillageException var11) {" +
-            "            ;" +
-            "        }" +
+            "    if(this.getVillage().isPermanent) {" +
+            "        return false;" +
+            "    }" +
+            "} catch (com.wurmonline.server.villages.NoSuchVillageException var11) {" +
+            "    ;" +
+            "}" +
             "double upkeepD = this.calculateUpkeep(true);" +
             "if (upkeepD < 0.0D) {" +
             "    logger.severe(\"Why is upkeep less than 0.0?\");" +
@@ -75,9 +75,10 @@ public class GuardPlanStrings {
             "if (this.output) {" +
             "    System.out.println(\"Village upkeep - \" + this.getVillage().getName() + \" paid \" + Double.toString(upkeepD) + \" this turn.  Upkeep buffer is now \" + Double.toString(this.upkeepBuffer));" +
             "}" +
-            "if (upkeepD == 0.0D) {" +
-            "    return false;" +
-            "}" +
+            // TODO - Why was this needed?
+            //"if (upkeepD == 0.0D) {" +
+            //"    return false;" +
+            //"}" +
             "        long upkeep = (long)upkeepD;" +
             "        if(this.moneyLeft - upkeep <= 0L) {" +
             "            try {" +

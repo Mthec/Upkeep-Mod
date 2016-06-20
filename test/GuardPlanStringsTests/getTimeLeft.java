@@ -4,6 +4,7 @@ import mod.wurmonline.mods.upkeepcosts.GuardPlanStrings;
 import org.junit.Assert;
 import org.junit.Test;
 
+// TODO - calculatedUpkeep not right.
 public class getTimeLeft extends GuardPlanStringsTest {
     private long specialValue = 29030400000L;
 
@@ -31,8 +32,8 @@ public class getTimeLeft extends GuardPlanStringsTest {
     public void testMoneyLeftOver() throws Exception {
         long moneyLeft = 10000L;
         GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
-        long calculatedUpkeep = 100L;
-        GuardPlan.getDeclaredField("calculatedUpkeep").setLong(gPlan, calculatedUpkeep);
+        double calculatedUpkeep = 100L;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, calculatedUpkeep);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
         Assert.assertEquals(result, call());
     }

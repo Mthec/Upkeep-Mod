@@ -3,6 +3,7 @@ package GuardPlanStringsTests;
 import javassist.*;
 import org.junit.Before;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +19,7 @@ abstract class GuardPlanStringsTest {
 
     @Before
     public void setUp() throws Exception {
+        // TODO - Should undo in tearDown?
         if (GuardPlan == null) {
             ClassPool pool = ClassPool.getDefault();
             createVillage(pool);
@@ -36,6 +38,12 @@ abstract class GuardPlanStringsTest {
         GuardPlan.getDeclaredField("savedDrainMod").setBoolean(gPlan, false);
         GuardPlan.getDeclaredField("drainCumulateFigure").setFloat(gPlan, 0.0f);
         GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, 0.0D);
+        Field upkeepCounter = GuardPlan.getDeclaredField("upkeepCounter");
+        upkeepCounter.setAccessible(true);
+        upkeepCounter.setInt(gPlan, 0);
+        upkeepCounter.setAccessible(false);
+        GuardPlan.getDeclaredField("upkeepBuffer").setDouble(gPlan, 0.0D);
+        GuardPlan.getDeclaredField("upkeepBuffer").setLong(gPlan, 0L);
 
         gVillage = GuardPlan.getDeclaredField("village").get(gPlan);
         Village.getDeclaredField("isPermanent").setBoolean(gVillage, false);
@@ -63,11 +71,15 @@ abstract class GuardPlanStringsTest {
         village.addField(CtField.make("public long perimeterNonFreeTiles;", village));
         village.addField(CtField.make("public boolean tooManyCitizens;", village));
         village.addField(CtField.make("public boolean isCapital;", village));
+        village.addField(CtField.make("public java.util.ArrayList broadcastMessage = new java.util.ArrayList();", village));
 
         village.addMethod(CtMethod.make("public long getNumTiles() {return this.numTiles;}", village));
         village.addMethod(CtMethod.make("public long getPerimeterNonFreeTiles() {return this.perimeterNonFreeTiles;}", village));
         village.addMethod(CtMethod.make("public boolean hasToomanyCitizens() {return this.tooManyCitizens;}", village));
         village.addMethod(CtMethod.make("public boolean isCapital() {return this.isCapital;}", village));
+        village.addMethod(CtMethod.make("public String getName() {return \"VILLAGE_NAME\";}", village));
+        village.addMethod(CtMethod.make("public void broadCastAlert(String message) { this.broadcastMessage.add(message); return;}", village));
+        village.addMethod(CtMethod.make("public void broadCastAlert(String message, byte b) { this.broadcastMessage.add(message); return;}", village));
         // Needs to be constructed at least once to be usable?
         Village = village.toClass();
     }
@@ -100,6 +112,11 @@ abstract class GuardPlanStringsTest {
         guardPlan.addField(CtField.make("public long costForGuards;", guardPlan));
         guardPlan.addField(CtField.make("public float drainCumulateFigure;", guardPlan));
         guardPlan.addField(CtField.make("public double calculatedUpkeep;", guardPlan));
+        guardPlan.addField(CtField.make("private int upkeepCounter = 0;", guardPlan));
+        guardPlan.addField(CtField.make("public double upkeepBuffer = 0.0D;", guardPlan));
+        guardPlan.addField(CtField.make("public boolean output = false;", guardPlan));
+        guardPlan.addField(CtField.make("public int type = 0;", guardPlan));
+        guardPlan.addField(CtField.make("private long lastSentWarning = 0L;", guardPlan));
 
         guardPlan.addMethod(CtMethod.make("com.wurmonline.server.villages.Village getVillage() {return this.village;}", guardPlan));
         guardPlan.addMethod(CtMethod.make("public long getMonthlyCost() {return this.monthlyCost;}", guardPlan));
@@ -116,6 +133,8 @@ abstract class GuardPlanStringsTest {
                 "}\n" +
                 "return (long)((double)this.moneyLeft / Math.max(1.0D, this.calculateUpkeep(false)) * 500000.0D);\n" +
                 "}", guardPlan));
+        // TODO
+        guardPlan.addMethod(CtMethod.make("public void updateGuardPlan(int a, long b, int c) {return;}", guardPlan));
 
         // From DbGuardPlan
         guardPlan.addField(CtField.make("public long guardPlanDrained;", guardPlan));
