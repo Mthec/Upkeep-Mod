@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 // TODO - Also test logging?
 // TODO - calculateUpkeep not right.  See getTimeLeft.
@@ -113,7 +114,23 @@ public class pollUpkeep extends GuardPlanStringsTest {
     }
 
     @Test
-    public void testBroadcastOnLowTimeLeft() throws Exception {
+    public void testBroadcastOnWeekLeft() throws Exception {
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 604L);
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, 1.0D);
+        assert (long)GuardPlan.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 604800000L;
+        call();
+        Assert.assertEquals("The village is disbanding within one week. Due to the low morale this gives, the guards have ceased their general maintenance of structures.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(0));
+        Assert.assertEquals((byte)4,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(0));
+        Assert.assertEquals("Any traders who are citizens of VILLAGE_NAME will disband without refund.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(1));
+        Assert.assertEquals(null,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(1));
+    }
+
+    @Test
+    public void testDelayedBroadcastOnWeekLeft() throws Exception {
         if (true) {
             throw new Exception("TODO");
         }
@@ -121,7 +138,23 @@ public class pollUpkeep extends GuardPlanStringsTest {
     }
 
     @Test
-    public void testDelayedBroadcastOnLowTimeLeft() throws Exception {
+    public void testBroadcastOnDayTimeLeft() throws Exception {
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 60L);
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, 1.0D);
+        assert (long)GuardPlan.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 86400000L;
+        call();
+        Assert.assertEquals("The village is disbanding within 24 hours. You may add upkeep money to the village coffers at the token.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(0));
+        Assert.assertEquals((byte)2,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(0));
+        Assert.assertEquals("Any traders who are citizens of VILLAGE_NAME will disband without refund.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(1));
+        Assert.assertEquals(null,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(1));
+    }
+
+    @Test
+    public void testDelayedBroadcastOnDayTimeLeft() throws Exception {
         if (true) {
             throw new Exception("TODO");
         }
@@ -129,31 +162,23 @@ public class pollUpkeep extends GuardPlanStringsTest {
     }
 
     @Test
-    public void testBroadcastOnVeryLowTimeLeft() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
+    public void testBroadcastOnHourTimeLeft() throws Exception {
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 6L);
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, 1.0D);
+        assert (long)GuardPlan.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 3600000L;
+        call();
+        Assert.assertEquals("The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(0));
+        Assert.assertEquals((byte)2,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(0));
+        Assert.assertEquals("Any traders who are citizens of VILLAGE_NAME will disband without refund.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(1));
+        Assert.assertEquals(null,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(1));
     }
 
     @Test
-    public void testDelayedBroadcastOnVeryLowTimeLeft() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
-    }
-
-    @Test
-    public void testBroadcastOnExtremelyLowTimeLeft() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
-    }
-
-    @Test
-    public void testNotDelayedBroadcastOnExtremelyLowTimeLeft() throws Exception {
+    public void testNotDelayedBroadcastOnHourLeft() throws Exception {
         if (true) {
             throw new Exception("TODO");
         }

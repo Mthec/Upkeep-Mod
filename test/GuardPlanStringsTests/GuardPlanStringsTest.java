@@ -84,14 +84,21 @@ abstract class GuardPlanStringsTest {
         village.addField(CtField.make("public boolean tooManyCitizens;", village));
         village.addField(CtField.make("public boolean isCapital;", village));
         village.addField(CtField.make("public java.util.ArrayList broadcastMessage = new java.util.ArrayList();", village));
+        village.addField(CtField.make("public java.util.ArrayList broadcastBytes = new java.util.ArrayList();", village));
 
         village.addMethod(CtMethod.make("public long getNumTiles() {return this.numTiles;}", village));
         village.addMethod(CtMethod.make("public long getPerimeterNonFreeTiles() {return this.perimeterNonFreeTiles;}", village));
         village.addMethod(CtMethod.make("public boolean hasToomanyCitizens() {return this.tooManyCitizens;}", village));
         village.addMethod(CtMethod.make("public boolean isCapital() {return this.isCapital;}", village));
         village.addMethod(CtMethod.make("public String getName() {return \"VILLAGE_NAME\";}", village));
-        village.addMethod(CtMethod.make("public void broadCastAlert(String message) { this.broadcastMessage.add(message); return;}", village));
-        village.addMethod(CtMethod.make("public void broadCastAlert(String message, byte b) { this.broadcastMessage.add(message); return;}", village));
+        village.addMethod(CtMethod.make("public void broadCastAlert(String message) {" +
+                "this.broadcastMessage.add(message);" +
+                "this.broadcastBytes.add(null);" +
+                "return;}", village));
+        village.addMethod(CtMethod.make("public void broadCastAlert(String message, byte b) {" +
+                "this.broadcastMessage.add(message);" +
+                "this.broadcastBytes.add(new Byte(b));" +
+                "return;}", village));
         // Needs to be constructed at least once to be usable?
         Village = village.toClass();
     }
@@ -148,7 +155,6 @@ abstract class GuardPlanStringsTest {
                 "}\n" +
                 "return (long)((double)this.moneyLeft / Math.max(1.0D, this.calculateUpkeep(false)) * 500000.0D);\n" +
                 "}", guardPlan));
-        // TODO
         guardPlan.addMethod(CtMethod.make("public void updateGuardPlan(int a, long b, int c) {" +
                 "updateGuardPlan1 = a;" +
                 "updateGuardPlan2 = b;" +
