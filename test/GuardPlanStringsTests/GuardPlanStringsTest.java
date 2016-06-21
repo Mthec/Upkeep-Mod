@@ -4,6 +4,7 @@ import javassist.*;
 import org.junit.Before;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ abstract class GuardPlanStringsTest {
         gPlan = GuardPlan.newInstance();
         GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 10000L);
         GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, 1000L);
+        GuardPlan.getDeclaredField("hiredGuardNumber").setInt(gPlan, 1);
         GuardPlan.getDeclaredField("minMoneyDrained").setLong(gPlan, 300L);
         GuardPlan.getDeclaredField("drainModifier").setFloat(gPlan, 0.0f);
         GuardPlan.getDeclaredField("maxDrainModifier").setFloat(gPlan, 5.0f);
@@ -43,7 +45,16 @@ abstract class GuardPlanStringsTest {
         upkeepCounter.setInt(gPlan, 0);
         upkeepCounter.setAccessible(false);
         GuardPlan.getDeclaredField("upkeepBuffer").setDouble(gPlan, 0.0D);
-        GuardPlan.getDeclaredField("upkeepBuffer").setLong(gPlan, 0L);
+        GuardPlan.getDeclaredField("output").setBoolean(gPlan, false);
+        GuardPlan.getDeclaredField("type").setInt(gPlan, 0);
+        Field lastSentWarning = GuardPlan.getDeclaredField("lastSentWarning");
+        lastSentWarning.setAccessible(true);
+        lastSentWarning.setLong(gPlan, 0L);
+        lastSentWarning.setAccessible(false);
+        GuardPlan.getDeclaredField("updateGuardPlan1").setInt(gPlan, -1);
+        GuardPlan.getDeclaredField("updateGuardPlan2").setLong(gPlan, -1);
+        GuardPlan.getDeclaredField("updateGuardPlan3").setInt(gPlan, -1);
+
 
         gVillage = GuardPlan.getDeclaredField("village").get(gPlan);
         Village.getDeclaredField("isPermanent").setBoolean(gVillage, false);
@@ -51,6 +62,7 @@ abstract class GuardPlanStringsTest {
         Village.getDeclaredField("perimeterNonFreeTiles").setLong(gVillage, 0L);
         Village.getDeclaredField("tooManyCitizens").setBoolean(gVillage, false);
         Village.getDeclaredField("isCapital").setBoolean(gVillage, false);
+        Village.getDeclaredField("broadcastMessage").set(gVillage, new ArrayList<>());
 
         Villages.getDeclaredField("FREE_TILES").setLong(null, 0L);
         Villages.getDeclaredField("TILE_UPKEEP").setLong(null, 0L);
@@ -117,6 +129,9 @@ abstract class GuardPlanStringsTest {
         guardPlan.addField(CtField.make("public boolean output = false;", guardPlan));
         guardPlan.addField(CtField.make("public int type = 0;", guardPlan));
         guardPlan.addField(CtField.make("private long lastSentWarning = 0L;", guardPlan));
+        guardPlan.addField(CtField.make("public int updateGuardPlan1;", guardPlan));
+        guardPlan.addField(CtField.make("public long updateGuardPlan2;", guardPlan));
+        guardPlan.addField(CtField.make("public int updateGuardPlan3;", guardPlan));
 
         guardPlan.addMethod(CtMethod.make("com.wurmonline.server.villages.Village getVillage() {return this.village;}", guardPlan));
         guardPlan.addMethod(CtMethod.make("public long getMonthlyCost() {return this.monthlyCost;}", guardPlan));
@@ -134,7 +149,11 @@ abstract class GuardPlanStringsTest {
                 "return (long)((double)this.moneyLeft / Math.max(1.0D, this.calculateUpkeep(false)) * 500000.0D);\n" +
                 "}", guardPlan));
         // TODO
-        guardPlan.addMethod(CtMethod.make("public void updateGuardPlan(int a, long b, int c) {return;}", guardPlan));
+        guardPlan.addMethod(CtMethod.make("public void updateGuardPlan(int a, long b, int c) {" +
+                "updateGuardPlan1 = a;" +
+                "updateGuardPlan2 = b;" +
+                "updateGuardPlan3 = c;" +
+                "return;}", guardPlan));
 
         // From DbGuardPlan
         guardPlan.addField(CtField.make("public long guardPlanDrained;", guardPlan));

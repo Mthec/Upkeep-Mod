@@ -20,29 +20,52 @@ public class pollUpkeep extends GuardPlanStringsTest {
     @Test
     public void testFalseIfIsPermanent() throws Exception {
         Village.getDeclaredField("isPermanent").setBoolean(gVillage, true);
+        // Cause true to make test accurate.
+        long moneyLeft = 10L;
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        double upkeep = 100.0D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
+        assert moneyLeft - upkeep <= 0L;
         Assert.assertEquals(false, call());
     }
 
     @Test
     public void testFalseIfNotUpkeep() throws Exception {
         LocalServer.getDeclaredField("isUpkeep").setBoolean(null, false);
+        // Cause true to make test accurate.
+        long moneyLeft = 10L;
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        double upkeep = 100.0D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
+        assert moneyLeft - upkeep <= 0L;
         Assert.assertEquals(false, call());
     }
 
     @Test
     public void testTrueIfMoneyRunsOut() throws Exception {
-        long moneyLeft = GuardPlan.getDeclaredField("moneyLeft").getLong(gPlan);
-        long upkeep = (long)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
+        long moneyLeft = 10L;
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        double upkeep = 100.0D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
         assert moneyLeft - upkeep <= 0L;
         Assert.assertEquals(true, call());
     }
 
     @Test
     public void testGuardPlanUpdated() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
+        long moneyLeft = 1000L;
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        double upkeep = 1.0D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
+        int type = 1;
+        GuardPlan.getDeclaredField("type").setInt(gPlan, type);
+        long newMoneyLeft = moneyLeft - (long)upkeep;
+        int guards = 3;
+        GuardPlan.getDeclaredField("hiredGuardNumber").setInt(gPlan, guards);
+        call();
+        Assert.assertEquals("type value incorrect:", type, GuardPlan.getDeclaredField("updateGuardPlan1").getInt(gPlan));
+        Assert.assertEquals("newMoneyLeft value incorrect:", newMoneyLeft, GuardPlan.getDeclaredField("updateGuardPlan2").getLong(gPlan));
+        Assert.assertEquals("guards value incorrect:", guards, GuardPlan.getDeclaredField("updateGuardPlan3").getInt(gPlan));
     }
 
     @Test
@@ -80,6 +103,12 @@ public class pollUpkeep extends GuardPlanStringsTest {
         if (true) {
             throw new Exception("???");
         }
+        // Trigger sub-1L upkeep to test Math.max(1L, upkeep).
+        long moneyLeft = 1000L;
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        double upkeep = 0.02D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
+        int type = 1;
         Assert.assertEquals(true, call());
     }
 
