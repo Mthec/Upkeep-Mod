@@ -131,10 +131,19 @@ public class pollUpkeep extends GuardPlanStringsTest {
 
     @Test
     public void testDelayedBroadcastOnWeekLeft() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 604L);
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, 1.0D);
+        assert (long)GuardPlan.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 604800000L;
+        long lastSentWarning = System.currentTimeMillis();
+        Field field = GuardPlan.getDeclaredField("lastSentWarning");
+        field.setAccessible(true);
+        field.setLong(gPlan, lastSentWarning);
+        field.setAccessible(false);
+        assert !(System.currentTimeMillis() - lastSentWarning > 3600000L);
+        call();
+        call();
+        Assert.assertTrue(((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).isEmpty());
+        Assert.assertTrue(((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).isEmpty());
     }
 
     @Test
@@ -155,10 +164,19 @@ public class pollUpkeep extends GuardPlanStringsTest {
 
     @Test
     public void testDelayedBroadcastOnDayTimeLeft() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 60L);
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, 1.0D);
+        assert (long)GuardPlan.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 86400000L;
+        long lastSentWarning = System.currentTimeMillis();
+        Field field = GuardPlan.getDeclaredField("lastSentWarning");
+        field.setAccessible(true);
+        field.setLong(gPlan, lastSentWarning);
+        field.setAccessible(false);
+        assert !(System.currentTimeMillis() - lastSentWarning > 3600000L);
+        call();
+        call();
+        Assert.assertTrue(((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).isEmpty());
+        Assert.assertTrue(((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).isEmpty());
     }
 
     @Test
@@ -179,10 +197,33 @@ public class pollUpkeep extends GuardPlanStringsTest {
 
     @Test
     public void testNotDelayedBroadcastOnHourLeft() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 6L);
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, 1.0D);
+        assert (long)GuardPlan.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 3600000L;
+        long lastSentWarning = System.currentTimeMillis();
+        Field field = GuardPlan.getDeclaredField("lastSentWarning");
+        field.setAccessible(true);
+        field.setLong(gPlan, lastSentWarning);
+        field.setAccessible(false);
+        assert !(System.currentTimeMillis() - lastSentWarning > 3600000L);
+        call();
+        call();
+        Assert.assertEquals("The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(0));
+        Assert.assertEquals((byte)2,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(0));
+        Assert.assertEquals("Any traders who are citizens of VILLAGE_NAME will disband without refund.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(1));
+        Assert.assertEquals(null,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(1));
+        Assert.assertEquals("The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(2));
+        Assert.assertEquals((byte)2,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(2));
+        Assert.assertEquals("Any traders who are citizens of VILLAGE_NAME will disband without refund.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(3));
+        Assert.assertEquals(null,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(3));
     }
 
     @Test

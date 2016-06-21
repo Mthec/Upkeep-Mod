@@ -13,6 +13,7 @@ abstract class GuardPlanStringsTest {
     static Class<?> Villages;
     static Class<?> GuardPlan;
     static Class<?> LocalServer;
+    static Class<?> KingsShop;
     static Map<String, String> methodsToTest = new HashMap<>();
     static Map<String, String> insertAftersToTest = new HashMap<>();
     Object gPlan;
@@ -72,6 +73,7 @@ abstract class GuardPlanStringsTest {
         Villages.getDeclaredField("GUARD_UPKEEP").setLong(null, 0L);
 
         LocalServer.getDeclaredField("isUpkeep").setBoolean(null, true);
+        KingsShop.getDeclaredField("money").setLong(null, 100L);
     }
 
     private void createVillage(ClassPool pool) throws Exception {
@@ -196,14 +198,30 @@ abstract class GuardPlanStringsTest {
 
     private void createOther(ClassPool pool) throws Exception {
         CtClass Servers = pool.makeClass("com.wurmonline.server.Servers");
-        CtClass localServer = pool.makeClass("test.Server");
+        CtClass localServer = pool.makeClass("com.wurmonline.server.ServerEntry");
         new CtNewConstructor();
         localServer.addConstructor(CtNewConstructor.make("public Server(){}", localServer));
-        Servers.addField(CtField.make("public static test.Server localServer = new test.Server();", Servers));
+        Servers.addField(CtField.make("public static com.wurmonline.server.ServerEntry localServer = new com.wurmonline.server.ServerEntry();", Servers));
         localServer.addField(CtField.make("public static boolean isUpkeep = true;", localServer));
         localServer.addMethod(CtMethod.make("public boolean isUpkeep() {return isUpkeep;}", localServer));
 
         Servers.toClass();
         LocalServer = localServer.toClass();
+
+        CtClass Economy = pool.makeClass("com.wurmonline.server.economy.Economy");
+        new CtNewConstructor();
+        Economy.addConstructor(CtNewConstructor.make("public Economy(){}", Economy));
+        Economy.addField(CtField.make("public static com.wurmonline.server.economy.Economy economy = new com.wurmonline.server.economy.Economy();", Economy));
+        Economy.addField(CtField.make("public static com.wurmonline.server.economy.Shop shop = new com.wurmonline.server.economy.Shop();", Economy));
+        Economy.addMethod(CtMethod.make("public static com.wurmonline.server.economy.Economy getEconomy() {return economy;}", Economy));
+        Economy.addMethod(CtMethod.make("public static com.wurmonline.server.economy.Shop getKingsShop() {return shop;}", Economy));
+        CtClass Shop = pool.makeClass("com.wurmonline.server.economy.Shop");
+        Shop.addConstructor(CtNewConstructor.make("public Shop(){}", Shop));
+        Shop.addField(CtField.make("public static long money;", Shop));
+        Shop.addMethod(CtMethod.make("public long getMoney() {return this.money;}", Shop));
+        Shop.addMethod(CtMethod.make("public void setMoney(long money) {this.money = money; return;}", Shop));
+
+        Economy.toClass();
+        KingsShop = Shop.toClass();
     }
 }
