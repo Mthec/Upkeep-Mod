@@ -4,6 +4,8 @@ import mod.wurmonline.mods.upkeepcosts.GuardPlanStrings;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.util.List;
 
@@ -241,6 +243,14 @@ public class pollUpkeep extends GuardPlanStringsTest {
     }
 
     @Test
+    public void testUpkeepDNotRoundResults() throws Exception {
+        if (true) {
+            throw new Exception("TODO");
+        }
+        Assert.assertEquals(true, call());
+    }
+
+    @Test
     public void testUpkeepBufferIncremented() throws Exception {
         if (true) {
             throw new Exception("TODO");
@@ -261,10 +271,19 @@ public class pollUpkeep extends GuardPlanStringsTest {
 
     @Test
     public void testOutput() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
+        double upkeepD = 0.9D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeepD);
+        GuardPlan.getDeclaredField("output").setBoolean(gPlan, true);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        System.setOut(new PrintStream(out));
+        call();
+        Assert.assertEquals("Village upkeep - VILLAGE_NAME paid 0.0 this turn.  Upkeep buffer is now " + Double.toString(upkeepD) + System.lineSeparator(),
+                out.toString());
+        out.reset();
+        call();
+        Assert.assertEquals("Village upkeep - VILLAGE_NAME paid 1.0 this turn.  Upkeep buffer is now " + Double.toString((upkeepD * 2) - 1) + System.lineSeparator(),
+                out.toString());
+        System.setOut(null);
     }
 
     @Test
