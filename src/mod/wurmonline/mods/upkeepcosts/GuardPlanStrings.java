@@ -75,10 +75,6 @@ public class GuardPlanStrings {
             "if (this.output) {" +
             "    System.out.println(\"Village upkeep - \" + this.getVillage().getName() + \" paid \" + Double.toString(upkeepD) + \" this turn.  Upkeep buffer is now \" + Double.toString(this.upkeepBuffer));" +
             "}" +
-            // TODO - Why was this needed?
-            //"if (upkeepD == 0.0D) {" +
-            //"    return false;" +
-            //"}" +
             "        long upkeep = (long)upkeepD;" +
             "        if(this.moneyLeft - upkeep <= 0L) {" +
             "            try {" +
@@ -97,17 +93,13 @@ public class GuardPlanStrings {
             "                }" +
             "            }" +
             "" +
-            "            this.updateGuardPlan(this.type, this.moneyLeft - Math.max(1L, upkeep), this.hiredGuardNumber);" +
+            "            this.updateGuardPlan(this.type, this.moneyLeft - upkeep, this.hiredGuardNumber);" +
             "            ++this.upkeepCounter;" +
             "            if(this.upkeepCounter == 2) {" +
             "                this.upkeepCounter = 0;" +
             "                com.wurmonline.server.economy.Shop tl = com.wurmonline.server.economy.Economy.getEconomy().getKingsShop();" +
             "                if(tl != null) {" +
-            "                    if(upkeep <= 1L) {" +
-            "                        tl.setMoney(tl.getMoney() + Math.max(1L, upkeep));" +
-            "                    } else {" +
-            "                        tl.setMoney(tl.getMoney() + upkeep);" +
-            "                    }" +
+            "                    tl.setMoney(tl.getMoney() + upkeep);" +
             "                } else {" +
             "                    logger.log(java.util.logging.Level.WARNING, \"No shop when \" + this.villageId + \" paying upkeep.\");" +
             "                }" +

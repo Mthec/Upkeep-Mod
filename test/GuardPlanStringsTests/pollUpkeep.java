@@ -72,6 +72,23 @@ public class pollUpkeep extends GuardPlanStringsTest {
     }
 
     @Test
+    public void testGuardPlanUpdatedWhenUpkeepLow() throws Exception {
+        // Trigger sub-1L upkeep to test that Math.max(1L, upkeep) does not apply.
+        long moneyLeft = 1000L;
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        double upkeep = 0.02D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
+        int type = 1;
+        GuardPlan.getDeclaredField("type").setInt(gPlan, type);
+        int guards = 3;
+        GuardPlan.getDeclaredField("hiredGuardNumber").setInt(gPlan, guards);
+        call();
+        Assert.assertEquals("type value incorrect:", type, GuardPlan.getDeclaredField("updateGuardPlan1").getInt(gPlan));
+        Assert.assertEquals("moneyLeft value incorrect:", moneyLeft, GuardPlan.getDeclaredField("updateGuardPlan2").getLong(gPlan));
+        Assert.assertEquals("guards value incorrect:", guards, GuardPlan.getDeclaredField("updateGuardPlan3").getInt(gPlan));
+    }
+
+    @Test
     public void testUpkeepCounterIncremented() throws Exception {
         call();
         Field upkeepCounter = GuardPlan.getDeclaredField("upkeepCounter");
@@ -102,16 +119,10 @@ public class pollUpkeep extends GuardPlanStringsTest {
     }
 
     @Test
-    public void testGuardPlanUpdatedWhenUpkeepLow() throws Exception {
+    public void testKingsShopUpdatedWhenUpkeep0() throws Exception {
         if (true) {
-            throw new Exception("???");
+            throw new Exception("TODO");
         }
-        // Trigger sub-1L upkeep to test Math.max(1L, upkeep).
-        long moneyLeft = 1000L;
-        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
-        double upkeep = 0.02D;
-        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
-        int type = 1;
         Assert.assertEquals(true, call());
     }
 
