@@ -55,6 +55,16 @@ public class pollUpkeep extends GuardPlanStringsTest {
     }
 
     @Test
+    public void testFalseOnPass() throws Exception {
+        long moneyLeft = 1000L;
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        double upkeep = 100.0D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
+        assert moneyLeft - upkeep > 0L;
+        Assert.assertEquals(false, call());
+    }
+
+    @Test
     public void testGuardPlanUpdated() throws Exception {
         long moneyLeft = 1000L;
         GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
@@ -249,11 +259,6 @@ public class pollUpkeep extends GuardPlanStringsTest {
                 ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(3));
     }
 
-    @Test
-    public void testFalseOnPass() throws Exception {
-        Assert.assertEquals(false, call());
-    }
-
     // My Changes
     @Test
     public void testWhyUpkeepIsLessThanPoint0() throws Exception {
@@ -273,21 +278,21 @@ public class pollUpkeep extends GuardPlanStringsTest {
 
     @Test
     public void testUpkeepBufferIncremented() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        /*long monthlyCost = 10L;
-
-        GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, monthlyCost);
-
+        double calculatedUpkeep = 0.75D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, calculatedUpkeep);
         call();
-
-        Assert.assertEquals(true, GuardPlan.getDeclaredField("upkeepBuffer").getDouble(gPlan));*/
+        Assert.assertEquals(calculatedUpkeep, GuardPlan.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.001);
+        call();
+        Assert.assertEquals((calculatedUpkeep * 2) - 1.0, GuardPlan.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.001);
     }
 
     @Test
     public void testUpkeepBufferLessThan1() throws Exception {
-        Assert.assertTrue(GuardPlan.getDeclaredField("upkeepBuffer").getDouble(gPlan) < 1.0D);
+        double calculatedUpkeep = 0.75D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, calculatedUpkeep);
+        for (int i = 0; i <= 100; i++){
+            Assert.assertTrue(GuardPlan.getDeclaredField("upkeepBuffer").getDouble(gPlan) < 1.0D);
+        }
     }
 
     @Test
@@ -305,11 +310,5 @@ public class pollUpkeep extends GuardPlanStringsTest {
         Assert.assertEquals("Village upkeep - VILLAGE_NAME paid 1.0 this turn.  Upkeep buffer is now " + Double.toString((upkeepD * 2) - 1) + System.lineSeparator(),
                 out.toString());
         System.setOut(null);
-    }
-
-    @Test
-    public void testFalseOnWholeUpkeep() throws Exception {
-        // TODO - Should this return false?  Why not continue?
-        Assert.assertEquals(false, call());
     }
 }
