@@ -269,14 +269,6 @@ public class pollUpkeep extends GuardPlanStringsTest {
     }
 
     @Test
-    public void testUpkeepDNotRoundResults() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
-    }
-
-    @Test
     public void testUpkeepBufferIncremented() throws Exception {
         double calculatedUpkeep = 0.75D;
         GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, calculatedUpkeep);

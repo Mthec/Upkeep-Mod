@@ -60,6 +60,9 @@ public class GuardPlanStrings {
             "} catch (com.wurmonline.server.villages.NoSuchVillageException var11) {" +
             "    ;" +
             "}" +
+            "if (!com.wurmonline.server.Servers.localServer.isUpkeep()) {" +
+            "    return false;" +
+            "}" +
             "double upkeepD = this.calculateUpkeep(true);" +
             "if (upkeepD < 0.0D) {" +
             "    logger.severe(\"Why is upkeep less than 0.0?\");" +
