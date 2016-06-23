@@ -73,7 +73,7 @@ abstract class GuardPlanStringsTest {
         Villages.getDeclaredField("GUARD_UPKEEP").setLong(null, 0L);
 
         LocalServer.getDeclaredField("isUpkeep").setBoolean(null, true);
-        KingsShop.getDeclaredField("money").setLong(null, 100L);
+        KingsShop.getDeclaredField("money").setLong(null, 0L);
     }
 
     private void createVillage(ClassPool pool) throws Exception {

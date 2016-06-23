@@ -112,18 +112,28 @@ public class pollUpkeep extends GuardPlanStringsTest {
 
     @Test
     public void testKingsShopUpdated() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
+        double upkeep = 5.0D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
+        // Two calls to trigger shop update.
+        call();
+        call();
+        Assert.assertEquals((long)upkeep, KingsShop.getDeclaredField("money").getLong(null));
+        call();
+        call();
+        Assert.assertEquals((long)upkeep * 2, KingsShop.getDeclaredField("money").getLong(null));
     }
 
     @Test
     public void testKingsShopUpdatedWhenUpkeep0() throws Exception {
-        if (true) {
-            throw new Exception("TODO");
-        }
-        Assert.assertEquals(true, call());
+        double upkeep = 0.0D;
+        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, upkeep);
+        // Two calls to trigger shop update.
+        call();
+        call();
+        Assert.assertEquals(0, KingsShop.getDeclaredField("money").getLong(null));
+        call();
+        call();
+        Assert.assertEquals(0, KingsShop.getDeclaredField("money").getLong(null));
     }
 
     @Test
