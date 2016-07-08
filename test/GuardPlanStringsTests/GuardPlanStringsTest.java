@@ -21,7 +21,6 @@ abstract class GuardPlanStringsTest {
 
     @Before
     public void setUp() throws Exception {
-        // TODO - Should undo in tearDown?
         if (GuardPlan == null) {
             ClassPool pool = ClassPool.getDefault();
             createVillage(pool);

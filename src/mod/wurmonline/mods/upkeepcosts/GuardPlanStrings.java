@@ -64,9 +64,6 @@ public class GuardPlanStrings {
             "    return false;" +
             "}" +
             "double upkeepD = this.calculateUpkeep(true);" +
-            "if (upkeepD < 0.0D) {" +
-            "    logger.severe(\"Why is upkeep less than 0.0?\");" +
-            "}" +
             "if (upkeepD < 1.0D) {" +
             "    this.upkeepBuffer += upkeepD;" +
             "    upkeepD = 0.0D;" +
