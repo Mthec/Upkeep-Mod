@@ -27,9 +27,8 @@ public class getTimeLeft extends GuardPlanStringsTest {
         Assert.assertEquals(specialValue, call());
     }
 
-    // TODO - Left Over What?
     @Test
-    public void testMoneyLeftOver() throws Exception {
+    public void testMoneyLeftOverDisbandLevel() throws Exception {
         long moneyLeft = 10000L;
         GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
         double calculatedUpkeep = (double)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
@@ -38,7 +37,7 @@ public class getTimeLeft extends GuardPlanStringsTest {
     }
 
     @Test
-    public void testMoneyLeftUnder() throws Exception {
+    public void testMoneyLeftUnderDisbandLevel() throws Exception {
         long moneyLeft = 10L;
         GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
         double calculatedUpkeep = (double)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
