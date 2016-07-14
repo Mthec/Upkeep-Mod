@@ -39,7 +39,6 @@ abstract class GuardPlanStringsTest {
         GuardPlan.getDeclaredField("guardPlanDrained").setLong(gPlan, 0L);
         GuardPlan.getDeclaredField("savedDrainMod").setBoolean(gPlan, false);
         GuardPlan.getDeclaredField("drainCumulateFigure").setFloat(gPlan, 0.0f);
-        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, 0.0D);
         Field upkeepCounter = GuardPlan.getDeclaredField("upkeepCounter");
         upkeepCounter.setAccessible(true);
         upkeepCounter.setInt(gPlan, 0);
@@ -131,9 +130,8 @@ abstract class GuardPlanStringsTest {
         guardPlan.addField(CtField.make("public int hiredGuardNumber;", guardPlan));
         guardPlan.addField(CtField.make("public long costForGuards;", guardPlan));
         guardPlan.addField(CtField.make("public float drainCumulateFigure;", guardPlan));
-        guardPlan.addField(CtField.make("public double calculatedUpkeep;", guardPlan));
         guardPlan.addField(CtField.make("private int upkeepCounter = 0;", guardPlan));
-        guardPlan.addField(CtField.make("public double upkeepBuffer = 0.0D;", guardPlan));
+        guardPlan.addField(CtField.make("public double upkeepBuffer;", guardPlan));
         guardPlan.addField(CtField.make("public boolean output = false;", guardPlan));
         guardPlan.addField(CtField.make("public int type = 0;", guardPlan));
         guardPlan.addField(CtField.make("private long lastSentWarning = 0L;", guardPlan));
@@ -145,7 +143,11 @@ abstract class GuardPlanStringsTest {
         guardPlan.addMethod(CtMethod.make("public long getMonthlyCost() {return this.monthlyCost;}", guardPlan));
         guardPlan.addMethod(CtMethod.make("long getCostForGuards(int guards) {return guards * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;}", guardPlan));
         guardPlan.addMethod(CtMethod.make("void delete() {return;}", guardPlan));
-        guardPlan.addMethod(CtMethod.make("public double calculateUpkeep(boolean calculateFraction) {return this.calculatedUpkeep;}", guardPlan));
+        guardPlan.addMethod(CtMethod.make("public double calculateUpkeep(boolean calculateFraction) {" +
+                "long monthlyCost = this.getMonthlyCost();\n" +
+                "double upkeep = (double)monthlyCost * 2.0667989417989417E-4D;\n" +
+                "return upkeep;" +
+                "}", guardPlan));
         guardPlan.addMethod(CtMethod.make("public final long getTimeLeft() {\n" +
                 "try {\n" +
                 "if(this.getVillage().isPermanent || !com.wurmonline.server.Servers.localServer.isUpkeep()) {\n" +

@@ -4,7 +4,6 @@ import mod.wurmonline.mods.upkeepcosts.GuardPlanStrings;
 import org.junit.Assert;
 import org.junit.Test;
 
-// TODO - calculatedUpkeep not right.
 public class getTimeLeft extends GuardPlanStringsTest {
     private long specialValue = 29030400000L;
 
@@ -28,12 +27,12 @@ public class getTimeLeft extends GuardPlanStringsTest {
         Assert.assertEquals(specialValue, call());
     }
 
+    // TODO - Left Over What?
     @Test
     public void testMoneyLeftOver() throws Exception {
         long moneyLeft = 10000L;
         GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
-        double calculatedUpkeep = 100L;
-        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, calculatedUpkeep);
+        double calculatedUpkeep = (double)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
         Assert.assertEquals(result, call());
     }
@@ -42,8 +41,7 @@ public class getTimeLeft extends GuardPlanStringsTest {
     public void testMoneyLeftUnder() throws Exception {
         long moneyLeft = 10L;
         GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
-        double calculatedUpkeep = 100.0D;
-        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, calculatedUpkeep);
+        double calculatedUpkeep = (double)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
         Assert.assertEquals(result, call());
     }
@@ -52,8 +50,7 @@ public class getTimeLeft extends GuardPlanStringsTest {
     public void testNoMinimumCalculatedUpkeep() throws Exception {
         // Original version has 1.0D minimum.  Should be removed.
         long moneyLeft = GuardPlan.getDeclaredField("moneyLeft").getLong(gPlan);
-        double calculatedUpkeep = 0.1D;
-        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, calculatedUpkeep);
+        double calculatedUpkeep = (double)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
         Assert.assertEquals(result, call());
     }
@@ -61,12 +58,10 @@ public class getTimeLeft extends GuardPlanStringsTest {
     @Test
     public void testCalculatedUpkeep() throws Exception {
         long moneyLeft = GuardPlan.getDeclaredField("moneyLeft").getLong(gPlan);
-        double calculatedUpkeep = 10.0D;
-        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, calculatedUpkeep);
+        double calculatedUpkeep = (double)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
         Assert.assertEquals(result, call());
-        calculatedUpkeep = 100.0D;
-        GuardPlan.getDeclaredField("calculatedUpkeep").setDouble(gPlan, calculatedUpkeep);
+        calculatedUpkeep = (double)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
         result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
         Assert.assertEquals(result, call());
     }

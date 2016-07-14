@@ -64,6 +64,7 @@ public class GuardPlanStrings {
             "    return false;" +
             "}" +
             "double upkeepD = this.calculateUpkeep(true);" +
+            // TODO - Should remove all decimals, even from whole?
             "if (upkeepD < 1.0D) {" +
             "    this.upkeepBuffer += upkeepD;" +
             "    upkeepD = 0.0D;" +
