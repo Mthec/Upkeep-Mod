@@ -64,11 +64,8 @@ public class GuardPlanStrings {
             "    return false;" +
             "}" +
             "double upkeepD = this.calculateUpkeep(true);" +
-            // TODO - Should remove all decimals, even from whole?
-            "if (upkeepD < 1.0D) {" +
-            "    this.upkeepBuffer += upkeepD;" +
-            "    upkeepD = 0.0D;" +
-            "}" +
+            "this.upkeepBuffer += upkeepD % 1;" +
+            "upkeepD -= upkeepD % 1;" +
             "while (this.upkeepBuffer >= 1.0D) {" +
             "    this.upkeepBuffer -= 1.0D;" +
             "    upkeepD += 1.0D;" +
@@ -76,6 +73,7 @@ public class GuardPlanStrings {
             "if (this.output) {" +
             "    System.out.println(\"Village upkeep - \" + this.getVillage().getName() + \" paid \" + Double.toString(upkeepD) + \" this turn.  Upkeep buffer is now \" + Double.toString(this.upkeepBuffer));" +
             "}" +
+            // TODO - Spaces.
             "        long upkeep = (long)upkeepD;" +
             "        if(this.moneyLeft - upkeep <= 0L) {" +
             "            try {" +

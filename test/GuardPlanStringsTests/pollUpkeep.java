@@ -281,8 +281,27 @@ public class pollUpkeep extends GuardPlanStringsTest {
         double calculatedUpkeep = (double)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
         assert calculatedUpkeep * 100 < 1.0D;
         for (int i = 0; i <= 100; i++){
+            call();
             Assert.assertTrue(GuardPlan.getDeclaredField("upkeepBuffer").getDouble(gPlan) < 1.0D);
         }
+    }
+
+    @Test
+    public void testCorrectUpkeepRemoved() throws Exception {
+        long moneyLeft = GuardPlan.getDeclaredField("moneyLeft").getLong(gPlan);
+        GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, 2420L);
+        // Silly, I know.
+        assert (long)((double)GuardPlan.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true) * 1000.0D) == 500L;
+        call();
+        Assert.assertEquals(moneyLeft, GuardPlan.getDeclaredField("updateGuardPlan2").getLong(gPlan));
+        Assert.assertEquals(0.5D, GuardPlan.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.01D);
+        call();
+        Assert.assertEquals(moneyLeft - 1, GuardPlan.getDeclaredField("updateGuardPlan2").getLong(gPlan));
+        Assert.assertEquals(0.0D, GuardPlan.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.01D);
+        call();
+        // Not moneyLeft - 1 as the fake updateGuardPlan doesn't affect moneyLeft.
+        Assert.assertEquals(moneyLeft, GuardPlan.getDeclaredField("updateGuardPlan2").getLong(gPlan));
+        Assert.assertEquals(0.5D, GuardPlan.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.01D);
     }
 
     @Test
