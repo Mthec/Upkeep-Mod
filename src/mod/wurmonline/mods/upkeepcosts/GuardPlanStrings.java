@@ -104,6 +104,8 @@ public class GuardPlanStrings {
             "    if(var12 < 3600000L) {" +
             "        try {" +
             "            this.getVillage().broadCastAlert(\"The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.\", (byte)2);" +
+            "            if (com.wurmonline.server.villages.Villages.FREE_TILES > 0 || com.wurmonline.server.villages.Villages.FREE_PERIMETER > 0)" +
+            "                this.getVillage().broadCastAlert(\"Or you may resize to remove any non-free tiles.  You can have up to \" + com.wurmonline.server.villages.Villages.FREE_TILES + \" free tiles and \" + com.wurmonline.server.villages.Villages.FREE_PERIMETER + \" free perimeter tiles.\", (byte)2);" +
             "            this.getVillage().broadCastAlert(\"Any traders who are citizens of \" + this.getVillage().getName() + \" will disband without refund.\");" +
             "        } catch (com.wurmonline.server.villages.NoSuchVillageException var9) {" +
             "            logger.log(java.util.logging.Level.WARNING, \"No Village? \" + this.villageId, var9);" +
@@ -113,6 +115,8 @@ public class GuardPlanStrings {
             "            this.lastSentWarning = System.currentTimeMillis();" +
             "            try {" +
             "                this.getVillage().broadCastAlert(\"The village is disbanding within 24 hours. You may add upkeep money to the village coffers at the token.\", (byte)2);" +
+            "                if (com.wurmonline.server.villages.Villages.FREE_TILES > 0 || com.wurmonline.server.villages.Villages.FREE_PERIMETER > 0)" +
+            "                    this.getVillage().broadCastAlert(\"Or you may resize to remove any non-free tiles.  You can have up to \" + com.wurmonline.server.villages.Villages.FREE_TILES + \" free tiles and \" + com.wurmonline.server.villages.Villages.FREE_PERIMETER + \" free perimeter tiles.\", (byte)2);" +
             "                this.getVillage().broadCastAlert(\"Any traders who are citizens of \" + this.getVillage().getName() + \" will disband without refund.\");" +
             "            } catch (com.wurmonline.server.villages.NoSuchVillageException var8) {" +
             "                logger.log(java.util.logging.Level.WARNING, \"No Village? \" + this.villageId, var8);" +
@@ -122,6 +126,8 @@ public class GuardPlanStrings {
             "        this.lastSentWarning = System.currentTimeMillis();" +
             "        try {" +
             "            this.getVillage().broadCastAlert(\"The village is disbanding within one week. Due to the low morale this gives, the guards have ceased their general maintenance of structures.\", (byte)4);" +
+            "            if (com.wurmonline.server.villages.Villages.FREE_TILES > 0 || com.wurmonline.server.villages.Villages.FREE_PERIMETER > 0)" +
+            "                this.getVillage().broadCastAlert(\"You may resize to remove any non-free tiles.  You can have up to \" + com.wurmonline.server.villages.Villages.FREE_TILES + \" free tiles and \" + com.wurmonline.server.villages.Villages.FREE_PERIMETER + \" free perimeter tiles.\", (byte)4);" +
             "            this.getVillage().broadCastAlert(\"Any traders who are citizens of \" + this.getVillage().getName() + \" will disband without refund.\");" +
             "        } catch (com.wurmonline.server.villages.NoSuchVillageException var7) {" +
             "            logger.log(java.util.logging.Level.WARNING, \"No Village? \" + this.villageId, var7);" +

@@ -321,4 +321,45 @@ public class pollUpkeep extends GuardPlanStringsTest {
                 out.toString());
         System.setOut(null);
     }
+
+    @Test
+    public void testBroadcastOnWeekFreeMessage() throws Exception {
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 604L);
+        GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, 1L);
+        Villages.getDeclaredField("FREE_TILES").setLong(null, 10);
+        Villages.getDeclaredField("FREE_PERIMETER").setLong(null, 100);
+        assert (long)GuardPlan.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 604800000L;
+        call();
+        Assert.assertEquals("You may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(1));
+        Assert.assertEquals((byte)4,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(1));
+    }
+
+    @Test
+    public void testBroadcastOnDayFreeMessage() throws Exception {
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 60L);
+        GuardPlan.getDeclaredField("monthlyCost").setLong(gPlan, 1L);
+        Villages.getDeclaredField("FREE_TILES").setLong(null, 10);
+        Villages.getDeclaredField("FREE_PERIMETER").setLong(null, 100);
+        assert (long)GuardPlan.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 86400000L;
+        call();
+        Assert.assertEquals("Or you may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(1));
+        Assert.assertEquals((byte)2,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(1));
+    }
+
+    @Test
+    public void testBroadcastOnHourFreeMessage() throws Exception {
+        GuardPlan.getDeclaredField("moneyLeft").setLong(gPlan, 6L);
+        Villages.getDeclaredField("FREE_TILES").setLong(null, 10);
+        Villages.getDeclaredField("FREE_PERIMETER").setLong(null, 100);
+        assert (long)GuardPlan.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 3600000L;
+        call();
+        Assert.assertEquals("Or you may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
+                ((List)Village.getDeclaredField("broadcastMessage").get(gVillage)).get(1));
+        Assert.assertEquals((byte)2,
+                ((List)Village.getDeclaredField("broadcastBytes").get(gVillage)).get(1));
+    }
 }
