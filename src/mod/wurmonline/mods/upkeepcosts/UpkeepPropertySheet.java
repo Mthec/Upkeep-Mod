@@ -1,5 +1,6 @@
 package mod.wurmonline.mods.upkeepcosts;
 
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
@@ -9,6 +10,7 @@ import mod.wurmonline.serverlauncher.LocaleHelper;
 import org.controlsfx.control.PropertySheet;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -107,6 +109,12 @@ public class UpkeepPropertySheet extends VBox {
                 changedProperties.add(type);
             }
             value = (Number)aValue;
+        }
+
+        @Override
+        public Optional<ObservableValue<? extends Object>> getObservableValue() {
+            // TODO
+            return null;
         }
     }
 

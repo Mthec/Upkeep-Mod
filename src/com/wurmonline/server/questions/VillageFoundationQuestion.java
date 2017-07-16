@@ -30,6 +30,7 @@ import com.wurmonline.server.zones.NoSuchZoneException;
 import com.wurmonline.server.zones.VolaTile;
 import com.wurmonline.server.zones.Zone;
 import com.wurmonline.server.zones.Zones;
+import com.wurmonline.shared.constants.CounterTypes;
 import com.wurmonline.shared.util.StringUtilities;
 
 import java.io.IOException;

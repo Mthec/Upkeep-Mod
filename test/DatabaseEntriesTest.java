@@ -2,21 +2,17 @@ import com.wurmonline.server.Constants;
 import com.wurmonline.server.DbConnector;
 import com.wurmonline.server.ServerDirInfo;
 import com.wurmonline.server.utils.DbUtilities;
-import com.wurmonline.server.villages.Village;
-import com.wurmonline.server.villages.Villages;
-import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Properties;
 
 public class DatabaseEntriesTest {
     Connection db;
@@ -26,15 +22,16 @@ public class DatabaseEntriesTest {
     @Before
     public void setUp() throws SQLException {
         String currentDir = "Creative Copy";
-        ServerDirInfo.setFileDBPath(currentDir + (currentDir.endsWith(File.separator) ? "" : File.separator));
-        ServerDirInfo.setConstantsFileName(ServerDirInfo.getFileDBPath() + "wurm.ini");
+        ServerDirInfo.setPath(Paths.get(currentDir + (currentDir.endsWith(File.separator) ? "" : File.separator)));
+        // TODO - No longer needed?
+        //ServerDirInfo.setConstantsFileName(ServerDirInfo.getFileDBPath() + "wurm.ini");
         Constants.load();
         Constants.dbHost = currentDir;
         Constants.dbPort = "";
-        Constants.loginDbHost = currentDir;
-        Constants.loginDbPort = "";
-        Constants.siteDbHost = currentDir;
-        Constants.siteDbPort = "";
+        //Constants.loginDbHost = currentDir;
+        //Constants.loginDbPort = "";
+        //Constants.siteDbHost = currentDir;
+        //Constants.siteDbPort = "";
         DbConnector.initialize();
         db = DbConnector.getZonesDbCon();
     }
