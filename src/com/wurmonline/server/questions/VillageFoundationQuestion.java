@@ -9,6 +9,7 @@ package com.wurmonline.server.questions;
 import com.wurmonline.mesh.Tiles;
 import com.wurmonline.mesh.Tiles.Tile;
 import com.wurmonline.server.*;
+import com.wurmonline.server.Features.Feature;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.creatures.NoSuchCreatureException;
 import com.wurmonline.server.economy.Change;
@@ -17,6 +18,7 @@ import com.wurmonline.server.economy.MonetaryConstants;
 import com.wurmonline.server.economy.Shop;
 import com.wurmonline.server.endgames.EndGameItem;
 import com.wurmonline.server.endgames.EndGameItems;
+import com.wurmonline.server.epic.EpicServerStatus;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemFactory;
 import com.wurmonline.server.items.ItemTypes;
@@ -33,11 +35,9 @@ import com.wurmonline.server.zones.Zones;
 import com.wurmonline.shared.constants.CounterTypes;
 import com.wurmonline.shared.util.StringUtilities;
 
+import java.awt.geom.Rectangle2D.Float;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -140,32 +140,59 @@ public final class VillageFoundationQuestion extends Question implements Village
         this.hasCompass = aResponder.getBestCompass() != null;
     }
 
+    private int getFreeTiles() {
+        try {
+            return (int)Villages.class.getDeclaredField("FREE_TILES").getLong(Villages.class);
+        } catch(NoSuchFieldException | IllegalAccessException ex) {
+            logger.warning("Free tiles not available, reason follows:");
+            ex.printStackTrace();
+            return 0;
+        }
+    }
+
+    private int getFreePerimeter() {
+        try {
+            return (int)Villages.class.getDeclaredField("FREE_PERIMETER").getLong(Villages.class);
+        } catch(NoSuchFieldException | IllegalAccessException ex) {
+            logger.warning("Free perimeter not available, reason follows:");
+            ex.printStackTrace();
+            return 0;
+        }
+    }
+
+    private int getChargeableTiles() {
+        int tiles = this.tiles - getFreeTiles();
+        if (tiles < 0)
+            return 0;
+        return tiles;
+    }
+
+    private int getChargeablePerimeter() {
+        int perimeter = this.perimeterTiles - getFreePerimeter();
+        if (perimeter < 0)
+            return 0;
+        return perimeter;
+    }
+
+    private int getExpansionDiff(long free, int newSize, int oldSize) {
+        int diff;
+        // If allowed free tiles is not exhausted.
+        if (oldSize < free) {
+            diff = newSize - (int)free;
+            if (diff < 0)
+                diff = 0;
+        } else {
+            diff = newSize - oldSize;
+        }
+        return diff;
+    }
+
     public int getTileX() {
         return this.tokenx;
     }
 
     public int getTileY() {
         return this.tokeny;
-    }
-
-    public long getChargeableTiles() {
-        try {
-            return (long)this.tiles - Villages.class.getDeclaredField("FREE_TILES").getLong(Villages.class);
-        } catch(NoSuchFieldException | IllegalAccessException ex) {
-            logger.warning("Free tiles not available, reason follows:");
-            ex.printStackTrace();
-            return (long)this.tiles;
-        }
-    }
-
-    public long getChargeablePerimeter() {
-        try {
-            return (long)this.perimeterTiles - Villages.class.getDeclaredField("FREE_PERIMETER").getLong(Villages.class);
-        } catch(NoSuchFieldException | IllegalAccessException ex) {
-            logger.warning("Free tiles not available, reason follows:");
-            ex.printStackTrace();
-            return (long)this.tiles;
-        }
     }
 
     public boolean isSurfaced() {
@@ -780,15 +807,14 @@ public final class VillageFoundationQuestion extends Question implements Village
             return 0L;
         } else {
             try {
-                Village nsv = Villages.getVillage(this.deed.getData2());
+                Village oldvill = Villages.getVillage(this.deed.getData2());
                 long moneyNeeded = 0L;
                 long moneyToRefund = 0L;
-                long free_tiles = (long)this.tiles - this.getChargeableTiles();
-                int diffDeed = this.tiles - nsv.getNumTiles();
-                long free_perimeter = (long)this.perimeterTiles - this.getChargeablePerimeter();
-                int diffPerim = this.perimeterTiles - nsv.getPerimeterNonFreeTiles();
-                long costDeedDiff = ((long)diffDeed - free_tiles) * Villages.TILE_COST;
-                long costPerimDiff = ((long)diffPerim - free_perimeter) * Villages.PERIMETER_COST;
+
+                int diffDeed = getExpansionDiff(this.getFreeTiles(), this.tiles, oldvill.getNumTiles());
+                int diffPerim = getExpansionDiff(this.getFreePerimeter(), this.perimeterTiles, oldvill.getPerimeterNonFreeTiles());
+                long costDeedDiff = diffDeed * Villages.TILE_COST;
+                long costPerimDiff = diffPerim * Villages.PERIMETER_COST;
                 long costTotalDiff = costDeedDiff + costPerimDiff;
                 if(costTotalDiff > moneyToRefund) {
                     moneyNeeded += costTotalDiff;
@@ -798,7 +824,7 @@ public final class VillageFoundationQuestion extends Question implements Village
                     moneyNeeded += NAME_CHANGE_COST;
                 }
 
-                int diffGuard = this.selectedGuards - nsv.plan.getNumHiredGuards();
+                int diffGuard = this.selectedGuards - oldvill.plan.getNumHiredGuards();
                 if(diffGuard > 0) {
                     moneyNeeded += (long)diffGuard * Villages.GUARD_COST;
                 }
@@ -868,11 +894,13 @@ public final class VillageFoundationQuestion extends Question implements Village
 
                     try {
                         Village funds = Villages.createVillage(Zones.safeTileX(this.tokenx - this.selectedWest), Zones.safeTileX(this.tokenx + this.selectedEast), Zones.safeTileY(this.tokeny - this.selectedNorth), Zones.safeTileY(this.tokeny + this.selectedSouth), this.tokenx, this.tokeny, this.villageName, this.getResponder(), this.target, this.surfaced, this.democracy, this.motto, this.permanent, this.spawnKingdom, this.initialPerimeter);
+                        logger.log(Level.INFO, this.getResponder().getName() + " founded " + this.villageName + " for " + iox + " irons.");
                         Server.getInstance().broadCastSafe(WurmCalendar.getTime(), false);
                         Server.getInstance().broadCastSafe("The settlement of " + this.villageName + " has just been founded by " + this.getResponder().getName() + ".");
                         this.getResponder().getCommunicator().sendSafeServerMessage("The settlement of " + this.villageName + " has been founded according to your specifications!");
                         this.deed.setDescription(this.villageName);
                         this.deed.setName("Settlement deed");
+                        funds.setIsHighwayAllowed(funds.hasHighway());
                         if(this.getResponder().getPower() < 5 && this.deed.getTemplateId() != 862) {
                             Shop shop = Economy.getEconomy().getKingsShop();
                             shop.setMoney(shop.getMoney() - (long)((int)((float)this.deed.getValue() * 0.4F)));
@@ -1156,7 +1184,19 @@ public final class VillageFoundationQuestion extends Question implements Village
                 mindist = 60;
             }
 
-            return Zones.isKingdomBlocking(this.tokenx - this.selectedWest - 5 - this.initialPerimeter - mindist, this.tokeny - this.selectedNorth - 5 - this.initialPerimeter - mindist, this.tokenx + this.selectedEast + 5 + this.initialPerimeter + mindist, this.tokeny + this.selectedSouth + 5 + this.initialPerimeter + mindist, this.getResponder().getKingdomId());
+            int eZoneStartX = -1;
+            int eZoneStartY = -1;
+            int eZoneEndX = -1;
+            int eZoneEndY = -1;
+            Village existing = Villages.getVillage(this.tokenx, this.tokeny, true);
+            if (existing != null) {
+                eZoneStartX = existing.getStartX() - 5 - existing.getPerimeterSize() - mindist;
+                eZoneStartY = existing.getStartY() - 5 - existing.getPerimeterSize() - mindist;
+                eZoneEndX = existing.getEndX() + 5 + existing.getPerimeterSize() + mindist;
+                eZoneEndY = existing.getEndY() + 5 + existing.getPerimeterSize() + mindist;
+            }
+
+            return Zones.isKingdomBlocking(this.tokenx - this.selectedWest - 5 - this.initialPerimeter - mindist, this.tokeny - this.selectedNorth - 5 - this.initialPerimeter - mindist, this.tokenx + this.selectedEast + 5 + this.initialPerimeter + mindist, this.tokeny + this.selectedSouth + 5 + this.initialPerimeter + mindist, this.getResponder().getKingdomId(), eZoneStartX, eZoneStartY, eZoneEndX, eZoneEndY);
         } else {
             return true;
         }
@@ -1172,43 +1212,52 @@ public final class VillageFoundationQuestion extends Question implements Village
             int maxcsouth = Math.min(Zones.worldTileSizeY, this.tokeny + this.selectedSouth + (Servers.localServer.isChallengeServer()?20:60));
             int maxcwest = Math.max(0, this.tokenx - this.selectedWest - (Servers.localServer.isChallengeServer()?20:60));
             int maxceast = Math.min(Zones.worldTileSizeX, this.tokenx + this.selectedEast + (Servers.localServer.isChallengeServer()?20:60));
-            Item[] var12;
-            int var11 = (var12 = Items.getWarTargets()).length;
+            new Float((float)maxwest, (float)maxnorth, (float)(maxeast - maxwest), (float)(maxsouth - maxnorth));
+            Item[] var10 = Items.getWarTargets();
+            int var11 = var10.length;
 
-            Item altar;
-            int alt;
-            for(alt = 0; alt < var11; ++alt) {
-                altar = var12[alt];
-                if(altar.getTileX() > maxcwest && altar.getTileX() < maxceast && altar.getTileY() < maxcsouth && altar.getTileY() > maxcnorth) {
+            int var12;
+            Item targ;
+            for(var12 = 0; var12 < var11; ++var12) {
+                targ = var10[var12];
+                if (targ.getTileX() > maxcwest && targ.getTileX() < maxceast && targ.getTileY() < maxcsouth && targ.getTileY() > maxcnorth) {
                     this.getResponder().getCommunicator().sendSafeServerMessage("You cannot found the settlement here, since this is a battle ground.");
                     return false;
                 }
             }
 
-            var11 = (var12 = Items.getSupplyDepots()).length;
+            var10 = Items.getSupplyDepots();
+            var11 = var10.length;
 
-            for(alt = 0; alt < var11; ++alt) {
-                altar = var12[alt];
-                if(altar.getTileX() > maxcwest && altar.getTileX() < maxceast && altar.getTileY() < maxcsouth && altar.getTileY() > maxcnorth) {
+            for(var12 = 0; var12 < var11; ++var12) {
+                targ = var10[var12];
+                if (targ.getTileX() > maxcwest && targ.getTileX() < maxceast && targ.getTileY() < maxcsouth && targ.getTileY() > maxcnorth) {
                     this.getResponder().getCommunicator().sendSafeServerMessage("You cannot found the settlement here, since this is a battle ground.");
                     return false;
                 }
             }
 
-            altar = Villages.isAltarOnDeed(this.selectedWest, this.selectedEast, this.selectedNorth, this.selectedSouth, this.tokenx, this.tokeny, true);
+            Item altar = Villages.isAltarOnDeed(this.selectedWest, this.selectedEast, this.selectedNorth, this.selectedSouth, this.tokenx, this.tokeny, true);
             if(altar != null) {
+                if (!altar.isEpicTargetItem() || !Servers.localServer.PVPSERVER) {
                 this.getResponder().getCommunicator().sendSafeServerMessage("You cannot found the settlement here, since the " + altar.getName() + " makes it holy ground.");
                 return false;
             }
 
-            EndGameItem var13 = EndGameItems.getGoodAltar();
-            if(var13 != null && var13.getItem() != null && (int)var13.getItem().getPosX() >> 2 > maxwest && (int)var13.getItem().getPosX() >> 2 < maxeast && (int)var13.getItem().getPosY() >> 2 < maxsouth && (int)var13.getItem().getPosY() >> 2 > maxnorth) {
+                if (EpicServerStatus.getRitualMissionForTarget(altar.getWurmId()) != null) {
+                    this.getResponder().getCommunicator().sendSafeServerMessage("You cannot found the settlement here, since the " + altar.getName() + " is currently required for an active mission.");
+                    return false;
+                }
+            }
+
+            EndGameItem alt = EndGameItems.getGoodAltar();
+            if (alt != null && alt.getItem() != null && (int)alt.getItem().getPosX() >> 2 > maxwest && (int)alt.getItem().getPosX() >> 2 < maxeast && (int)alt.getItem().getPosY() >> 2 < maxsouth && (int)alt.getItem().getPosY() >> 2 > maxnorth) {
                 this.getResponder().getCommunicator().sendSafeServerMessage("You cannot found the settlement here, since this is holy ground.");
                 return false;
             }
 
-            var13 = EndGameItems.getEvilAltar();
-            if(var13 != null && var13.getItem() != null && (int)var13.getItem().getPosX() >> 2 > maxwest && (int)var13.getItem().getPosX() >> 2 < maxeast && (int)var13.getItem().getPosY() >> 2 < maxsouth && (int)var13.getItem().getPosY() >> 2 > maxnorth) {
+            alt = EndGameItems.getEvilAltar();
+            if (alt != null && alt.getItem() != null && (int)alt.getItem().getPosX() >> 2 > maxwest && (int)alt.getItem().getPosX() >> 2 < maxeast && (int)alt.getItem().getPosY() >> 2 < maxsouth && (int)alt.getItem().getPosY() >> 2 > maxnorth) {
                 this.getResponder().getCommunicator().sendSafeServerMessage("You cannot found the settlement here, since this is holy ground.");
                 return false;
             }
@@ -1224,32 +1273,74 @@ public final class VillageFoundationQuestion extends Question implements Village
 
     private boolean checkStructuresInArea() {
         if(this.getResponder().getPower() <= 1) {
-            Structure[] structures = Zones.getStructuresInArea(this.tokenx - this.selectedWest - 2, this.tokeny - this.selectedNorth - 2, this.tokenx + this.selectedEast + 2, this.tokeny + this.selectedSouth + 2, true);
-            Structure[] oldstructures = new Structure[0];
+            ArrayList<Structure> newStructures = new ArrayList();
+            ArrayList<Structure> oldStructures = new ArrayList();
+            Structure[] surfStructures = Zones.getStructuresInArea(this.tokenx - this.selectedWest - 2, this.tokeny - this.selectedNorth - 2, this.tokenx + this.selectedEast + 2, this.tokeny + this.selectedSouth + 2, true);
+            Structure[] caveStructures = Zones.getStructuresInArea(this.tokenx - this.selectedWest - 2, this.tokeny - this.selectedNorth - 2, this.tokenx + this.selectedEast + 2, this.tokeny + this.selectedSouth + 2, false);
+            Structure[] var5 = surfStructures;
+            int var6 = surfStructures.length;
+
+            int var7;
+            Structure c;
+            for(var7 = 0; var7 < var6; ++var7) {
+                c = var5[var7];
+                newStructures.add(c);
+            }
+
+            var5 = caveStructures;
+            var6 = caveStructures.length;
+
+            for(var7 = 0; var7 < var6; ++var7) {
+                c = var5[var7];
+                newStructures.add(c);
+            }
+
             if(this.expanding) {
                 try {
-                    Village ok = Villages.getVillage(this.deed.getData2());
-                    oldstructures = Zones.getStructuresInArea(ok.getStartX(), ok.getStartY(), ok.getEndX(), ok.getEndY(), true);
-                } catch (NoSuchVillageException ignored) {
+                    Village oldvill = Villages.getVillage(this.deed.getData2());
+                    Structure[] surfStructuresOld = Zones.getStructuresInArea(oldvill.getStartX(), oldvill.getStartY(), oldvill.getEndX(), oldvill.getEndY(), true);
+                    Structure[] caveStructuresOld = Zones.getStructuresInArea(oldvill.getStartX(), oldvill.getStartY(), oldvill.getEndX(), oldvill.getEndY(), true);
+                    Structure[] var18 = surfStructuresOld;
+                    int var9 = surfStructuresOld.length;
+
+                    int var10;
+                    for(var10 = 0; var10 < var9; ++var10) {
+                        c = var18[var10];
+                        oldStructures.add(c);
+                    }
+
+                    var18 = caveStructuresOld;
+                    var9 = caveStructuresOld.length;
+
+                    for(var10 = 0; var10 < var9; ++var10) {
+                        c = var18[var10];
+                        oldStructures.add(c);
+                    }
+                } catch (NoSuchVillageException var12) {
+                    ;
                 }
             }
 
-            if(structures.length > 0) {
-                boolean var13 = false;
+            if (newStructures.size() > 0) {
+                boolean ok = false;
+                Iterator var16 = newStructures.iterator();
 
-                for (Structure lStructure : structures) {
-                    var13 = false;
+                while(var16.hasNext()) {
+                    Structure lStructure = (Structure)var16.next();
+                    ok = false;
                     if (this.expanding) {
+                        Iterator var20 = oldStructures.iterator();
 
-                        for (Structure lOldstructure : oldstructures) {
+                        while(var20.hasNext()) {
+                            Structure lOldstructure = (Structure)var20.next();
                             if (lOldstructure.getWurmId() == lStructure.getWurmId()) {
-                                var13 = true;
+                                ok = true;
                                 break;
                             }
                         }
                     }
 
-                    if (!var13 && lStructure.isTypeHouse() && !lStructure.mayManage(this.getResponder())) {
+                    if (!ok && lStructure.isTypeHouse() && !lStructure.mayManage(this.getResponder())) {
                         this.getResponder().getCommunicator().sendSafeServerMessage("You need to have manage permissions for the structure " + lStructure.getName() + " to found the settlement here.");
                         return false;
                     }
@@ -1274,11 +1365,11 @@ public final class VillageFoundationQuestion extends Question implements Village
             buf.append("text{text=\"\"}");
         } else {
             try {
-                Village nsv = Villages.getVillage(this.deed.getData2());
-                int diff = this.tiles - nsv.getNumTiles();
-                long free = this.tiles - this.getChargeableTiles();
+                Village oldvill = Villages.getVillage(this.deed.getData2());
+                int diff = getExpansionDiff(this.getFreeTiles(), this.tiles, oldvill.getNumTiles());
+
                 if(diff > 0 && !Servers.localServer.isFreeDeeds()) {
-                    buf.append("text{text=\"The initial cost for the tiles will be ").append((new Change(((long) diff - free) * Villages.TILE_COST)).getChangeString()).append(".\"}");
+                    buf.append("text{text=\"The initial cost for the tiles will be ").append((new Change(((long)diff) * Villages.TILE_COST)).getChangeString()).append(".\"}");
                 }
 
                 if(Servers.localServer.isUpkeep()) {
@@ -1317,12 +1408,12 @@ public final class VillageFoundationQuestion extends Question implements Village
             buf.append("text{text=\"\"}");
         } else {
             try {
-                Village nsv = Villages.getVillage(this.deed.getData2());
                 buf.append("text{text=\"You selected a perimeter size of ").append(this.initialPerimeter).append(" outside of the free ").append(5).append(" tiles.\"}");
-                int diff = this.perimeterTiles - nsv.getPerimeterNonFreeTiles();
-                long free = this.perimeterTiles - this.getChargeablePerimeter();
+                Village oldvill = Villages.getVillage(this.deed.getData2());
+                int diff = getExpansionDiff(this.getFreePerimeter(), this.perimeterTiles, oldvill.getPerimeterNonFreeTiles());
+
                 if(diff > 0 && !Servers.localServer.isFreeDeeds()) {
-                    buf.append("text{text=\"The additional cost for the extra perimeter tiles will be ").append((new Change(((long) diff - free) * Villages.PERIMETER_COST)).getChangeString()).append(".\"}");
+                    buf.append("text{text=\"The additional cost for the extra perimeter tiles will be ").append((new Change(((long)diff) * Villages.PERIMETER_COST)).getChangeString()).append(".\"}");
                 }
 
                 if(Servers.localServer.isUpkeep()) {
@@ -1816,54 +1907,94 @@ public final class VillageFoundationQuestion extends Question implements Village
             buf.append("text{text=\"\"}");
         }
 
-        buf.append("text{type=\"bold\";text=\"").append(fs).append(" ").append(this.villageName).append("\"}");
-        buf.append("text{type=\"italic\";text=\"By clicking on the ").append(fs).append(" Settlement button you agree to the following terms:\"}");
+        boolean hasError = false;
+        Village village = null;
+        if (this.expanding) {
+            try {
+                village = Villages.getVillage(this.deed.getData2());
+            } catch (NoSuchVillageException var14) {
+                hasError = true;
+                buf.append("text{type=\"bold\";color=\"255,0,0\";text=\"Error: This settlement no longer exists and the operation will fail.\"}");
+            }
+        }
+
+        if (!hasError && Feature.HIGHWAYS.isEnabled()) {
+            buf.append("text{type=\"bold\";text=\"" + this.villageName + " KOS.v.Highways\"}");
+            if (this.expanding) {
+                if (!village.isKosAllowed() && village.getReputations().length <= 0) {
+                    if (this.willHaveHighay()) {
+                        if (!village.isHighwayAllowed()) {
+                            hasError = true;
+                            buf.append("text{type=\"bold\";color=\"255,0,0\";text=\"Error: The new size covers a highway but highways have not been allowed, see settlment settings to change this option.\"}");
+                        } else if (village.hasHighway()) {
+                            buf.append("text{text=\"The new size will still cover a highway which is already allowed by settlement settings.\"}");
+                        } else {
+                            buf.append("text{text=\"The new size will now cover a highway which is already allowed by settlement settings.\"}");
+                        }
+                    } else if (village.isHighwayAllowed()) {
+                        buf.append("text{text=\"Note: You will not be able to use KOS as highways have been enabled for this settlment, see settlment settings to change this option.\"}");
+                    } else {
+                        buf.append("label{text=\"Note: To allow KOS or Highways, use the settlement settings.\"}");
+                    }
+                } else if (this.willHaveHighay()) {
+                    hasError = true;
+                    buf.append("text{type=\"bold\";color=\"255,0,0\";text=\"Error: Cannot expand over a highway if KOS is enabled, see settlment settings to change this option.\"}");
+                } else {
+                    buf.append("text{text=\"Note: You will not be able to have highway through this settlement as KOS is active.\"}");
+                }
+            } else if (this.willHaveHighay()) {
+                buf.append("text{text=\"The settlement size covers a highway, and will auto-set that flag in settlement settings.\"}");
+            } else {
+                buf.append("label{text=\"Note: To allow KOS or Highways, use the settlement settings after founding.\"}");
+            }
+        }
+
+        if (!hasError) {
+            buf.append("text{type=\"bold\";text=\"" + fs + " " + this.villageName + "\"}");
+            buf.append("text{type=\"italic\";text=\"By clicking on the " + fs + " Settlement button you agree to the following terms:\"}");
         buf.append("text{type=\"italic\";text=\"This is an irreversible and non refundable operation.\"}");
         buf.append("text{text=\"\"}");
         long fullcost;
-        Change cfull;
+            Change needed;
+            long toCharge;
+            Change cc;
         if(this.expanding) {
             fullcost = this.getResizeCostDiff();
             if(fullcost > 0L) {
-                cfull = new Change(fullcost);
-
-                try {
-                    Village toCharge = Villages.getVillage(this.deed.getData2());
-                    long avail = toCharge.getAvailablePlanMoney();
-                    Change availc = new Change(avail);
-                    buf.append("text{type=\"italic\";text=\"This change will cost ").append(cfull.getChangeString()).append(".\"}");
-                    buf.append("text{type=\"italic\";text=\"Up to ").append(availc.getChangeString()).append(" can be taken from the settlement upkeep funds.\"}");
-                    long leftc = getExpandMoneyNeededFromBank(fullcost, toCharge);
-                    if(leftc > 0L) {
-                        Change restc = new Change(leftc);
-                        buf.append("text{type=\"italic\";text=\"").append(restc.getChangeString()).append(" will be taken from your bank account.\"}");
-                    }
-                } catch (NoSuchVillageException var13) {
-                    buf.append("text{type=\"bold\";text=\"Error: This settlement no longer exists and the operation will fail.\"}");
+                    needed = new Change(fullcost);
+                    toCharge = village.getAvailablePlanMoney();
+                    cc = new Change(toCharge);
+                    buf.append("text{type=\"italic\";text=\"This change will cost " + needed.getChangeString() + ".\"}");
+                    buf.append("text{type=\"italic\";text=\"Up to " + cc.getChangeString() + " can be taken from the settlement upkeep funds.\"}");
+                    long rest = getExpandMoneyNeededFromBank(fullcost, village);
+                    if (rest > 0L) {
+                        Change restc = new Change(rest);
+                        buf.append("text{type=\"italic\";text=\"" + restc.getChangeString() + " will be taken from your bank account.\"}");
                 }
             } else {
                 buf.append("text{type=\"italic\";text=\"This change is free of charge.\"}");
             }
         } else if(!Servers.localServer.isFreeDeeds()) {
             fullcost = this.getFoundingCost();
-            cfull = new Change(fullcost);
-            buf.append("text{type=\"italic\";text=\"The full cost for founding this deed will be ").append(cfull.getChangeString()).append(".\"}");
+                needed = new Change(fullcost);
+                buf.append("text{type=\"italic\";text=\"The full cost for founding this deed will be " + needed.getChangeString() + ".\"}");
             if(this.deed.getTemplateId() != 862) {
                 buf.append("text{type=\"italic\";text=\"The cost of the deed form will cover up to 7 silver coins of these. The rest will go into upkeep.\"}");
             }
 
-            long toCharge1 = this.getFoundingCharge();
-            if(toCharge1 > 0L) {
-                Change left = new Change(toCharge1);
-                buf.append("text{type=\"italic\";text=\"").append(left.getChangeString()).append(" will be taken from your bank account.\"}");
+                toCharge = this.getFoundingCharge();
+                if (toCharge > 0L) {
+                    cc = new Change(toCharge);
+                    buf.append("text{type=\"italic\";text=\"" + cc.getChangeString() + " will be taken from your bank account.\"}");
             } else if(this.deed.getTemplateId() != 862) {
-                long left1 = DEED_VALUE - fullcost;
-                Change leftc1 = new Change(left1);
-                buf.append("text{type=\"italic\";text=\"The settlement will be founded and ").append(leftc1.getChangeString()).append(" will be put into upkeep.\"}");
+                    long left = 100000L - fullcost;
+                    Change leftc = new Change(left);
+                    buf.append("text{type=\"italic\";text=\"The settlement will be founded and " + leftc.getChangeString() + " will be put into upkeep.\"}");
+                }
             }
         }
 
-        buf.append("harray {button{text=\"").append(fs).append(" Settlement\";id=\"submit\"};label{text=\" \";id=\"spacedlxg\"};button{text=\"Go Back\";id=\"back\"};label{text=\" \";id=\"spacedlxg\"};button{text=\"Cancel\";id=\"cancel\"};}}};null;null;}");
+        buf.append("harray{" + (!hasError ? "button{text=\"" + fs + " Settlement\";id=\"submit\"};label{text=\" \"};" : "") + "button{text=\"Go Back\";id=\"back\"};label{text=\" \"};button{text=\"Cancel\";id=\"cancel\"};}}};null;null;}");
         this.getResponder().getCommunicator().sendBml(600, 700, true, false, buf.toString(), 200, 200, 200, this.title);
     }
 
@@ -1921,6 +2052,26 @@ public final class VillageFoundationQuestion extends Question implements Village
         vfq.tokeny = this.tokeny;
         vfq.surfaced = this.surfaced;
         vfq.expanding = this.expanding;
+    }
+
+    private boolean willHaveHighay() {
+        int startx = this.tokenx - this.selectedWest;
+        int starty = this.tokeny - this.selectedNorth;
+        int endx = this.tokenx + this.selectedEast;
+        int endy = this.tokeny + this.selectedSouth;
+        Item[] var5 = Items.getMarkers();
+        int var6 = var5.length;
+
+        for(int var7 = 0; var7 < var6; ++var7) {
+            Item marker = var5[var7];
+            int x = marker.getTileX();
+            int y = marker.getTileY();
+            if (x >= startx - 2 && x <= endx + 2 && y >= starty - 2 && y <= endy + 2) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public void setSequence(int newseq) {

@@ -70,7 +70,7 @@ public final class VillageUpkeep extends Question implements VillageStatus, Time
                         buf1.append("text{text=\"A drain would cost " + Economy.getEconomy().getChangeFor(plan1.getMoneyDrained()).getChangeString() + ".\"};");
                         if(plan1.moneyLeft < plan1.getMoneyDrained() * 5) {
                             try {
-                                buf1.append("text{type=\'bold\';text=\'Since minimum drain is " + Economy.getEconomy().getChangeFor(plan1.getClass().getField("minMoneyDrained").getLong(plan1.getClass())).getChangeString() + " it may be drained to disband soon.\'}");
+                                buf1.append("text{type=\'bold\';text=\'Since minimum drain is " + Economy.getEconomy().getChangeFor(plan1.getClass().getField("minMoneyDrained").getLong(plan1.getClass())).getChangeString() + " it may be drained to disband in less than 5 days.\'}");
                             } catch (NoSuchFieldException | IllegalAccessException e) {
                                 e.printStackTrace();
                             }
