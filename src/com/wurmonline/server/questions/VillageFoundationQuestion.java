@@ -22,6 +22,7 @@ import com.wurmonline.server.epic.EpicServerStatus;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.items.ItemFactory;
 import com.wurmonline.server.items.ItemTypes;
+import com.wurmonline.server.kingdom.InfluenceChain;
 import com.wurmonline.server.kingdom.Kingdom;
 import com.wurmonline.server.kingdom.Kingdoms;
 import com.wurmonline.server.players.Player;
@@ -1039,42 +1040,71 @@ public final class VillageFoundationQuestion extends Question implements Village
     }
 
     private boolean checkSize() {
+        Iterator var3;
         if(this.getResponder().getPower() < 3) {
-            boolean oldvill = false;
+            if (Feature.TOWER_CHAINING.isEnabled()) {
+                InfluenceChain chain = InfluenceChain.getInfluenceChain(this.getResponder().getKingdomId());
+                boolean found = false;
+                var3 = chain.getChainMarkers().iterator();
 
-            for(int decliners = this.tokenx - 50; decliners <= this.tokenx + 50; decliners += 10) {
-                for(int checkFocusZones = this.tokeny - 50; checkFocusZones <= this.tokeny + 50; checkFocusZones += 10) {
-                    if(Zones.getKingdom(this.tokenx, this.tokeny) == this.getResponder().getKingdomId()) {
-                        oldvill = true;
+                label108:
+                while(true) {
+                    Item marker;
+                    do {
+                        if (!var3.hasNext()) {
+                            break label108;
+                        }
+
+                        marker = (Item)var3.next();
+                    } while(!marker.isChained() && this.getResponder().getKingdomId() != 4);
+
+                    if (marker.isGuardTower() && Math.abs(this.tokenx - marker.getTileX()) <= 50 && Math.abs(this.tokeny - marker.getTileY()) <= 50) {
+                        found = true;
                         break;
                     }
                 }
-            }
 
-            if(!oldvill) {
-                this.getResponder().getCommunicator().sendSafeServerMessage("You must found the settlement within 50 tiles of your own kingdom.");
-                return false;
+                if (!found) {
+                    this.getResponder().getCommunicator().sendSafeServerMessage("You must found the settlement within 50 tiles of an allied tower linked to the kingdom influence chain.");
+                    return false;
+                }
+            } else {
+                boolean found = false;
+
+                for(int x = this.tokenx - 50; x <= this.tokenx + 50; x += 10) {
+                    for(int y = this.tokeny - 50; y <= this.tokeny + 50; y += 10) {
+                        if (Zones.getKingdom(this.tokenx, this.tokeny) == this.getResponder().getKingdomId()) {
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (!found) {
+                    this.getResponder().getCommunicator().sendSafeServerMessage("You must found the settlement within 50 tiles of your own kingdom.");
+                    return false;
+                }
             }
         }
 
-        Village oldvill1 = null;
+        Village oldvill = null;
         if(this.expanding) {
             try {
-                oldvill1 = Villages.getVillage(this.deed.getData2());
+                oldvill = Villages.getVillage(this.deed.getData2());
             } catch (NoSuchVillageException var6) {
                 this.getResponder().getCommunicator().sendSafeServerMessage("The settlement could not be located.");
                 return false;
             }
         }
 
-        Map decliners1 = Villages.canFoundVillage(this.selectedWest, this.selectedEast, this.selectedNorth, this.selectedSouth, this.tokenx, this.tokeny, this.initialPerimeter, true, oldvill1, this.getResponder());
-        if(!decliners1.isEmpty()) {
+        Map<Village, String> decliners = Villages.canFoundVillage(this.selectedWest, this.selectedEast, this.selectedNorth, this.selectedSouth, this.tokenx, this.tokeny, this.initialPerimeter, true, oldvill, this.getResponder());
+        if (!decliners.isEmpty()) {
             this.getResponder().getCommunicator().sendSafeServerMessage("You cannot found the settlement here:");
-            Iterator focusZoneReject1 = decliners1.keySet().iterator();
+            Iterator focusZoneReject1 = decliners.keySet().iterator();
 
             while(focusZoneReject1.hasNext()) {
                 Village checkFocusZones2 = (Village)focusZoneReject1.next();
-                String reason = (String) decliners1.get(checkFocusZones2);
+                String reason = (String) decliners.get(checkFocusZones2);
                 if (reason.startsWith("has perimeter")) {
                     this.getResponder().getCommunicator().sendSafeServerMessage(checkFocusZones2.getName() + " " + reason);
                 } else {
@@ -1084,34 +1114,34 @@ public final class VillageFoundationQuestion extends Question implements Village
 
             return false;
         } else {
-            boolean checkFocusZones1 = !this.expanding;
-            if(this.expanding && oldvill1 != null) {
-                if(oldvill1.getStartX() != this.tokenx - this.selectedWest) {
-                    checkFocusZones1 = true;
+            boolean checkFocusZones = !this.expanding;
+            if (this.expanding && oldvill != null) {
+                if (oldvill.getStartX() != this.tokenx - this.selectedWest) {
+                    checkFocusZones = true;
                 }
 
-                if(oldvill1.getStartY() != this.tokeny - this.selectedNorth) {
-                    checkFocusZones1 = true;
+                if (oldvill.getStartY() != this.tokeny - this.selectedNorth) {
+                    checkFocusZones = true;
                 }
 
-                if(oldvill1.getEndX() != this.tokenx + this.selectedEast) {
-                    checkFocusZones1 = true;
+                if (oldvill.getEndX() != this.tokenx + this.selectedEast) {
+                    checkFocusZones = true;
                 }
 
-                if(oldvill1.getEndY() != this.tokenx + this.selectedNorth) {
-                    checkFocusZones1 = true;
+                if (oldvill.getEndY() != this.tokenx + this.selectedNorth) {
+                    checkFocusZones = true;
                 }
 
-                if(oldvill1.getPerimeterDiameterX() != this.perimeterDiameterX) {
-                    checkFocusZones1 = true;
+                if (oldvill.getPerimeterDiameterX() != this.perimeterDiameterX) {
+                    checkFocusZones = true;
                 }
 
-                if(oldvill1.getPerimeterDiameterY() != this.perimeterDiameterY) {
-                    checkFocusZones1 = true;
+                if (oldvill.getPerimeterDiameterY() != this.perimeterDiameterY) {
+                    checkFocusZones = true;
                 }
             }
 
-            if(checkFocusZones1) {
+            if (checkFocusZones) {
                 String focusZoneReject = Villages.isFocusZoneBlocking(this.selectedWest, this.selectedEast, this.selectedNorth, this.selectedSouth, this.tokenx, this.tokeny, this.initialPerimeter, true);
                 if(focusZoneReject.length() > 0) {
                     this.getResponder().getCommunicator().sendSafeServerMessage(focusZoneReject);
