@@ -1,6 +1,26 @@
 package mod.wurmonline.mods.upkeepcosts;
 
+import com.wurmonline.server.creatures.Creature;
+import com.wurmonline.server.economy.Change;
+import com.wurmonline.server.economy.Economy;
+import com.wurmonline.server.questions.GuardManagementQuestion;
+import com.wurmonline.server.questions.Question;
+import com.wurmonline.server.questions.QuestionParser;
+import com.wurmonline.server.villages.GuardPlan;
+import com.wurmonline.server.villages.Village;
+import com.wurmonline.server.villages.Villages;
+import org.gotti.wurmunlimited.modloader.ReflectionUtil;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class GuardPlanStrings {
+    private static final Logger logger = Logger.getLogger(GuardPlanStrings.class.getName());
+
     public static String getMoneyDrained = "{try {\n" +
             "    if(this.getVillage().isPermanent) {\n" +
             "        return 0L;\n" +
@@ -51,7 +71,7 @@ public class GuardPlanStrings {
             "    return (long)((double)this.moneyLeft / this.calculateUpkeep(false) * 500000.0D);" +
             "}";
 
-    public static String getCostForGuards = "return (long)$1 * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;";
+    public static String getCostForGuards = "return ((long)$1 - com.wurmonline.server.villages.Villages.FREE_GUARDS) * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;";
 
     public static String pollUpkeep = "{try {" +
             "    if(this.getVillage().isPermanent) {" +
@@ -135,4 +155,130 @@ public class GuardPlanStrings {
             "    }" +
             "    return false;" +
             "}}";
+
+    static Object parseGuardRentalQuestion(Object o, Method method, Object[] args) {
+        GuardManagementQuestion question = (GuardManagementQuestion)args[0];
+        Properties props;
+        try {
+            props = ReflectionUtil.getPrivateField(question, Question.class.getDeclaredField("answer"));
+        } catch (IllegalAccessException | NoSuchFieldException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        Creature responder = question.getResponder();
+        String key = "12345678910";
+        String val = null;
+        Village village = responder.citizenVillage;
+        long money = responder.getMoney();
+        if (money > 0L) {
+            long valueWithdrawn;
+            try {
+                valueWithdrawn = ReflectionUtil.callPrivateMethod(null, QuestionParser.class.getDeclaredMethod("getValueWithdrawn", Question.class), question);
+            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                e.printStackTrace();
+                return null;
+            }
+            if (valueWithdrawn > 0L) {
+                try {
+                    if (village.plan != null) {
+                        if (responder.chargeMoney(valueWithdrawn)) {
+                            village.plan.addMoney(valueWithdrawn);
+                            village.plan.addPayment(responder.getName(), responder.getWurmId(), valueWithdrawn);
+                            Change newch = Economy.getEconomy().getChangeFor(valueWithdrawn);
+                            responder.getCommunicator().sendNormalServerMessage("You pay " + newch.getChangeString() + " to the upkeep fund of " + village.getName() + ".");
+                            logger.log(Level.INFO, responder.getName() + " added " + valueWithdrawn + " irons to " + village.getName() + " upkeep.");
+                        } else {
+                            responder.getCommunicator().sendNormalServerMessage("You don't have that much money.");
+                        }
+                    } else {
+                        responder.getCommunicator().sendNormalServerMessage("This village does not have an upkeep plan.");
+                    }
+                } catch (IOException var17) {
+                    logger.log(Level.WARNING, "Failed to withdraw money from " + responder.getName() + ":" + var17.getMessage(), var17);
+                    responder.getCommunicator().sendNormalServerMessage("The transaction failed. Please contact the game masters using the <i>/dev</i> command.");
+                }
+            } else {
+                responder.getCommunicator().sendNormalServerMessage("No money withdrawn.");
+            }
+        }
+
+        if (responder.mayManageGuards()) {
+            GuardPlan plan = responder.getCitizenVillage().plan;
+            if (plan != null) {
+                boolean changed = false;
+                key = "hired";
+                val = (String)props.get(key);
+                int nums = plan.getNumHiredGuards();
+                int oldnums = nums;
+                if (val == null) {
+                    responder.getCommunicator().sendNormalServerMessage("Failed to parse the value " + val + ". Please enter a number if you wish to change the number of guards.");
+                    return null;
+                }
+
+                try {
+                    nums = Integer.parseInt(val);
+                } catch (NumberFormatException var16) {
+                    responder.getCommunicator().sendNormalServerMessage("Failed to parse the value " + val + ". Please enter a number if you wish to change the number of guards.");
+                    return null;
+                }
+
+                if (nums != plan.getNumHiredGuards()) {
+                    int freeGuards = 0;
+
+                    try {
+                        freeGuards = Villages.class.getDeclaredField("FREE_GUARDS").getInt(null);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+
+                    boolean aboveMax = nums > GuardPlan.getMaxGuards(responder.getCitizenVillage());
+                    nums = Math.min(nums, GuardPlan.getMaxGuards(responder.getCitizenVillage()));
+                    int diff = nums - plan.getNumHiredGuards() - freeGuards;
+                    boolean takeFromBank = Boolean.parseBoolean(props.getProperty("use_bank"));
+                    if (diff > 0) {
+                        long moneyOver = plan.moneyLeft - plan.calculateMonthlyUpkeepTimeforType(0);
+                        if (moneyOver > (long)(10000 * diff)) {
+                            changed = true;
+                            plan.changePlan(0, nums);
+                            plan.updateGuardPlan(0, plan.moneyLeft - (long)(10000 * diff), nums);
+                        } else if (takeFromBank && responder.getMoney() > (long)(10000 * diff)) {
+                            try {
+                                responder.setMoney(responder.getMoney() - (10000 * diff));
+                                changed = true;
+                                plan.changePlan(0, nums);
+                                plan.updateGuardPlan(0, plan.moneyLeft, nums);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                responder.getCommunicator().sendAlertServerMessage("An error occurred when taking payment.  Please report.");
+                                return null;
+                            }
+                        } else {
+                            responder.getCommunicator().sendNormalServerMessage("There was not enough upkeep to increase the number of guards. Please make sure that there is at least one month of upkeep left after you hire the guards.");
+                        }
+                    } else if (diff < 0) {
+                        changed = true;
+                        plan.changePlan(0, nums);
+                    }
+
+                    if (aboveMax) {
+                        responder.getCommunicator().sendNormalServerMessage("You tried to increase the amount of guards above the max of " + GuardPlan.getMaxGuards(responder.getCitizenVillage()) + " which was denied.");
+                    }
+                }
+
+                if (changed && oldnums < nums) {
+                    responder.getCommunicator().sendNormalServerMessage("You change the upkeep plan. New guards will arrive soon.");
+                } else if (changed) {
+                    responder.getCommunicator().sendNormalServerMessage("You change the upkeep plan.");
+                } else {
+                    responder.getCommunicator().sendNormalServerMessage("No change was made.");
+                }
+            }
+        } else {
+            logger.log(Level.WARNING, responder.getName() + " tried to manage guards without the right.");
+        }
+
+
+        return null;
+    }
 }

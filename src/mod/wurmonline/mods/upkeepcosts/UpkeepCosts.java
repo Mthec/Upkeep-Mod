@@ -485,6 +485,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 return method.invoke(proxy, args);
             });
 
+            HookManager.getInstance().registerHook("com.wurmonline.server.questions.QuestionParser", "parseGuardRentalQuestion", "(Lcom/wurmonline/server/questions/GuardManagementQuestion;)V",
+                    () -> GuardPlanStrings::parseGuardRentalQuestion);
+
         } catch (NotFoundException | CannotCompileException | IOException ex) {
             ex.printStackTrace();
             System.exit(-1);
