@@ -46,6 +46,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public long name_change;
     public long free_tiles;
     public long free_perimeter;
+    public int free_guards;
     public long min_drain;
     public float max_drain_modifier;
     public float drain_modifier_increment;
@@ -71,6 +72,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         name_change = 50000;
         free_tiles = 0;
         free_perimeter = 0;
+        free_guards = 0;
         min_drain = 7500;
         max_drain_modifier = 5.0F;
         drain_modifier_increment = 0.5F;
@@ -162,6 +164,12 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         Villages.GUARD_COST_STRING = (new Change(Villages.GUARD_COST)).getChangeString();
         Villages.GUARD_UPKEEP_STRING = (new Change(Villages.GUARD_UPKEEP)).getChangeString();
 
+        try {
+            Villages.class.getDeclaredField("FREE_GUARDS").set(null, free_guards);
+        } catch (IllegalAccessException | NoSuchFieldException ex) {
+            logger.warning(messages.getString("free_guards_not_set"));
+            ex.printStackTrace();
+        }
 
         Villages.MINIMUM_UPKEEP = minimum_upkeep;
         Villages.MINIMUM_UPKEEP_STRING = (new Change(Villages.MINIMUM_UPKEEP)).getChangeString();
@@ -277,6 +285,12 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
+        String FREE_GUARDS = "?";
+        try {
+            FREE_GUARDS = String.valueOf(Villages.class.getDeclaredField("FREE_GUARDS").getLong(null));
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
         String minMoneyDrained = "?";
         try {
             minMoneyDrained = String.valueOf(GuardPlan.class.getDeclaredField("minMoneyDrained").getLong(null));
@@ -306,6 +320,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 FREE_PERIMETER,
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
+                FREE_GUARDS,
                 Villages.MINIMUM_UPKEEP_STRING,
                 new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
                 new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString(),
@@ -368,6 +383,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             CtField freePerimeter = new CtField(CtClass.longType, "FREE_PERIMETER", villages);
             freePerimeter.setModifiers(Modifier.setPublic(Modifier.STATIC));
             villages.addField(freePerimeter, "0L");
+            CtField freeGuards = new CtField(CtClass.longType, "FREE_GUARDS", villages);
+            freeGuards.setModifiers(Modifier.setPublic(Modifier.STATIC));
+            villages.addField(freeGuards, "0");
 
 
             CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");
