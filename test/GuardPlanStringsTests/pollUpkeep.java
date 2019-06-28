@@ -15,7 +15,7 @@ public class pollUpkeep extends GuardPlanStringsTest {
         methodsToTest.put("public boolean pollUpkeep()", GuardPlanStrings.pollUpkeep);
     }
 
-    private boolean call() throws Exception{
+    private boolean call() throws Exception {
         return (boolean)GuardPlan.getDeclaredMethod("pollUpkeep").invoke(gPlan);
     }
 

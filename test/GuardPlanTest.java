@@ -30,10 +30,10 @@ public class GuardPlanTest extends ServerSetup {
         properties.setProperty("epic_guard_upkeep", "0");
         upkeep.configure(properties);
 
-        controller.startDB("Creative Copy");
-        // TODO - onServerStart is not called for some reason.
-        upkeep.onServerStarted();
-        Thread.sleep(10000);
+//        controller.startDB("Creative Copy");
+//        // TODO - onServerStart is not called for some reason.
+//        upkeep.onServerStarted();
+//        Thread.sleep(10000);
         Assert.assertEquals(0, GuardPlan.getCostForGuards(1));
     }
 }

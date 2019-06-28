@@ -6,21 +6,10 @@
             <fileset dir="../out/production/NoMinimumUpkeep" includes="**/GuardPlanStrings.class" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageFoundationQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageUpkeep.class" prefix="mod/wurmonline/mods/upkeepcosts" />
+            <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/GuardManagementQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/locale/UpkeepCosts.properties" fullpath="mod/wurmonline/mods/upkeepcosts/UpkeepCostsBundle.properties" />
         </jar>
         <copy file="upkeepcosts.properties" tofile="../out/jar/mods/upkeepcosts.properties" />
-
-        <jar destfile="../out/jarui/mods/upkeepcosts/upkeepcosts.jar">
-            <fileset dir="../out/production/NoMinimumUpkeep" includes="**/Upkeep*" excludes="locale/**" />
-            <fileset dir="../out/production/NoMinimumUpkeep" includes="**/GuardPlanStrings.class" />
-            <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageFoundationQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
-            <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageUpkeep.class" prefix="mod/wurmonline/mods/upkeepcosts" />
-            <zipfileset file="../out/production/NoMinimumUpkeep/locale/UpkeepCosts.properties" fullpath="mod/wurmonline/mods/upkeepcosts/UpkeepCostsBundle.properties" />
-        </jar>
-        <copy file="upkeepcosts.properties" tofile="../out/jarui/mods/upkeepcosts.properties" />
-        <propertyfile file="../out/jarui/mods/upkeepcosts.properties">
-            <entry key="classname" value="mod.wurmonline.mods.upkeepcosts.UpkeepCostsUI" />
-        </propertyfile>
 
         <copy todir="E:/Steam/steamapps/common/Wurm Unlimited Dedicated Server/">
             <fileset dir="../out/jar" />
@@ -36,10 +25,6 @@
     <target name="zip" depends="jar">
         <zip destfile="../upkeepcosts.zip">
             <zipfileset dir="../out/jar" />
-        </zip>
-        <zip destfile="../upkeepcostsui.zip">
-            <zipfileset dir="../out/jarui" />
-            <zipfileset file="locale/UpkeepCosts.properties" fullpath="locale/UpkeepCosts.properties" />
         </zip>
     </target>
 </project>

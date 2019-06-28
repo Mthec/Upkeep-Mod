@@ -375,6 +375,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             CtClass question2 = pool.getCtClass("com.wurmonline.server.questions.VillageUpkeep");
             question2.detach();
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageUpkeep.class"));
+            CtClass question3 = pool.getCtClass("com.wurmonline.server.questions.GuardManagementQuestion");
+            question3.detach();
+            pool.makeClass(UpkeepCosts.class.getResourceAsStream("GuardManagementQuestion.class"));
 
             CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
             CtField freeTiles = new CtField(CtClass.longType, "FREE_TILES", villages);
@@ -383,9 +386,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             CtField freePerimeter = new CtField(CtClass.longType, "FREE_PERIMETER", villages);
             freePerimeter.setModifiers(Modifier.setPublic(Modifier.STATIC));
             villages.addField(freePerimeter, "0L");
-            CtField freeGuards = new CtField(CtClass.longType, "FREE_GUARDS", villages);
+            CtField freeGuards = new CtField(CtClass.intType, "FREE_GUARDS", villages);
             freeGuards.setModifiers(Modifier.setPublic(Modifier.STATIC));
-            villages.addField(freeGuards, "0");
+            villages.addField(freeGuards);
 
 
             CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");

@@ -1,14 +1,13 @@
-import mod.wurmonline.serverlauncher.ServerConsoleController;
-import org.gotti.wurmunlimited.serverlauncher.ServerLauncher2;
+import org.gotti.wurmunlimited.serverlauncher.ServerLauncher;
 import org.junit.BeforeClass;
 
 public class ServerSetup {
-    ServerConsoleController controller;
+    ServerLauncher controller;
 
     @BeforeClass
     public static void setUp () throws Exception {
 
-        ServerLauncher2.main(new String[0]);
+        ServerLauncher.main(new String[0]);
 
         /*try {
             Loader loader = HookManager.getInstance().getLoader();
