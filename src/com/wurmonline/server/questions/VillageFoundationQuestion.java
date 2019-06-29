@@ -161,6 +161,16 @@ public final class VillageFoundationQuestion extends Question implements Village
         }
     }
 
+    private int getFreeGuards() {
+        try {
+            return Villages.class.getDeclaredField("FREE_GUARDS").getInt(Villages.class);
+        } catch(NoSuchFieldException | IllegalAccessException ex) {
+            logger.warning("Free guards not available, reason follows:");
+            ex.printStackTrace();
+            return 0;
+        }
+    }
+
     private int getChargeableTiles() {
         int tiles = this.tiles - getFreeTiles();
         if (tiles < 0)
@@ -827,7 +837,7 @@ public final class VillageFoundationQuestion extends Question implements Village
 
                 int diffGuard = this.selectedGuards - oldvill.plan.getNumHiredGuards();
                 if(diffGuard > 0) {
-                    moneyNeeded += (long)diffGuard * Villages.GUARD_COST;
+                    moneyNeeded += (Math.max(0, this.selectedGuards - getFreeGuards()) - Math.max(0, oldvill.plan.getNumHiredGuards() - getFreeGuards())) * Villages.GUARD_COST;
                 }
 
                 moneyNeeded -= 0L;
@@ -846,7 +856,7 @@ public final class VillageFoundationQuestion extends Question implements Village
     private long getFoundingCost() {
         long moneyNeeded = this.getChargeableTiles() * Villages.TILE_COST;
         moneyNeeded += this.getChargeablePerimeter() * Villages.PERIMETER_COST;
-        moneyNeeded += (long)this.selectedGuards * Villages.GUARD_COST;
+        moneyNeeded += (long)Math.max(0, this.selectedGuards - getFreeGuards()) * Villages.GUARD_COST;
         return moneyNeeded;
     }
 
@@ -1512,13 +1522,24 @@ public final class VillageFoundationQuestion extends Question implements Village
 
     }
 
+    private int getNonFreeGuards(int numGuards) {
+        int nonFreeGuards = numGuards;
+        try {
+            nonFreeGuards = Math.max(0, numGuards - Villages.class.getDeclaredField("FREE_GUARDS").getInt(null));
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        return nonFreeGuards;
+    }
+
     private void addGuardCost(StringBuilder buf) {
         if(!this.expanding) {
             if(this.selectedGuards > 0) {
                 if(Servers.localServer.isFreeDeeds()) {
                     buf.append("text{text=\"You will hire ").append(this.selectedGuards).append(" guards.\"}");
                 } else {
-                    buf.append("text{text=\"You will hire ").append(this.selectedGuards).append(" guards for a cost of ").append((new Change((long) this.selectedGuards * Villages.GUARD_COST)).getChangeString()).append(".\"}");
+                    buf.append("text{text=\"You will hire ").append(this.selectedGuards).append(" guards for a cost of ").append((new Change(getNonFreeGuards(this.selectedGuards) * Villages.GUARD_COST)).getChangeString()).append(".\"}");
                 }
 
                 if(Servers.localServer.isUpkeep()) {
@@ -1533,11 +1554,12 @@ public final class VillageFoundationQuestion extends Question implements Village
             try {
                 Village nsv = Villages.getVillage(this.deed.getData2());
                 int diff = this.selectedGuards - nsv.plan.getNumHiredGuards();
+                int nonFreeGuardsDiff = (this.selectedGuards - getFreeGuards()) - (nsv.plan.getNumHiredGuards() - getFreeGuards());
                 if(diff > 0) {
                     if(Servers.localServer.isFreeDeeds()) {
                         buf.append("text{text=\"You will hire ").append(diff).append(" new guards.\"}");
                     } else {
-                        buf.append("text{text=\"You will hire ").append(diff).append(" new guards for a cost of ").append((new Change((long) diff * Villages.GUARD_COST)).getChangeString()).append(".\"}");
+                        buf.append("text{text=\"You will hire ").append(diff).append(" new guards for a cost of ").append((new Change((long) nonFreeGuardsDiff * Villages.GUARD_COST)).getChangeString()).append(".\"}");
                     }
 
                     if(Servers.localServer.isUpkeep()) {
@@ -1843,6 +1865,7 @@ public final class VillageFoundationQuestion extends Question implements Village
         buf.append("text{type=\"bold\";text=\"Do you wish to hire guards?\"}");
         buf.append("text{text=\"\"}");
         buf.append("text{text=\"For ").append(this.villageName).append(" you may hire up to ").append(this.maxGuards).append(" guards.\"}");
+        buf.append("text{text=\"You may have up to ").append(getFreeGuards()).append(" free guards.\"}");
         buf.append("text{text=\"\"}");
         if(Servers.localServer.isChallengeOrEpicServer() && !Servers.localServer.isFreeDeeds()) {
             buf.append("text{text=\"The only guard type is heavy guards. The running upkeep cost increases the more guards you have in a sort of ladder system. The first guards are cheaper than the last.\"};");

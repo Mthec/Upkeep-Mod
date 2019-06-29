@@ -1,5 +1,6 @@
 package mod.wurmonline.mods.upkeepcosts;
 
+import com.wurmonline.server.Servers;
 import com.wurmonline.server.creatures.Creature;
 import com.wurmonline.server.economy.Change;
 import com.wurmonline.server.economy.Economy;
@@ -71,7 +72,15 @@ public class GuardPlanStrings {
             "    return (long)((double)this.moneyLeft / this.calculateUpkeep(false) * 500000.0D);" +
             "}";
 
-    public static String getCostForGuards = "return ((long)$1 - com.wurmonline.server.villages.Villages.FREE_GUARDS) * com.wurmonline.server.villages.Villages.GUARD_UPKEEP;";
+    public static Object getCostForGuards(Object o, Method method, Object[] args) {
+        int nonFreeGuards = (int)args[0];
+        try {
+            nonFreeGuards = Math.max(0, nonFreeGuards - Villages.class.getDeclaredField("FREE_GUARDS").getInt(null));
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return Servers.localServer.isChallengeOrEpicServer() ? (nonFreeGuards * Villages.GUARD_UPKEEP + (nonFreeGuards - 1) * nonFreeGuards / 2 * 100 * 50) : nonFreeGuards * Villages.GUARD_UPKEEP;
+    }
 
     public static String pollUpkeep = "{try {" +
             "    if(this.getVillage().isPermanent) {" +
@@ -234,10 +243,11 @@ public class GuardPlanStrings {
 
                     boolean aboveMax = nums > GuardPlan.getMaxGuards(responder.getCitizenVillage());
                     nums = Math.min(nums, GuardPlan.getMaxGuards(responder.getCitizenVillage()));
-                    int diff = nums - plan.getNumHiredGuards() - freeGuards;
+                    int diff = Math.max(0, nums - freeGuards) - Math.max(0, plan.getNumHiredGuards() - freeGuards);
                     boolean takeFromBank = Boolean.parseBoolean(props.getProperty("use_bank"));
                     if (diff > 0) {
                         long moneyOver = plan.moneyLeft - plan.calculateMonthlyUpkeepTimeforType(0);
+                        // TODO - Surely this isn't right?  Uses non-epic upkeep as hiring cost and doesn't factor in guard upkeep in one month test.  Or maybe it is just the heat.
                         if (moneyOver > (long)(10000 * diff)) {
                             changed = true;
                             plan.changePlan(0, nums);

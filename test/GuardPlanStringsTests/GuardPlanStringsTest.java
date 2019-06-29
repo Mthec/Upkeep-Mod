@@ -111,6 +111,7 @@ abstract class GuardPlanStringsTest {
         villages.addField(CtField.make("public static long FREE_PERIMETER = 0L;", villages));
         villages.addField(CtField.make("public static long PERIMETER_UPKEEP = 0L;", villages));
         villages.addField(CtField.make("public static long MINIMUM_UPKEEP = 0L;", villages));
+        villages.addField(CtField.make("public static int FREE_GUARDS = 0;", villages));
         villages.addField(CtField.make("public static long GUARD_UPKEEP = 0L;", villages));
         // Needs to be constructed at least once to be usable?
         Villages = villages.toClass();
@@ -205,6 +206,7 @@ abstract class GuardPlanStringsTest {
         Servers.addField(CtField.make("public static com.wurmonline.server.ServerEntry localServer = new com.wurmonline.server.ServerEntry();", Servers));
         localServer.addField(CtField.make("public static boolean isUpkeep = true;", localServer));
         localServer.addMethod(CtMethod.make("public boolean isUpkeep() {return isUpkeep;}", localServer));
+        localServer.addMethod(CtMethod.make("public boolean isChallengeOrEpicServer() {return false;}", localServer));
 
         Servers.toClass();
         LocalServer = localServer.toClass();

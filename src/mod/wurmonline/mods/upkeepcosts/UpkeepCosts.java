@@ -94,6 +94,18 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     }
                     field.set(this, value);
                 }
+                else if ((field.getType().isAssignableFrom(int.class))) {
+                    String property = properties.getProperty(field.getName());
+                    if (property == null || property.equals("")) {
+                        continue;
+                    }
+                    int value = Integer.valueOf(property);
+                    if (value < 0) {
+                        negative(field.getName());
+                        continue;
+                    }
+                    field.set(this, value);
+                }
                 else if ((field.getType().isAssignableFrom(float.class))) {
                     String property = properties.getProperty(field.getName());
                     if (property == null || property.equals("")) {
@@ -392,7 +404,6 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
 
 
             CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");
-            guardPlan.getDeclaredMethod("getCostForGuards").setBody(GuardPlanStrings.getCostForGuards);
             CtField upkeepBufferField = new CtField(CtClass.doubleType, "upkeepBuffer", guardPlan);
             upkeepBufferField.setModifiers(Modifier.PUBLIC);
             guardPlan.addField(upkeepBufferField, "0.0D");
@@ -508,6 +519,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
 
             HookManager.getInstance().registerHook("com.wurmonline.server.questions.QuestionParser", "parseGuardRentalQuestion", "(Lcom/wurmonline/server/questions/GuardManagementQuestion;)V",
                     () -> GuardPlanStrings::parseGuardRentalQuestion);
+
+            HookManager.getInstance().registerHook("com.wurmonline.server.villages.GuardPlan", "getCostForGuards", "(I)J",
+                    () -> GuardPlanStrings::getCostForGuards);
 
         } catch (NotFoundException | CannotCompileException | IOException ex) {
             ex.printStackTrace();
