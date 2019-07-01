@@ -41,6 +41,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public long normal_guard_upkeep;
     public long epic_guard_cost;
     public long epic_guard_upkeep;
+    public boolean epic_guard_upkeep_scaling;
     public long minimum_upkeep;
     public long into_upkeep;
     public long name_change;
@@ -67,6 +68,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         normal_guard_upkeep = 10000;
         epic_guard_cost = 30000;
         epic_guard_upkeep = 30000;
+        epic_guard_upkeep_scaling = true;
         minimum_upkeep = 10000;
         into_upkeep = 30000;
         name_change = 50000;
@@ -118,6 +120,14 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     }
                     field.set(this, value);
                 }
+                else if ((field.getType().isAssignableFrom(boolean.class))) {
+                    String property = properties.getProperty(field.getName());
+                    if (property == null || property.equals("")) {
+                        continue;
+                    }
+                    boolean value = Boolean.valueOf(property);
+                    field.set(this, value);
+                }
             } catch (IllegalAccessException ex) {
                 ex.printStackTrace();
                 System.exit(-1);
@@ -167,10 +177,22 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         if (local.isChallengeOrEpicServer()) {
             Villages.GUARD_COST = epic_guard_cost;
             Villages.GUARD_UPKEEP = epic_guard_upkeep;
+            try {
+                Villages.class.getDeclaredField("EPIC_UPKEEP_SCALING").set(null, epic_guard_upkeep_scaling);
+            } catch (IllegalAccessException | NoSuchFieldException ex) {
+                logger.warning(messages.getString("epic_upkeep_scaling_not_set"));
+                ex.printStackTrace();
+            }
         }
         else {
             Villages.GUARD_COST = normal_guard_cost;
             Villages.GUARD_UPKEEP = normal_guard_upkeep;
+            try {
+                Villages.class.getDeclaredField("EPIC_UPKEEP_SCALING").set(null, false);
+            } catch (IllegalAccessException | NoSuchFieldException ex) {
+                logger.warning(messages.getString("epic_upkeep_scaling_not_set"));
+                ex.printStackTrace();
+            }
         }
 
         Villages.GUARD_COST_STRING = (new Change(Villages.GUARD_COST)).getChangeString();
@@ -303,6 +325,12 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
+        String EPIC_UPKEEP_SCALING = "?";
+        try {
+            EPIC_UPKEEP_SCALING = String.valueOf(Villages.class.getDeclaredField("EPIC_UPKEEP_SCALING").getBoolean(null));
+        } catch (NoSuchFieldException | IllegalAccessException ex) {
+            ex.printStackTrace();
+        }
         String minMoneyDrained = "?";
         try {
             minMoneyDrained = String.valueOf(GuardPlan.class.getDeclaredField("minMoneyDrained").getLong(null));
@@ -332,6 +360,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 FREE_PERIMETER,
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
+                EPIC_UPKEEP_SCALING,
                 FREE_GUARDS,
                 Villages.MINIMUM_UPKEEP_STRING,
                 new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
@@ -401,6 +430,9 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             CtField freeGuards = new CtField(CtClass.intType, "FREE_GUARDS", villages);
             freeGuards.setModifiers(Modifier.setPublic(Modifier.STATIC));
             villages.addField(freeGuards);
+            CtField epicScaling = new CtField(CtClass.booleanType, "EPIC_UPKEEP_SCALING", villages);
+            epicScaling.setModifiers(Modifier.setPublic(Modifier.STATIC));
+            villages.addField(epicScaling);
 
 
             CtClass guardPlan = pool.get("com.wurmonline.server.villages.GuardPlan");

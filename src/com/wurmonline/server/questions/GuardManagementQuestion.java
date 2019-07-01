@@ -49,7 +49,7 @@ public final class GuardManagementQuestion extends Question implements TimeConst
                     float left = (float)plan.moneyLeft / (float)plan.getMonthlyCost();
                     buf.append("text{text=\"This means that the upkeep should last for about " + left * 28.0F + " days.\"}");
                     if (Servers.localServer.PVPSERVER || Servers.localServer.id == 3) {
-                        buf.append("text{text=\"A drain would cost " + Economy.getEconomy().getChangeFor(plan.getMoneyDrained()).getChangeString() + ".\"};");
+                        buf.append("text{text=\"A drain would cost " + new Change(plan.getMoneyDrained()).getChangeShortString() + ".\"};");
                         long minimumDrain = 7500;
                         try {
                             minimumDrain = ReflectionUtil.getPrivateField(null, GuardPlan.class.getDeclaredField("minMoneyDrained"));
@@ -58,7 +58,7 @@ public final class GuardManagementQuestion extends Question implements TimeConst
                             logger.warning("Could not get minimum drain value.");
                         }
                         if (plan.moneyLeft < minimumDrain * 5) {
-                            buf.append("text{type='bold';text='Since minimum drain is " + minimumDrain + " it may be drained to disband in less than 5 days.'}");
+                            buf.append("text{type='bold';text='Since minimum drain is " + new Change(minimumDrain).getChangeShortString() + " it may be drained to disband in less than 5 days.'}");
                         }
                     }
 
@@ -66,7 +66,7 @@ public final class GuardManagementQuestion extends Question implements TimeConst
                 }
 
                 if (Servers.localServer.isChallengeOrEpicServer()) {
-                    buf.append("text{text=\"The only guard type is heavy guards. The running upkeep cost increases the more guards you have in a sort of ladder system. The first guards are cheaper than the last.\"};");
+                    buf.append("text{text=\"The only guard type is heavy guards. The cost for hiring them is " + Villages.GUARD_COST_STRING + " and running upkeep cost increases the more guards you have in a sort of ladder system. The first guards are cheaper than the last.\"};");
                     buf.append("text{text=\"Make sure to review the cost for upkeep once you are done.\"};");
                 } else {
                     buf.append("text{text=\"The only guard type is heavy guards. The cost for hiring them is " + Villages.GUARD_COST_STRING + " and running upkeep is " + Villages.GUARD_UPKEEP_STRING + " per month.\"};");

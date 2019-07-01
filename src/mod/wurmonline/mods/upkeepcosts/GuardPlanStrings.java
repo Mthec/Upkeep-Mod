@@ -76,6 +76,9 @@ public class GuardPlanStrings {
         int nonFreeGuards = (int)args[0];
         try {
             nonFreeGuards = Math.max(0, nonFreeGuards - Villages.class.getDeclaredField("FREE_GUARDS").getInt(null));
+            if (!Villages.class.getDeclaredField("EPIC_UPKEEP_SCALING").getBoolean(null)) {
+                return nonFreeGuards * Villages.GUARD_UPKEEP;
+            }
         } catch (NoSuchFieldException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -247,14 +250,14 @@ public class GuardPlanStrings {
                     boolean takeFromBank = Boolean.parseBoolean(props.getProperty("use_bank"));
                     if (diff > 0) {
                         long moneyOver = plan.moneyLeft - plan.calculateMonthlyUpkeepTimeforType(0);
-                        // TODO - Surely this isn't right?  Uses non-epic upkeep as hiring cost and doesn't factor in guard upkeep in one month test.  Or maybe it is just the heat.
-                        if (moneyOver > (long)(10000 * diff)) {
+                        long costForHire = Villages.GUARD_COST * diff;
+                        if (moneyOver > costForHire) {
                             changed = true;
                             plan.changePlan(0, nums);
-                            plan.updateGuardPlan(0, plan.moneyLeft - (long)(10000 * diff), nums);
-                        } else if (takeFromBank && responder.getMoney() > (long)(10000 * diff)) {
+                            plan.updateGuardPlan(0, plan.moneyLeft - costForHire, nums);
+                        } else if (takeFromBank && responder.getMoney() > costForHire) {
                             try {
-                                responder.setMoney(responder.getMoney() - (10000 * diff));
+                                responder.setMoney(responder.getMoney() - costForHire);
                                 changed = true;
                                 plan.changePlan(0, nums);
                                 plan.updateGuardPlan(0, plan.moneyLeft, nums);
@@ -264,6 +267,7 @@ public class GuardPlanStrings {
                                 return null;
                             }
                         } else {
+                            // TODO - Not really true, as the cost comes after the check?
                             responder.getCommunicator().sendNormalServerMessage("There was not enough upkeep to increase the number of guards. Please make sure that there is at least one month of upkeep left after you hire the guards.");
                         }
                     } else if (diff < 0) {
