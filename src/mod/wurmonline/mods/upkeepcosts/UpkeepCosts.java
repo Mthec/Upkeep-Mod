@@ -8,6 +8,7 @@ import com.wurmonline.server.economy.Change;
 import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.utils.DbUtilities;
 import com.wurmonline.server.villages.GuardPlan;
+import com.wurmonline.server.villages.GuardPlanMethods;
 import com.wurmonline.server.villages.Villages;
 import javassist.*;
 import org.gotti.wurmunlimited.modloader.classhooks.HookManager;
@@ -53,7 +54,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public float drain_modifier_increment;
     ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCostsBundle");
     private boolean createdDb = false;
-    boolean output = false;
+    public static boolean output = false;
 
     public UpkeepCosts() {
         setDefaults();
@@ -89,7 +90,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     if (property == null || property.equals("")) {
                         continue;
                     }
-                    long value = Long.valueOf(property);
+                    long value = Long.parseLong(property);
                     if (value < 0) {
                         negative(field.getName());
                         continue;
@@ -101,7 +102,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     if (property == null || property.equals("")) {
                         continue;
                     }
-                    int value = Integer.valueOf(property);
+                    int value = Integer.parseInt(property);
                     if (value < 0) {
                         negative(field.getName());
                         continue;
@@ -113,7 +114,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                     if (property == null || property.equals("")) {
                         continue;
                     }
-                    float value = Float.valueOf(property);
+                    float value = Float.parseFloat(property);
                     if (value < 0.0F) {
                         negative(field.getName());
                         continue;
@@ -365,7 +366,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 Villages.MINIMUM_UPKEEP_STRING,
                 new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
                 new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString(),
-                new Change(Long.valueOf(minMoneyDrained)).getChangeString(),
+                new Change(Long.parseLong(minMoneyDrained)).getChangeString(),
                 maxDrainModifier,
                 drainCumulateFigure));
     }
@@ -420,6 +421,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             question3.detach();
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("GuardManagementQuestion.class"));
 
+            // TODO - Replace with accessing values from here?
             CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
             CtField freeTiles = new CtField(CtClass.longType, "FREE_TILES", villages);
             freeTiles.setModifiers(Modifier.setPublic(Modifier.STATIC));
@@ -454,20 +456,29 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             getVillageId.setBody("{return this.villageId;}");
             getVillageId.setModifiers(Modifier.PUBLIC);
             guardPlan.addMethod(getVillageId);
+            // TODO - Move here.
             CtField output = new CtField(CtClass.booleanType, "output", guardPlan);
             output.setModifiers(Modifier.setPublic(Modifier.STATIC));
             guardPlan.addField(output, CtField.Initializer.constant(false));
+            
+            HookManager manager = HookManager.getInstance();
 
-            CtMethod getTimeLeft = guardPlan.getDeclaredMethod("getTimeLeft");
-            getTimeLeft.insertAfter(GuardPlanStrings.getTimeLeft);
+            manager.registerHook("com.wurmonline.server.villages.GuardPlan",
+                    "getTimeLeft",
+                    "()J",
+                    () -> GuardPlanMethods::getTimeLeft);
 
-            CtMethod getMonthlyCost = guardPlan.getDeclaredMethod("getMonthlyCost");
-            getMonthlyCost.setBody(GuardPlanStrings.getMonthlyCost);
+            manager.registerHook("com.wurmonline.server.villages.GuardPlan",
+                    "getMonthlyCost",
+                    "()J",
+                    () -> GuardPlanMethods::getMonthlyCost);
 
-            CtMethod pollUpkeep = guardPlan.getDeclaredMethod("pollUpkeep");
-            pollUpkeep.setBody(GuardPlanStrings.pollUpkeep);
+            manager.registerHook("com.wurmonline.server.villages.GuardPlan",
+                    "pollUpkeep",
+                    "()Z",
+                    () -> GuardPlanMethods::pollUpkeep);
 
-            HookManager.getInstance().registerHook("com.wurmonline.server.villages.DbGuardPlan", "load", "()V", () -> (proxy, method, args) -> {
+            manager.registerHook("com.wurmonline.server.villages.DbGuardPlan", "load", "()V", () -> (proxy, method, args) -> {
                 createOrPass();
                 Field upkeepBuffer = proxy.getClass().getField("upkeepBuffer");
                 Connection dbcon = null;
@@ -489,7 +500,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 return method.invoke(proxy, args);
             });
 
-            HookManager.getInstance().registerHook("com.wurmonline.server.villages.DbGuardPlan", "create", "()V", () -> (proxy, method, args) -> {
+            manager.registerHook("com.wurmonline.server.villages.DbGuardPlan", "create", "()V", () -> (proxy, method, args) -> {
                 createOrPass();
                 Connection dbcon = null;
                 PreparedStatement ps = null;
@@ -509,7 +520,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 return method.invoke(proxy, args);
             });
 
-            HookManager.getInstance().registerHook("com.wurmonline.server.villages.DbGuardPlan", "updateGuardPlan", "(IJI)V", () -> (proxy, method, args) -> {
+            manager.registerHook("com.wurmonline.server.villages.DbGuardPlan", "updateGuardPlan", "(IJI)V", () -> (proxy, method, args) -> {
                 createOrPass();
                 Field upkeepBuffer = proxy.getClass().getField("upkeepBuffer");
                 Connection dbcon = null;
@@ -530,7 +541,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 return method.invoke(proxy, args);
             });
 
-            HookManager.getInstance().registerHook("com.wurmonline.server.villages.DbGuardPlan", "delete", "()V", () -> (proxy, method, args) -> {
+            manager.registerHook("com.wurmonline.server.villages.DbGuardPlan", "delete", "()V", () -> (proxy, method, args) -> {
                 createOrPass();
                 Connection dbcon = null;
                 PreparedStatement ps = null;
@@ -549,10 +560,10 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
                 return method.invoke(proxy, args);
             });
 
-            HookManager.getInstance().registerHook("com.wurmonline.server.questions.QuestionParser", "parseGuardRentalQuestion", "(Lcom/wurmonline/server/questions/GuardManagementQuestion;)V",
+            manager.registerHook("com.wurmonline.server.questions.QuestionParser", "parseGuardRentalQuestion", "(Lcom/wurmonline/server/questions/GuardManagementQuestion;)V",
                     () -> GuardPlanStrings::parseGuardRentalQuestion);
 
-            HookManager.getInstance().registerHook("com.wurmonline.server.villages.GuardPlan", "getCostForGuards", "(I)J",
+            manager.registerHook("com.wurmonline.server.villages.GuardPlan", "getCostForGuards", "(I)J",
                     () -> GuardPlanStrings::getCostForGuards);
 
         } catch (NotFoundException | CannotCompileException | IOException ex) {
