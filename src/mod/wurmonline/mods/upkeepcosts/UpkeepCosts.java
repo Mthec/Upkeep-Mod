@@ -5,6 +5,7 @@ import com.wurmonline.server.ServerDirInfo;
 import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Change;
+import com.wurmonline.server.questions.ParseGuardRentalQuestion;
 import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.utils.DbUtilities;
 import com.wurmonline.server.villages.GuardPlan;
@@ -33,7 +34,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerStartedListener {
-    protected static final Logger logger = Logger.getLogger(UpkeepCosts.class.getName());
+    private static final Logger logger = Logger.getLogger(UpkeepCosts.class.getName());
     public long tile_cost;
     public long tile_upkeep;
     public long perimeter_cost;
@@ -52,6 +53,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     public long min_drain;
     public float max_drain_modifier;
     public float drain_modifier_increment;
+    public boolean use_per_server_settings;
     ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCostsBundle");
     private boolean createdDb = false;
     public static boolean output = false;
@@ -79,6 +81,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
         min_drain = 7500;
         max_drain_modifier = 5.0F;
         drain_modifier_increment = 0.5F;
+        use_per_server_settings = true;
     }
     
     @Override
@@ -243,25 +246,27 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
     }
 
     void lateConfigure () {
-        try {
-            File file = getFile();
-            boolean created = file.getParentFile().mkdirs();
-            if (!created) {
-                created = file.createNewFile();
-            }
+        if (use_per_server_settings) {
+            try {
+                File file = getFile();
+                boolean created = file.getParentFile().mkdirs();
+                if (!created) {
+                    created = file.createNewFile();
+                }
 
-            if (created) {
-                saveUpkeep();
-                return;
-            }
+                if (created) {
+                    saveUpkeep();
+                    return;
+                }
 
-            FileInputStream stream = new FileInputStream(file.toString());
-            Properties properties = new Properties();
-            properties.load(stream);
-            configure(properties);
-        } catch (IOException ex) {
-            logger.warning(messages.getString("load_properties_error"));
-            ex.printStackTrace();
+                FileInputStream stream = new FileInputStream(file.toString());
+                Properties properties = new Properties();
+                properties.load(stream);
+                configure(properties);
+            } catch (IOException ex) {
+                logger.warning(messages.getString("load_properties_error"));
+                ex.printStackTrace();
+            }
         }
     }
 
@@ -443,14 +448,8 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             guardPlan.addField(upkeepBufferField, "0.0D");
 
             // Draining
-            guardPlan.getDeclaredField("minMoneyDrained").setModifiers(Modifier.setPublic(Modifier.STATIC));
-            CtMethod getMoneyDrained = guardPlan.getDeclaredMethod("getMoneyDrained");
-            getMoneyDrained.setBody(GuardPlanStrings.getMoneyDrained);
-
             guardPlan.getDeclaredField("maxDrainModifier").setModifiers(Modifier.setPublic(Modifier.STATIC));
             guardPlan.getDeclaredField("drainCumulateFigure").setModifiers(Modifier.setPublic(Modifier.STATIC));
-            CtMethod drainMoney = guardPlan.getDeclaredMethod("drainMoney");
-            drainMoney.setBody(GuardPlanStrings.drainMoney);
 
             CtMethod getVillageId = new CtMethod(CtPrimitiveType.intType, "getVillageId", null, guardPlan);
             getVillageId.setBody("{return this.villageId;}");
@@ -464,9 +463,24 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             HookManager manager = HookManager.getInstance();
 
             manager.registerHook("com.wurmonline.server.villages.GuardPlan",
+                    "getMoneyDrained",
+                    "()J",
+                    () -> GuardPlanMethods::getMoneyDrained);
+
+            manager.registerHook("com.wurmonline.server.villages.GuardPlan",
+                    "drainMoney",
+                    "()J",
+                    () -> GuardPlanMethods::drainMoney);
+
+            manager.registerHook("com.wurmonline.server.villages.GuardPlan",
                     "getTimeLeft",
                     "()J",
                     () -> GuardPlanMethods::getTimeLeft);
+
+            manager.registerHook("com.wurmonline.server.villages.GuardPlan",
+                    "getCostForGuards",
+                    "(I)J",
+                    () -> GuardPlanMethods::getCostForGuards);
 
             manager.registerHook("com.wurmonline.server.villages.GuardPlan",
                     "getMonthlyCost",
@@ -561,10 +575,7 @@ public class UpkeepCosts implements WurmMod, Configurable, PreInitable, ServerSt
             });
 
             manager.registerHook("com.wurmonline.server.questions.QuestionParser", "parseGuardRentalQuestion", "(Lcom/wurmonline/server/questions/GuardManagementQuestion;)V",
-                    () -> GuardPlanStrings::parseGuardRentalQuestion);
-
-            manager.registerHook("com.wurmonline.server.villages.GuardPlan", "getCostForGuards", "(I)J",
-                    () -> GuardPlanStrings::getCostForGuards);
+                    () -> ParseGuardRentalQuestion::parseGuardRentalQuestion);
 
         } catch (NotFoundException | CannotCompileException | IOException ex) {
             ex.printStackTrace();

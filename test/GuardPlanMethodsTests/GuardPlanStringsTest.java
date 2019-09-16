@@ -1,4 +1,4 @@
-package GuardPlanStringsTests;
+package GuardPlanMethodsTests;
 
 import javassist.*;
 import org.junit.Before;

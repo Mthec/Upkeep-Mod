@@ -57,7 +57,6 @@ public class GuardPlanMethods {
         guardPlan.drainModifier = Math.min(getFloat("maxDrainModifier", guardPlan), getFloat("drainCumulateFigure", guardPlan) + guardPlan.drainModifier);
         guardPlan.saveDrainMod();
         return moneyToDrain;
-        
     }
 
     public static Object getMonthlyCost(Object o, Method method, Object[] args) throws NoSuchFieldException, IllegalAccessException {

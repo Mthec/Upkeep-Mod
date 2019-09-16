@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 public class ParseGuardRentalQuestion {
     private static final Logger logger = Logger.getLogger(ParseGuardRentalQuestion.class.getName());
 
-    static Object parseGuardRentalQuestion(Object o, Method method, Object[] args) {
+    public static Object parseGuardRentalQuestion(Object o, Method method, Object[] args) {
         GuardManagementQuestion question = (GuardManagementQuestion)args[0];
         Properties props;
         try {
