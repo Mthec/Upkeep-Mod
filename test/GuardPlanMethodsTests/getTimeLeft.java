@@ -1,6 +1,6 @@
 package GuardPlanMethodsTests;
 
-public class getTimeLeft extends GuardPlanStringsTest {
+public class getTimeLeft extends GuardPlanMethodsTest {
 //    private long specialValue = 29030400000L;
 //
 //    public getTimeLeft() {

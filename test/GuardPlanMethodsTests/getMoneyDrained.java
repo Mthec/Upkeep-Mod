@@ -1,6 +1,6 @@
 package GuardPlanMethodsTests;
 
-public class getMoneyDrained extends GuardPlanStringsTest {
+public class getMoneyDrained extends GuardPlanMethodsTest {
 //    public getMoneyDrained() {
 //        methodsToTest.put("public long getMoneyDrained()", GuardPlanStrings.getMoneyDrained);
 //    }

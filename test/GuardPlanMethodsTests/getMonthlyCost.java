@@ -1,6 +1,6 @@
 package GuardPlanMethodsTests;
 
-public class getMonthlyCost extends GuardPlanStringsTest {
+public class getMonthlyCost extends GuardPlanMethodsTest {
 //    public getMonthlyCost() {
 //        methodsToTest.put("public long getMonthlyCost()", GuardPlanStrings.getMonthlyCost);
 //    }

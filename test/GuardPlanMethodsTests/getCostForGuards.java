@@ -1,6 +1,6 @@
 package GuardPlanMethodsTests;
 
-public class getCostForGuards extends GuardPlanStringsTest {
+public class getCostForGuards extends GuardPlanMethodsTest {
 //    @Test
 //    public void testGuardCosts() throws Throwable {
 //        // Probably don't need a test for this, but going to do it just as a precaution.

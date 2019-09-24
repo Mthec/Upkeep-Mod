@@ -1,7 +1,7 @@
 package GuardPlanMethodsTests;
 
 // TODO - Also test logging?
-public class pollUpkeep extends GuardPlanStringsTest {
+public class pollUpkeep extends GuardPlanMethodsTest {
 //    public pollUpkeep() {
 //        methodsToTest.put("public boolean pollUpkeep()", GuardPlanStrings.pollUpkeep);
 //    }

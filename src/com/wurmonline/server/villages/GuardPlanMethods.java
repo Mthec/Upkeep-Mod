@@ -16,11 +16,15 @@ public class GuardPlanMethods {
     private static final Logger logger = Logger.getLogger(GuardPlanMethods.class.getName());
 
     private static float getFloat(String fieldName, GuardPlan guardPlan) throws NoSuchFieldException, IllegalAccessException {
-        return GuardPlan.class.getDeclaredField(fieldName).getFloat(guardPlan);
+        Field field = GuardPlan.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.getFloat(guardPlan);
     }
 
     private static long getLong(String fieldName, GuardPlan guardPlan) throws NoSuchFieldException, IllegalAccessException {
-        return GuardPlan.class.getDeclaredField(fieldName).getLong(guardPlan);
+        Field field = GuardPlan.class.getDeclaredField(fieldName);
+        field.setAccessible(true);
+        return field.getLong(guardPlan);
     }
 
     private static long getVillagesLong(String fieldName) throws NoSuchFieldException, IllegalAccessException {
