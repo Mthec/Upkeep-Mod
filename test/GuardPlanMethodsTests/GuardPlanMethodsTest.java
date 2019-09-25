@@ -15,8 +15,8 @@ import java.lang.reflect.Field;
 import static org.mockito.Mockito.mock;
 
 abstract class GuardPlanMethodsTest {
-    static Class<?> VillagesClass = Village.class;
-    static Class<?> GuardPlanClass = GuardPlan.class;
+    static ClassReflector VillagesClass;
+    static ClassReflector GuardPlanClass = new ClassReflector(GuardPlan.class);
     static Class<?> LocalServer;
     static Class<?> KingsShop;
     Object gPlan;
@@ -81,7 +81,8 @@ abstract class GuardPlanMethodsTest {
         villages.addField(CtField.make("public static int FREE_GUARDS = 0;", villages));
         villages.addMethod(CtMethod.make("public static void addVillage(com.wurmonline.server.villages.Village newVillage) {villages.put((Object)Integer.valueOf(newVillage.getId()), (java.lang.Object)newVillage);}", villages));
 //         Needs to be constructed at least once to be usable?
-        VillagesClass = villages.toClass();
+        Class<?> VillagesClazz = villages.toClass();
+        VillagesClass = new ClassReflector(VillagesClazz);
     }
 
     private void createOther(ClassPool pool) throws Exception {
