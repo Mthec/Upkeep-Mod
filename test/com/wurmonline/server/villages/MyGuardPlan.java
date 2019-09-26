@@ -3,9 +3,10 @@ package com.wurmonline.server.villages;
 public class MyGuardPlan extends GuardPlan {
     public long guardPlanDrained = 0L;
     public boolean savedDrainMod = false;
-    int updateGuardPlan1 = -1;
-    long updateGuardPlan2 = -1;
-    int updateGuardPlan3 = -1;
+    public int updateGuardPlan1 = -1;
+    public long updateGuardPlan2 = -1;
+    public int updateGuardPlan3 = -1;
+    public Long monthlyCost = null;
 
     public MyGuardPlan(int aVillageId) {
         super(aVillageId);
@@ -61,5 +62,13 @@ public class MyGuardPlan extends GuardPlan {
     @Override
     void drainGuardPlan(long l) {
         guardPlanDrained = l;
+    }
+
+    @Override
+    public long getMonthlyCost() {
+        if (monthlyCost != null)
+            return monthlyCost;
+        else
+            return super.getMonthlyCost();
     }
 }

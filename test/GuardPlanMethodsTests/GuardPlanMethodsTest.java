@@ -2,15 +2,15 @@ package GuardPlanMethodsTests;
 
 import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
-import com.wurmonline.server.villages.GuardPlan;
-import com.wurmonline.server.villages.MyGuardPlan;
-import com.wurmonline.server.villages.Village;
-import com.wurmonline.server.villages.Villages;
+import com.wurmonline.server.villages.*;
 import javassist.*;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.junit.Before;
+import org.mockito.internal.util.reflection.FieldSetter;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.mockito.Mockito.mock;
 
@@ -19,7 +19,7 @@ abstract class GuardPlanMethodsTest {
     static ClassReflector GuardPlanClass = new ClassReflector(GuardPlan.class);
     static Class<?> LocalServer;
     static Class<?> KingsShop;
-    Object gPlan;
+    MyGuardPlan gPlan;
     Village gVillage;
     protected int villageId = 0;
     private static boolean firstRun = true;
@@ -49,17 +49,14 @@ abstract class GuardPlanMethodsTest {
 
 
         gVillage = mock(Village.class);
+        Map<Long, Citizen> citizens = new HashMap<>();
+        FieldSetter.setField(gVillage, Village.class.getDeclaredField("citizens"), citizens);
         Villages.class.getDeclaredMethod("addVillage", Village.class).invoke(null, gVillage);
         Field isPermanent = Village.class.getDeclaredField("isPermanent");
         Field modifiers = Field.class.getDeclaredField("modifiers");
         modifiers.setAccessible(true);
         modifiers.setInt(isPermanent, isPermanent.getModifiers() & ~Modifier.FINAL);
         isPermanent.setBoolean(gVillage, false);
-        //Village.class.getDeclaredField("numTiles").setLong(gVillage, 110L);
-//        Village.class.getDeclaredField("perimeterNonFreeTiles").setLong(gVillage, 0L);
-//        Village.class.getDeclaredField("tooManyCitizens").setBoolean(gVillage, false);
-//        Village.class.getDeclaredField("isCapital").setBoolean(gVillage, false);
-//        Village.class.getDeclaredField("broadcastMessage").set(gVillage, new ArrayList<>());
 
         Villages.class.getDeclaredField("FREE_TILES").setLong(null, 0L);
         Villages.class.getDeclaredField("TILE_UPKEEP").setLong(null, 0L);

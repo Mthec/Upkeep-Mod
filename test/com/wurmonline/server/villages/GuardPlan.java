@@ -105,7 +105,7 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
         return Servers.localServer.isChallengeOrEpicServer() ? (long)(numGuards * 10000 + (numGuards - 1) * numGuards / 2 * 100 * 50) : (long)numGuards * Villages.GUARD_UPKEEP;
     }
 
-    public final long getMonthlyCost() {
+    public long getMonthlyCost() {
         if (!Servers.localServer.isUpkeep()) {
             return 0L;
         } else {

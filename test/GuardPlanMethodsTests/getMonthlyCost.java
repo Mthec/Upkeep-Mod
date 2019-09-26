@@ -1,28 +1,51 @@
 package GuardPlanMethodsTests;
 
-import com.wurmonline.server.villages.Village;
+import com.wurmonline.server.villages.MyCitizen;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class getMonthlyCost extends GuardPlanMethodsTest {
+import java.io.IOException;
+
+import static org.mockito.Mockito.when;
+
+public class getMonthlyCost extends GuardPlanMethodsTest {    
     private long call() throws Exception {
         return (long)GuardPlanClass.getDeclaredMethod("getMonthlyCost").invoke(gPlan);
+    }
+
+    private int numTiles() {
+        return gVillage.getDiameterX() * gVillage.getDiameterY();
+    }
+
+    private void setDimensions(int width, int height) {
+        gVillage.startx = width;
+        gVillage.starty = height;
+    }
+
+    private void setTilesToZero() {
+        gVillage.startx = -1;
+        gVillage.starty = -1;
+    }
+    
+    private void fillMaxCitizens() throws IOException {
+        for (long i = 0; i <= gVillage.getMaxCitizens(); ++i)
+            gVillage.citizens.put(i, new MyCitizen());
     }
 
     @Test
     public void testTileUpkeep() throws Exception {
         long tileUpkeep = 10L;
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
-        long upkeep = Village.class.getDeclaredField("numTiles").getLong(gVillage) * tileUpkeep;
+        long upkeep = numTiles() * tileUpkeep;
         Assert.assertEquals(upkeep, call());
     }
 
     @Test
     public void testPerimeterUpkeep() throws Exception {
         long perimeter_upkeep = 10L;
-        long perimeter_tiles = 100L;
+        int perimeter_tiles = 100;
         VillagesClass.getDeclaredField("PERIMETER_UPKEEP").setLong(null, perimeter_upkeep);
-        Village.class.getDeclaredField("perimeterNonFreeTiles").setLong(gVillage, perimeter_tiles);
+        when(gVillage.getPerimeterNonFreeTiles()).thenReturn(perimeter_tiles);
         long upkeep = perimeter_tiles * perimeter_upkeep;
         Assert.assertEquals(upkeep, call());
     }
@@ -36,7 +59,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     @Test
     public void testZeroFreeTiles() throws Exception {
         long tileUpkeep = 10L;
-        long numTiles = Village.class.getDeclaredField("numTiles").getLong(gVillage);
+        long numTiles = numTiles();
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
         VillagesClass.getDeclaredField("FREE_TILES").setLong(null, 0L);
         long upkeep = numTiles * tileUpkeep;
@@ -46,7 +69,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     @Test
     public void testLowFreeTiles() throws Exception {
         long tileUpkeep = 10L;
-        long numTiles = Village.class.getDeclaredField("numTiles").getLong(gVillage);
+        long numTiles = numTiles();
         long freeTiles = numTiles - 100L;
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
         VillagesClass.getDeclaredField("FREE_TILES").setLong(null, freeTiles);
@@ -57,7 +80,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     @Test
     public void testOverFreeTiles() throws Exception {
         long tileUpkeep = 10L;
-        long numTiles = Village.class.getDeclaredField("numTiles").getLong(gVillage);
+        long numTiles = numTiles();
         long freeTiles = numTiles + 100L;
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
         VillagesClass.getDeclaredField("FREE_TILES").setLong(null, freeTiles);
@@ -66,10 +89,10 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
 
     @Test
     public void testZeroFreePerimeters() throws Exception {
-        Village.class.getDeclaredField("numTiles").setLong(gVillage, 0L);
+        setTilesToZero();
         long perimeter_upkeep = 10L;
-        long perimeterNonFreeTiles = 100L;
-        Village.class.getDeclaredField("perimeterNonFreeTiles").setLong(gVillage, perimeterNonFreeTiles);
+        int perimeterNonFreeTiles = 100;
+        when(gVillage.getPerimeterNonFreeTiles()).thenReturn(perimeterNonFreeTiles);
         VillagesClass.getDeclaredField("PERIMETER_UPKEEP").setLong(null, perimeter_upkeep);
         VillagesClass.getDeclaredField("FREE_PERIMETER").setLong(null, 0L);
         long upkeep = perimeterNonFreeTiles * perimeter_upkeep;
@@ -78,10 +101,10 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
 
     @Test
     public void testLowFreePerimeters() throws Exception {
-        Village.class.getDeclaredField("numTiles").setLong(gVillage, 0L);
+        setTilesToZero();
         long perimeter_upkeep = 10L;
-        long perimeterNonFreeTiles = 100L;
-        Village.class.getDeclaredField("perimeterNonFreeTiles").setLong(gVillage, perimeterNonFreeTiles);
+        int perimeterNonFreeTiles = 100;
+        when(gVillage.getPerimeterNonFreeTiles()).thenReturn(perimeterNonFreeTiles);
         long freePerimeter = perimeterNonFreeTiles - 100L;
         VillagesClass.getDeclaredField("PERIMETER_UPKEEP").setLong(null, perimeter_upkeep);
         VillagesClass.getDeclaredField("FREE_PERIMETER").setLong(null, freePerimeter);
@@ -91,10 +114,10 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
 
     @Test
     public void testOverFreePerimeters() throws Exception {
-        Village.class.getDeclaredField("numTiles").setLong(gVillage, 0L);
+        setTilesToZero();
         long perimeter_upkeep = 10L;
-        long perimeterNonFreeTiles = 100L;
-        Village.class.getDeclaredField("perimeterNonFreeTiles").setLong(gVillage, perimeterNonFreeTiles);
+        int perimeterNonFreeTiles = 100;
+        when(gVillage.getPerimeterNonFreeTiles()).thenReturn(perimeterNonFreeTiles);
         long freePerimeter = perimeterNonFreeTiles + 100L;
         VillagesClass.getDeclaredField("PERIMETER_UPKEEP").setLong(null, perimeter_upkeep);
         VillagesClass.getDeclaredField("FREE_PERIMETER").setLong(null, freePerimeter);
@@ -111,9 +134,9 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     @Test
     public void testCapital() throws Exception {
         long tileUpkeep = 10L;
-        long numTiles = Village.class.getDeclaredField("numTiles").getLong(gVillage);
+        long numTiles = numTiles();
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
-        Village.class.getDeclaredField("isCapital").setBoolean(gVillage, true);
+        when(gVillage.isCapital()).thenReturn(true);
         long upkeep = (numTiles * tileUpkeep) / 2;
         Assert.assertEquals(upkeep, call());
     }
@@ -121,9 +144,9 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     @Test
     public void testTooManyCitizens() throws Exception {
         long tileUpkeep = 10L;
-        long numTiles = Village.class.getDeclaredField("numTiles").getLong(gVillage);
+        long numTiles = numTiles();
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
-        Village.class.getDeclaredField("tooManyCitizens").setBoolean(gVillage, true);
+        fillMaxCitizens();
         long upkeep = (numTiles * tileUpkeep) * 2;
         Assert.assertEquals(upkeep, call());
     }
@@ -131,10 +154,10 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     @Test
     public void testTooManyCitizensAndCapital() throws Exception {
         long tileUpkeep = 10L;
-        long numTiles = Village.class.getDeclaredField("numTiles").getLong(gVillage);
+        long numTiles = numTiles();
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
-        Village.class.getDeclaredField("tooManyCitizens").setBoolean(gVillage, true);
-        Village.class.getDeclaredField("isCapital").setBoolean(gVillage, true);
+        fillMaxCitizens();
+        when(gVillage.isCapital()).thenReturn(true);
         long upkeep = (numTiles * tileUpkeep);
         Assert.assertEquals(upkeep, call());
     }
@@ -142,7 +165,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     @Test
     public void testMinimumUpkeep() throws Exception {
         long tileUpkeep = 10L;
-        long numTiles = Village.class.getDeclaredField("numTiles").getLong(gVillage);
+        long numTiles = numTiles();
         long minimumUpkeep = 2000L;
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
         VillagesClass.getDeclaredField("MINIMUM_UPKEEP").setLong(null, minimumUpkeep);
@@ -155,7 +178,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     public void testDifferentSizes() throws Exception {
         long tileUpkeep = 100L;
         long perimeterUpkeep = 10L;
-        long perimeterNonFreeTiles;
+        int perimeterNonFreeTiles;
         long numTiles;
         long upkeep;
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
@@ -163,9 +186,9 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
         for (int i = 11; i <= 100; i++) {
             for (int p = 0; p <= 10; p++) {
                 numTiles = i * i;
-                Village.class.getDeclaredField("numTiles").setLong(gVillage, numTiles);
-                perimeterNonFreeTiles = 100L;
-                Village.class.getDeclaredField("perimeterNonFreeTiles").setLong(gVillage, perimeterNonFreeTiles);
+                setDimensions(i, i);
+                perimeterNonFreeTiles = 100;
+                when(gVillage.getPerimeterNonFreeTiles()).thenReturn(perimeterNonFreeTiles);
                 upkeep = (numTiles * tileUpkeep) + (perimeterNonFreeTiles * perimeterUpkeep);
                 Assert.assertEquals(upkeep, call());
             }

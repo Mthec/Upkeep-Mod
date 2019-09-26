@@ -36,7 +36,7 @@ public class getMoneyDrained extends GuardPlanMethodsTest {
     public void testDrainModifier() throws Exception {
         long moneyLeft = GuardPlanClass.getDeclaredField("moneyLeft").getLong(gPlan);
         long monthlyCost = 10000L;
-        GuardPlanClass.getDeclaredField("monthlyCost").setLong(gPlan, monthlyCost);
+        gPlan.monthlyCost = monthlyCost;
         long minMoneyDrained = GuardPlanClass.getDeclaredField("minMoneyDrained").getLong(gPlan);
         assert monthlyCost * 0.15 > minMoneyDrained;
         assert monthlyCost * 0.15 < moneyLeft;
@@ -73,13 +73,13 @@ public class getMoneyDrained extends GuardPlanMethodsTest {
         GuardPlanClass.getDeclaredField("minMoneyDrained").setLong(gPlan, 0L);
 
         long monthlyCost = 1000L;
-        GuardPlanClass.getDeclaredField("monthlyCost").setLong(gPlan, monthlyCost);
+        gPlan.monthlyCost = monthlyCost;
         Assert.assertEquals((long)(monthlyCost * 0.15), call());
         monthlyCost = 250000L;
-        GuardPlanClass.getDeclaredField("monthlyCost").setLong(gPlan, monthlyCost);
+        gPlan.monthlyCost = monthlyCost;
         Assert.assertEquals((long)(monthlyCost * 0.15), call());
         monthlyCost = 50000000L;
-        GuardPlanClass.getDeclaredField("monthlyCost").setLong(gPlan, monthlyCost);
+        gPlan.monthlyCost = monthlyCost;
         Assert.assertEquals((long)(monthlyCost * 0.15), call());
 
     }
