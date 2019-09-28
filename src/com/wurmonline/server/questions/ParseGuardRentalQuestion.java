@@ -6,6 +6,7 @@ import com.wurmonline.server.economy.Economy;
 import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.villages.Villages;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 
 import java.io.IOException;
@@ -88,11 +89,7 @@ public class ParseGuardRentalQuestion {
                 if (nums != plan.getNumHiredGuards()) {
                     int freeGuards = 0;
 
-                    try {
-                        freeGuards = Villages.class.getDeclaredField("FREE_GUARDS").getInt(null);
-                    } catch (NoSuchFieldException | IllegalAccessException e) {
-                        e.printStackTrace();
-                    }
+                    freeGuards = UpkeepCosts.free_guards;
 
                     boolean aboveMax = nums > GuardPlan.getMaxGuards(responder.getCitizenVillage());
                     nums = Math.min(nums, GuardPlan.getMaxGuards(responder.getCitizenVillage()));

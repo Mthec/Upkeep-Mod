@@ -49,7 +49,6 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
 
     // Custom
     public double upkeepBuffer = 0.0D;
-    public boolean output = true;
     public int getVillageId() {
         return villageId;
     }

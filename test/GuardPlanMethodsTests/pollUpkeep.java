@@ -1,6 +1,7 @@
 package GuardPlanMethodsTests;
 
 import com.wurmonline.server.villages.Village;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -332,7 +333,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
         gPlan.monthlyCost = 4500L;
         double upkeepD = (double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
         assert upkeepD < 1.0D && upkeepD * 2 > 1.0D;
-        GuardPlanClass.getDeclaredField("output").setBoolean(gPlan, true);
+        UpkeepCosts.output = true;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
         call();
@@ -349,8 +350,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     public void testBroadcastOnWeekFreeMessage() throws Exception {
         GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 604L);
         gPlan.monthlyCost = 1L;
-        VillagesClass.getDeclaredField("FREE_TILES").setLong(null, 10);
-        VillagesClass.getDeclaredField("FREE_PERIMETER").setLong(null, 100);
+        UpkeepCosts.free_tiles = 10;
+        UpkeepCosts.free_perimeter = 100;
         assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 604800000L;
         call();
         Assert.assertEquals("You may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
@@ -363,8 +364,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     public void testBroadcastOnDayFreeMessage() throws Exception {
         GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 60L);
         gPlan.monthlyCost = 1L;
-        VillagesClass.getDeclaredField("FREE_TILES").setLong(null, 10);
-        VillagesClass.getDeclaredField("FREE_PERIMETER").setLong(null, 100);
+        UpkeepCosts.free_tiles = 10;
+        UpkeepCosts.free_perimeter = 100;
         assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 86400000L;
         call();
         Assert.assertEquals("Or you may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
@@ -376,8 +377,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     @Test
     public void testBroadcastOnHourFreeMessage() throws Exception {
         GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 6L);
-        VillagesClass.getDeclaredField("FREE_TILES").setLong(null, 10);
-        VillagesClass.getDeclaredField("FREE_PERIMETER").setLong(null, 100);
+        UpkeepCosts.free_tiles = 10;
+        UpkeepCosts.free_perimeter = 100;
         assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 3600000L;
         call();
         Assert.assertEquals("Or you may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",

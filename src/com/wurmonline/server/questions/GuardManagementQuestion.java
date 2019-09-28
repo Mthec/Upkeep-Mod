@@ -14,7 +14,7 @@ import com.wurmonline.server.economy.Economy;
 import com.wurmonline.server.economy.MonetaryConstants;
 import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Villages;
-import org.gotti.wurmunlimited.modloader.ReflectionUtil;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 
 import java.util.Properties;
 
@@ -50,13 +50,7 @@ public final class GuardManagementQuestion extends Question implements TimeConst
                     buf.append("text{text=\"This means that the upkeep should last for about " + left * 28.0F + " days.\"}");
                     if (Servers.localServer.PVPSERVER || Servers.localServer.id == 3) {
                         buf.append("text{text=\"A drain would cost " + new Change(plan.getMoneyDrained()).getChangeShortString() + ".\"};");
-                        long minimumDrain = 7500;
-                        try {
-                            minimumDrain = ReflectionUtil.getPrivateField(null, GuardPlan.class.getDeclaredField("minMoneyDrained"));
-                        } catch (IllegalAccessException | NoSuchFieldException e) {
-                            e.printStackTrace();
-                            logger.warning("Could not get minimum drain value.");
-                        }
+                        long minimumDrain = UpkeepCosts.min_drain;
                         if (plan.moneyLeft < minimumDrain * 5) {
                             buf.append("text{type='bold';text='Since minimum drain is " + new Change(minimumDrain).getChangeShortString() + " it may be drained to disband in less than 5 days.'}");
                         }
@@ -82,11 +76,7 @@ public final class GuardManagementQuestion extends Question implements TimeConst
 
                 int freeGuards = 0;
 
-                try {
-                    freeGuards = Math.max(0, Villages.class.getDeclaredField("FREE_GUARDS").getInt(null) - plan.getNumHiredGuards());
-                } catch (IllegalAccessException | NoSuchFieldException e) {
-                    e.printStackTrace();
-                }
+                freeGuards = Math.max(0, UpkeepCosts.free_guards - plan.getNumHiredGuards());
 
                 buf.append("text{text=\"How many guards do you wish to have? You currently have " + plan.getNumHiredGuards() + ", can hire " + freeGuards + " more for free and may hire up to " + GuardPlan.getMaxGuards(this.getResponder().getCitizenVillage()) + ".\"};input{text=\"" + plan.getNumHiredGuards() + "\";id=\"hired\"}; ");
                 buf.append("text{text=\"\"};");

@@ -35,6 +35,7 @@ import com.wurmonline.server.zones.Zone;
 import com.wurmonline.server.zones.Zones;
 import com.wurmonline.shared.constants.CounterTypes;
 import com.wurmonline.shared.util.StringUtilities;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 
 import java.awt.geom.Rectangle2D.Float;
 import java.io.IOException;
@@ -142,33 +143,15 @@ public final class VillageFoundationQuestion extends Question implements Village
     }
 
     private int getFreeTiles() {
-        try {
-            return (int)Villages.class.getDeclaredField("FREE_TILES").getLong(Villages.class);
-        } catch(NoSuchFieldException | IllegalAccessException ex) {
-            logger.warning("Free tiles not available, reason follows:");
-            ex.printStackTrace();
-            return 0;
-        }
+        return (int)UpkeepCosts.free_tiles;
     }
 
     private int getFreePerimeter() {
-        try {
-            return (int)Villages.class.getDeclaredField("FREE_PERIMETER").getLong(Villages.class);
-        } catch(NoSuchFieldException | IllegalAccessException ex) {
-            logger.warning("Free perimeter not available, reason follows:");
-            ex.printStackTrace();
-            return 0;
-        }
+        return (int)UpkeepCosts.free_perimeter;
     }
 
     private int getFreeGuards() {
-        try {
-            return Villages.class.getDeclaredField("FREE_GUARDS").getInt(Villages.class);
-        } catch(NoSuchFieldException | IllegalAccessException ex) {
-            logger.warning("Free guards not available, reason follows:");
-            ex.printStackTrace();
-            return 0;
-        }
+        return UpkeepCosts.free_guards;
     }
 
     private int getChargeableTiles() {
@@ -1523,14 +1506,7 @@ public final class VillageFoundationQuestion extends Question implements Village
     }
 
     private int getNonFreeGuards(int numGuards) {
-        int nonFreeGuards = numGuards;
-        try {
-            nonFreeGuards = Math.max(0, numGuards - Villages.class.getDeclaredField("FREE_GUARDS").getInt(null));
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        return nonFreeGuards;
+        return Math.max(0, numGuards - getFreeGuards());
     }
 
     private void addGuardCost(StringBuilder buf) {

@@ -2,6 +2,7 @@ package GuardPlanMethodsTests;
 
 import com.wurmonline.server.villages.GuardPlanMethods;
 import com.wurmonline.server.villages.MyGuardPlan;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.junit.Test;
 
@@ -18,8 +19,8 @@ public class DrainMoney extends GuardPlanMethodsTest {
     @Test
     public void testMaxDrain() throws Throwable {
         float maxDrainModifier = 9.0f;
-        ReflectionUtil.setPrivateField(gPlan, GuardPlanClass.getDeclaredField("drainCumulateFigure"), 10.0f);
-        ReflectionUtil.setPrivateField(gPlan, GuardPlanClass.getDeclaredField("maxDrainModifier"), maxDrainModifier);
+        UpkeepCosts.drain_modifier_increment = 10.0f;
+        UpkeepCosts.max_drain_modifier = maxDrainModifier;
         InvocationHandler handler = GuardPlanMethods::drainMoney;
         Method method = mock(Method.class);
 

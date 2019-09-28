@@ -4,6 +4,7 @@ import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.villages.*;
 import javassist.*;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.junit.Before;
 import org.mockito.internal.util.reflection.FieldSetter;
@@ -40,7 +41,6 @@ abstract class GuardPlanMethodsTest {
         upkeepCounter.setInt(gPlan, 0);
         upkeepCounter.setAccessible(false);
         ReflectionUtil.setPrivateField(gPlan, GuardPlanClass.getDeclaredField("upkeepBuffer"), 0.0D);
-        ReflectionUtil.setPrivateField(gPlan, GuardPlanClass.getDeclaredField("output"), false);
         ReflectionUtil.setPrivateField(gPlan, GuardPlanClass.getDeclaredField("type"), 0);
         Field lastSentWarning = GuardPlanClass.getDeclaredField("lastSentWarning");
         lastSentWarning.setAccessible(true);
@@ -58,9 +58,9 @@ abstract class GuardPlanMethodsTest {
         modifiers.setInt(isPermanent, isPermanent.getModifiers() & ~Modifier.FINAL);
         isPermanent.setBoolean(gVillage, false);
 
-        Villages.class.getDeclaredField("FREE_TILES").setLong(null, 0L);
+        UpkeepCosts.free_tiles = 0L;
         Villages.class.getDeclaredField("TILE_UPKEEP").setLong(null, 0L);
-        Villages.class.getDeclaredField("FREE_PERIMETER").setLong(null, 0L);
+        UpkeepCosts.free_perimeter = 0L;
         Villages.class.getDeclaredField("PERIMETER_UPKEEP").setLong(null, 0L);
         Villages.class.getDeclaredField("MINIMUM_UPKEEP").setLong(null, 0L);
         Villages.class.getDeclaredField("GUARD_UPKEEP").setLong(null, 0L);
@@ -73,9 +73,6 @@ abstract class GuardPlanMethodsTest {
         CtClass villages = pool.get("com.wurmonline.server.villages.Villages");
         villages.defrost();
 
-        villages.addField(CtField.make("public static long FREE_TILES = 0L;", villages));
-        villages.addField(CtField.make("public static long FREE_PERIMETER = 0L;", villages));
-        villages.addField(CtField.make("public static int FREE_GUARDS = 0;", villages));
         villages.addMethod(CtMethod.make("public static void addVillage(com.wurmonline.server.villages.Village newVillage) {villages.put((Object)Integer.valueOf(newVillage.getId()), (java.lang.Object)newVillage);}", villages));
 //         Needs to be constructed at least once to be usable?
         Class<?> VillagesClazz = villages.toClass();

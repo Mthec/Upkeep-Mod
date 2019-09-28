@@ -1,6 +1,7 @@
 package GuardPlanMethodsTests;
 
 import com.wurmonline.server.villages.MyCitizen;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -61,7 +62,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
         long tileUpkeep = 10L;
         long numTiles = numTiles();
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
-        VillagesClass.getDeclaredField("FREE_TILES").setLong(null, 0L);
+        UpkeepCosts.free_tiles = 0L;
         long upkeep = numTiles * tileUpkeep;
         Assert.assertEquals(upkeep, call());
     }
@@ -72,7 +73,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
         long numTiles = numTiles();
         long freeTiles = numTiles - 100L;
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
-        VillagesClass.getDeclaredField("FREE_TILES").setLong(null, freeTiles);
+        UpkeepCosts.free_tiles = freeTiles;
         long upkeep = (numTiles - freeTiles) * tileUpkeep;
         Assert.assertEquals(upkeep, call());
     }
@@ -83,7 +84,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
         long numTiles = numTiles();
         long freeTiles = numTiles + 100L;
         VillagesClass.getDeclaredField("TILE_UPKEEP").setLong(null, tileUpkeep);
-        VillagesClass.getDeclaredField("FREE_TILES").setLong(null, freeTiles);
+        UpkeepCosts.free_tiles = freeTiles;
         Assert.assertEquals(0L, call());
     }
 
@@ -94,7 +95,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
         int perimeterNonFreeTiles = 100;
         when(gVillage.getPerimeterNonFreeTiles()).thenReturn(perimeterNonFreeTiles);
         VillagesClass.getDeclaredField("PERIMETER_UPKEEP").setLong(null, perimeter_upkeep);
-        VillagesClass.getDeclaredField("FREE_PERIMETER").setLong(null, 0L);
+        UpkeepCosts.free_perimeter = 0L;
         long upkeep = perimeterNonFreeTiles * perimeter_upkeep;
         Assert.assertEquals(upkeep, call());
     }
@@ -107,7 +108,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
         when(gVillage.getPerimeterNonFreeTiles()).thenReturn(perimeterNonFreeTiles);
         long freePerimeter = perimeterNonFreeTiles - 100L;
         VillagesClass.getDeclaredField("PERIMETER_UPKEEP").setLong(null, perimeter_upkeep);
-        VillagesClass.getDeclaredField("FREE_PERIMETER").setLong(null, freePerimeter);
+        UpkeepCosts.free_perimeter = freePerimeter;
         long upkeep = (perimeterNonFreeTiles - freePerimeter) * perimeter_upkeep;
         Assert.assertEquals(upkeep, call());
     }
@@ -120,7 +121,7 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
         when(gVillage.getPerimeterNonFreeTiles()).thenReturn(perimeterNonFreeTiles);
         long freePerimeter = perimeterNonFreeTiles + 100L;
         VillagesClass.getDeclaredField("PERIMETER_UPKEEP").setLong(null, perimeter_upkeep);
-        VillagesClass.getDeclaredField("FREE_PERIMETER").setLong(null, freePerimeter);
+        UpkeepCosts.free_perimeter = freePerimeter;
         Assert.assertEquals(0L, call());
     }
 

@@ -15,31 +15,7 @@ import java.util.logging.Logger;
 public class GuardPlanMethods {
     private static final Logger logger = Logger.getLogger(GuardPlanMethods.class.getName());
 
-    private static float getFloat(String fieldName, GuardPlan guardPlan) throws NoSuchFieldException, IllegalAccessException {
-        Field field = GuardPlan.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return field.getFloat(guardPlan);
-    }
-
-    private static long getLong(String fieldName, GuardPlan guardPlan) throws NoSuchFieldException, IllegalAccessException {
-        Field field = GuardPlan.class.getDeclaredField(fieldName);
-        field.setAccessible(true);
-        return field.getLong(guardPlan);
-    }
-
-    private static long getVillagesLong(String fieldName) throws NoSuchFieldException, IllegalAccessException {
-        return Villages.class.getDeclaredField(fieldName).getLong(null);
-    }
-
-    private static int getVillagesInt(String fieldName) throws NoSuchFieldException, IllegalAccessException {
-        return Villages.class.getDeclaredField(fieldName).getInt(null);
-    }
-
-    private static boolean getVillagesBoolean(String fieldName) throws NoSuchFieldException, IllegalAccessException {
-        return Villages.class.getDeclaredField(fieldName).getBoolean(null);
-    }
-
-    public static Object getMoneyDrained(Object o, Method method, Object[] args) throws NoSuchFieldException, IllegalAccessException {
+    public static Object getMoneyDrained(Object o, Method method, Object[] args) {
         GuardPlan guardPlan = (GuardPlan)o;
         try {
             if (guardPlan.getVillage().isPermanent) {
@@ -50,29 +26,28 @@ public class GuardPlanMethods {
             return 0L;
         }
 
-        float minMoneyDrained = (float)getLong("minMoneyDrained", guardPlan);
-        return (long)Math.min((float)guardPlan.moneyLeft, (1.0F + guardPlan.drainModifier) * Math.max(minMoneyDrained, (float)guardPlan.getMonthlyCost() * 0.15F));
+        return (long)Math.min((float)guardPlan.moneyLeft, (1.0F + guardPlan.drainModifier) * Math.max(UpkeepCosts.min_drain, (float)guardPlan.getMonthlyCost() * 0.15F));
     }
 
-    public static Object drainMoney(Object o, Method method, Object[] args) throws NoSuchFieldException, IllegalAccessException {
+    public static Object drainMoney(Object o, Method method, Object[] args) {
         GuardPlan guardPlan = (GuardPlan)o;
         long moneyToDrain = guardPlan.getMoneyDrained();
         guardPlan.drainGuardPlan(guardPlan.moneyLeft - moneyToDrain);
-        guardPlan.drainModifier = Math.min(getFloat("maxDrainModifier", guardPlan), getFloat("drainCumulateFigure", guardPlan) + guardPlan.drainModifier);
+        guardPlan.drainModifier = Math.min(UpkeepCosts.max_drain_modifier, UpkeepCosts.drain_modifier_increment + guardPlan.drainModifier);
         guardPlan.saveDrainMod();
         return moneyToDrain;
     }
 
-    public static Object getMonthlyCost(Object o, Method method, Object[] args) throws NoSuchFieldException, IllegalAccessException {
+    public static Object getMonthlyCost(Object o, Method method, Object[] args) {
         if (!Servers.localServer.isUpkeep()) {
             return 0L;
         } else {
             GuardPlan guardPlan = (GuardPlan)o;
             try {
                 Village vill = guardPlan.getVillage();
-                long tiles = (long)vill.getNumTiles() - getVillagesLong("FREE_TILES");
+                long tiles = (long)vill.getNumTiles() - UpkeepCosts.free_tiles;
                 long cost = tiles > 0L ? tiles * Villages.TILE_UPKEEP : 0L;
-                long perimeter = (long)vill.getPerimeterNonFreeTiles() - getVillagesLong("FREE_PERIMETER");
+                long perimeter = (long)vill.getPerimeterNonFreeTiles() - UpkeepCosts.free_perimeter;
                 cost += perimeter > 0L ? perimeter * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP : 0L;
                 cost += GuardPlan.getCostForGuards(guardPlan.hiredGuardNumber);
                 if (vill.isCapital()) {
@@ -103,13 +78,9 @@ public class GuardPlanMethods {
 
     public static Object getCostForGuards(Object o, Method method, Object[] args) {
         int nonFreeGuards = (int)args[0];
-        try {
-            nonFreeGuards = Math.max(0, nonFreeGuards - getVillagesInt("FREE_GUARDS"));
-            if (!getVillagesBoolean("EPIC_UPKEEP_SCALING")) {
-                return nonFreeGuards * Villages.GUARD_UPKEEP;
-            }
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
+        nonFreeGuards = Math.max(0, nonFreeGuards - UpkeepCosts.free_guards);
+        if (!UpkeepCosts.epic_guard_upkeep_scaling) {
+            return nonFreeGuards * Villages.GUARD_UPKEEP;
         }
         return Servers.localServer.isChallengeOrEpicServer() ? (nonFreeGuards * Villages.GUARD_UPKEEP + (nonFreeGuards - 1) * nonFreeGuards / 2 * 100 * 50) : nonFreeGuards * Villages.GUARD_UPKEEP;
     }
@@ -183,8 +154,8 @@ public class GuardPlanMethods {
                 if (tl < 3600000L) {
                     try {
                         guardPlan.getVillage().broadCastAlert("The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.", (byte)2);
-                        if (getVillagesLong("FREE_TILES") > 0 || getVillagesLong("FREE_PERIMETER") > 0)
-                            guardPlan.getVillage().broadCastAlert("Or you may resize to remove any non-free tiles.  You can have up to " + getVillagesLong("FREE_TILES") + " free tiles and " + getVillagesLong("FREE_PERIMETER") + " free perimeter tiles.", (byte)2);
+                        if (UpkeepCosts.free_tiles > 0 || UpkeepCosts.free_perimeter > 0)
+                            guardPlan.getVillage().broadCastAlert("Or you may resize to remove any non-free tiles.  You can have up to " + UpkeepCosts.free_tiles + " free tiles and " + UpkeepCosts.free_perimeter + " free perimeter tiles.", (byte)2);
                         guardPlan.getVillage().broadCastAlert("Any traders who are citizens of " + guardPlan.getVillage().getName() + " will disband without refund.");
                     } catch (NoSuchVillageException var9) {
                         logger.log(Level.WARNING, "No Village? " + guardPlan.villageId, var9);
@@ -195,8 +166,8 @@ public class GuardPlanMethods {
 
                         try {
                             guardPlan.getVillage().broadCastAlert("The village is disbanding within 24 hours. You may add upkeep money to the village coffers at the token.", (byte)2);
-                            if (getVillagesLong("FREE_TILES") > 0 || getVillagesLong("FREE_PERIMETER") > 0)
-                                guardPlan.getVillage().broadCastAlert("Or you may resize to remove any non-free tiles.  You can have up to " + getVillagesLong("FREE_TILES") + " free tiles and " + getVillagesLong("FREE_PERIMETER") + " free perimeter tiles.", (byte)2);
+                            if (UpkeepCosts.free_tiles > 0 || UpkeepCosts.free_perimeter > 0)
+                                guardPlan.getVillage().broadCastAlert("Or you may resize to remove any non-free tiles.  You can have up to " + UpkeepCosts.free_tiles + " free tiles and " + UpkeepCosts.free_perimeter + " free perimeter tiles.", (byte)2);
                             guardPlan.getVillage().broadCastAlert("Any traders who are citizens of " + guardPlan.getVillage().getName() + " will disband without refund.");
                         } catch (NoSuchVillageException var8) {
                             logger.log(Level.WARNING, "No Village? " + guardPlan.villageId, var8);
@@ -207,8 +178,8 @@ public class GuardPlanMethods {
 
                     try {
                         guardPlan.getVillage().broadCastAlert("The village is disbanding within one week. Due to the low morale guardPlan gives, the guards have ceased their general maintenance of structures.", (byte)4);
-                        if (getVillagesLong("FREE_TILES") > 0 || getVillagesLong("FREE_PERIMETER") > 0)
-                            guardPlan.getVillage().broadCastAlert("You may resize to remove any non-free tiles.  You can have up to " + getVillagesLong("FREE_TILES") + " free tiles and " + getVillagesLong("FREE_PERIMETER") + " free perimeter tiles.", (byte)4);
+                        if (UpkeepCosts.free_tiles > 0 || UpkeepCosts.free_perimeter > 0)
+                            guardPlan.getVillage().broadCastAlert("You may resize to remove any non-free tiles.  You can have up to " + UpkeepCosts.free_tiles + " free tiles and " + UpkeepCosts.free_perimeter + " free perimeter tiles.", (byte)4);
                         guardPlan.getVillage().broadCastAlert("Any traders who are citizens of " + guardPlan.getVillage().getName() + " will disband without refund.");
                     } catch (NoSuchVillageException var7) {
                         logger.log(Level.WARNING, "No Village? " + guardPlan.villageId, var7);
