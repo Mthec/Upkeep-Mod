@@ -1,5 +1,6 @@
 package GuardPlanMethodsTests;
 
+import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.GuardPlanMethods;
 import com.wurmonline.server.villages.MyGuardPlan;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
@@ -26,13 +27,13 @@ public class DrainMoney extends GuardPlanMethodsTest {
 
         handler.invoke(gPlan, method, args);
         verify(method, never()).invoke(gPlan, method, args);
-        assertEquals(maxDrainModifier, ReflectionUtil.getPrivateField(gPlan, GuardPlanClass.getDeclaredField("drainModifier")), 0.0001f);
+        assertEquals(maxDrainModifier, ReflectionUtil.getPrivateField(gPlan, GuardPlan.class.getDeclaredField("drainModifier")), 0.0001f);
     }
 
     @Test
     public void testDrainGuardPlanCalled() throws Throwable {
-        long moneyLeft = GuardPlanClass.getDeclaredField("moneyLeft").getLong(gPlan);
-        long moneyDrained = (long)GuardPlanClass.getDeclaredMethod("getMoneyDrained").invoke(gPlan);
+        long moneyLeft = gPlan.moneyLeft;
+        long moneyDrained = gPlan.getMoneyDrained();
         InvocationHandler handler = GuardPlanMethods::drainMoney;
         Method method = mock(Method.class);
 
@@ -56,15 +57,15 @@ public class DrainMoney extends GuardPlanMethodsTest {
         InvocationHandler handler = GuardPlanMethods::drainMoney;
         Method method = mock(Method.class);
 
-        assertEquals(GuardPlanClass.getDeclaredMethod("getMoneyDrained").invoke(gPlan), handler.invoke(gPlan, method, args));
+        assertEquals(gPlan.getMoneyDrained(), handler.invoke(gPlan, method, args));
         verify(method, never()).invoke(gPlan, method, args);
     }
 
     @Test
     public void testDrainIncrements() throws Throwable {
-        long drainCost = (long)GuardPlanClass.getDeclaredMethod("getMoneyDrained").invoke(gPlan);
-        ReflectionUtil.setPrivateField(gPlan, GuardPlanClass.getDeclaredField("drainCumulateFigure"), 0.5f);
-        ReflectionUtil.setPrivateField(gPlan, GuardPlanClass.getDeclaredField("maxDrainModifier"), 5.0f);
+        long drainCost = gPlan.getMoneyDrained();
+        UpkeepCosts.drain_modifier_increment = 0.5f;
+        UpkeepCosts.max_drain_modifier = 5.0f;
         InvocationHandler handler = GuardPlanMethods::drainMoney;
         Method method = mock(Method.class);
 

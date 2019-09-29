@@ -17,13 +17,12 @@ import static org.mockito.Mockito.mock;
 
 abstract class GuardPlanMethodsTest {
     static ClassReflector VillagesClass;
-    static ClassReflector GuardPlanClass = new ClassReflector(GuardPlan.class);
-    static Class<?> LocalServer;
     static Class<?> KingsShop;
     MyGuardPlan gPlan;
     Village gVillage;
-    protected int villageId = 0;
+    private int villageId = 0;
     private static boolean firstRun = true;
+    private ServerEntry localServer = new ServerEntry();
 
     @Before
     public void setUp() throws Exception {
@@ -35,17 +34,16 @@ abstract class GuardPlanMethodsTest {
         }
         Servers.localServer = mock(ServerEntry.class);
         gPlan = new MyGuardPlan(villageId);
+
         // Reset values
-        Field upkeepCounter = GuardPlanClass.getDeclaredField("upkeepCounter");
+        Field upkeepCounter = GuardPlan.class.getDeclaredField("upkeepCounter");
         upkeepCounter.setAccessible(true);
         upkeepCounter.setInt(gPlan, 0);
-        upkeepCounter.setAccessible(false);
-        ReflectionUtil.setPrivateField(gPlan, GuardPlanClass.getDeclaredField("upkeepBuffer"), 0.0D);
-        ReflectionUtil.setPrivateField(gPlan, GuardPlanClass.getDeclaredField("type"), 0);
-        Field lastSentWarning = GuardPlanClass.getDeclaredField("lastSentWarning");
+        ReflectionUtil.setPrivateField(gPlan, GuardPlan.class.getDeclaredField("upkeepBuffer"), 0.0D);
+        ReflectionUtil.setPrivateField(gPlan, GuardPlan.class.getDeclaredField("type"), 0);
+        Field lastSentWarning = GuardPlan.class.getDeclaredField("lastSentWarning");
         lastSentWarning.setAccessible(true);
         lastSentWarning.setLong(gPlan, 0L);
-        lastSentWarning.setAccessible(false);
 
 
         gVillage = mock(Village.class);
@@ -59,13 +57,17 @@ abstract class GuardPlanMethodsTest {
         isPermanent.setBoolean(gVillage, false);
 
         UpkeepCosts.free_tiles = 0L;
-        Villages.class.getDeclaredField("TILE_UPKEEP").setLong(null, 0L);
+        Villages.TILE_UPKEEP = 0L;
         UpkeepCosts.free_perimeter = 0L;
-        Villages.class.getDeclaredField("PERIMETER_UPKEEP").setLong(null, 0L);
+        Villages.PERIMETER_UPKEEP = 0L;
         Villages.class.getDeclaredField("MINIMUM_UPKEEP").setLong(null, 0L);
-        Villages.class.getDeclaredField("GUARD_UPKEEP").setLong(null, 0L);
+        Villages.GUARD_UPKEEP = 0L;
 
-        LocalServer.getDeclaredField("isUpkeep").setBoolean(null, true);
+        localServer = new ServerEntry();
+        ReflectionUtil.setPrivateField(null, Servers.class.getDeclaredField("localServer"), localServer);
+        setUpkeep(true);
+        ReflectionUtil.setPrivateField(localServer, ServerEntry.class.getDeclaredField("PVPSERVER"), false);
+        ReflectionUtil.setPrivateField(localServer, ServerEntry.class.getDeclaredField("challengeServer"), false);
         KingsShop.getDeclaredField("money").setLong(null, 0L);
     }
 
@@ -80,21 +82,6 @@ abstract class GuardPlanMethodsTest {
     }
 
     private void createOther(ClassPool pool) throws Exception {
-        CtClass Servers = pool.getCtClass("com.wurmonline.server.Servers");
-        Servers.defrost();
-        CtClass localServer = pool.makeClass("com.wurmonline.server.ServerEntry");
-        localServer.defrost();
-        new CtNewConstructor();
-        localServer.addConstructor(CtNewConstructor.make("public Server(){}", localServer));
-        //Servers.addField(CtField.make("public static com.wurmonline.server.ServerEntry localServer = new com.wurmonline.server.ServerEntry();", Servers));
-        localServer.addField(CtField.make("public static boolean isUpkeep = true;", localServer));
-        localServer.addField(CtField.make("public boolean PVPSERVER = false;", localServer));
-        localServer.addMethod(CtMethod.make("public boolean isUpkeep() {return isUpkeep;}", localServer));
-        localServer.addMethod(CtMethod.make("public boolean isChallengeOrEpicServer() {return false;}", localServer));
-
-        Servers.toClass();
-        LocalServer = localServer.toClass();
-
         CtClass Economy = pool.makeClass("com.wurmonline.server.economy.Economy");
         new CtNewConstructor();
         Economy.addConstructor(CtNewConstructor.make("public Economy(){}", Economy));
@@ -110,5 +97,9 @@ abstract class GuardPlanMethodsTest {
 
         Economy.toClass();
         KingsShop = Shop.toClass();
+    }
+
+    protected void setUpkeep(boolean isUpkeep) throws NoSuchFieldException, IllegalAccessException {
+        ReflectionUtil.setPrivateField(localServer, ServerEntry.class.getDeclaredField("upkeep"), isUpkeep);
     }
 }

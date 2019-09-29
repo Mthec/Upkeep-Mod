@@ -1,12 +1,13 @@
 package GuardPlanMethodsTests;
 
 import com.wurmonline.server.villages.Village;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class getMoneyDrained extends GuardPlanMethodsTest {
-    private long call() throws Exception {
-        return (long)GuardPlanClass.getDeclaredMethod("getMoneyDrained").invoke(gPlan);
+    private long call() {
+        return gPlan.getMoneyDrained();
     }
 
     @Test
@@ -24,9 +25,9 @@ public class getMoneyDrained extends GuardPlanMethodsTest {
     @Test
     public void testLowMoneyLeft() throws Exception {
         long moneyLeft = 10L;
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
-        long monthlyCost = (long)GuardPlanClass.getDeclaredMethod("getMonthlyCost").invoke(gPlan);
-        long minMoneyDrained = GuardPlanClass.getDeclaredField("minMoneyDrained").getLong(gPlan);
+        gPlan.moneyLeft = moneyLeft;
+        long monthlyCost = gPlan.getMonthlyCost();
+        long minMoneyDrained = UpkeepCosts.min_drain;
         assert moneyLeft < minMoneyDrained;
         assert moneyLeft < monthlyCost * 0.15;
         Assert.assertEquals(moneyLeft, call());
@@ -34,23 +35,23 @@ public class getMoneyDrained extends GuardPlanMethodsTest {
 
     @Test
     public void testDrainModifier() throws Exception {
-        long moneyLeft = GuardPlanClass.getDeclaredField("moneyLeft").getLong(gPlan);
+        long moneyLeft = gPlan.moneyLeft;
         long monthlyCost = 10000L;
         gPlan.monthlyCost = monthlyCost;
-        long minMoneyDrained = GuardPlanClass.getDeclaredField("minMoneyDrained").getLong(gPlan);
+        long minMoneyDrained = UpkeepCosts.min_drain;
         assert monthlyCost * 0.15 > minMoneyDrained;
         assert monthlyCost * 0.15 < moneyLeft;
         Assert.assertEquals((long)(monthlyCost * 0.15 * 1.0), call());
-        GuardPlanClass.getDeclaredField("drainModifier").setFloat(gPlan, 0.5f);
+        gPlan.drainModifier = 0.5f;
         Assert.assertEquals((long)(monthlyCost * 0.15 * 1.5), call());
     }
 
     @Test
     public void testBelowMinimumDrain() throws Exception {
-        long moneyLeft = GuardPlanClass.getDeclaredField("moneyLeft").getLong(gPlan);
-        long monthlyCost = (long)GuardPlanClass.getDeclaredMethod("getMonthlyCost").invoke(gPlan);
+        long moneyLeft = gPlan.moneyLeft;
+        long monthlyCost = gPlan.getMonthlyCost();
         long minMoneyDrained = 1000L;
-        GuardPlanClass.getDeclaredField("minMoneyDrained").setLong(gPlan, minMoneyDrained);
+        UpkeepCosts.min_drain = minMoneyDrained;
         assert minMoneyDrained > monthlyCost * 0.15;
         assert minMoneyDrained < moneyLeft;
         Assert.assertEquals(minMoneyDrained, call());
@@ -58,10 +59,10 @@ public class getMoneyDrained extends GuardPlanMethodsTest {
 
     @Test
     public void testAboveMinimumDrain() throws Exception {
-        long moneyLeft = GuardPlanClass.getDeclaredField("moneyLeft").getLong(gPlan);
-        long monthlyCost = (long)GuardPlanClass.getDeclaredMethod("getMonthlyCost").invoke(gPlan);
+        long moneyLeft = gPlan.moneyLeft;
+        long monthlyCost = gPlan.getMonthlyCost();
         long minMoneyDrained = 1L;
-        GuardPlanClass.getDeclaredField("minMoneyDrained").setLong(gPlan, minMoneyDrained);
+        UpkeepCosts.min_drain = minMoneyDrained;
         assert minMoneyDrained < monthlyCost * 0.15;
         assert minMoneyDrained < moneyLeft;
         Assert.assertEquals((long)(monthlyCost * 0.15), call());
@@ -69,8 +70,8 @@ public class getMoneyDrained extends GuardPlanMethodsTest {
 
     @Test
     public void test15Percent() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 99999999999L);
-        GuardPlanClass.getDeclaredField("minMoneyDrained").setLong(gPlan, 0L);
+        gPlan.moneyLeft = 99999999999L;
+        UpkeepCosts.min_drain = 0L;
 
         long monthlyCost = 1000L;
         gPlan.monthlyCost = monthlyCost;

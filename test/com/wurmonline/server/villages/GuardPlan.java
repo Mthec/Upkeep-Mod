@@ -39,11 +39,11 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
     private long lastSentWarning = 0L;
     private static final long polltime = 500000L;
     long lastDrained = 0L;
-    float drainModifier = 0.0F;
+    public float drainModifier = 0.0F;
     private static float maxDrainModifier = 5.0F;
     private static float drainCumulateFigure = 0.5F;
     private int upkeepCounter = 0;
-    int hiredGuardNumber = 0;
+    public int hiredGuardNumber = 0;
     private static final int maxGuards;
     private static long minMoneyDrained = 7500L;
 
@@ -51,6 +51,10 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
     public double upkeepBuffer = 0.0D;
     public int getVillageId() {
         return villageId;
+    }
+
+    public static long getCostForGuards(int numGuards) {
+        return (long)GuardPlanMethods.getCostForGuards(null, null, new Object[] { numGuards });
     }
 
     GuardPlan(int aType, int aVillageId) {
@@ -78,7 +82,7 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
         }
     }
 
-    public final long getTimeLeft() {
+    public long getTimeLeft() {
         try {
             if (this.getVillage().isPermanent || !Servers.localServer.isUpkeep()) {
                 return 29030400000L;
@@ -100,9 +104,9 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
         return this.moneyLeft;
     }
 
-    public static final long getCostForGuards(int numGuards) {
-        return Servers.localServer.isChallengeOrEpicServer() ? (long)(numGuards * 10000 + (numGuards - 1) * numGuards / 2 * 100 * 50) : (long)numGuards * Villages.GUARD_UPKEEP;
-    }
+//    public static final long getCostForGuards(int numGuards) {
+//        return Servers.localServer.isChallengeOrEpicServer() ? (long)(numGuards * 10000 + (numGuards - 1) * numGuards / 2 * 100 * 50) : (long)numGuards * Villages.GUARD_UPKEEP;
+//    }
 
     public long getMonthlyCost() {
         if (!Servers.localServer.isUpkeep()) {
@@ -526,7 +530,7 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
         return this.lastDrained + 86400000L - System.currentTimeMillis();
     }
 
-    public final long getMoneyDrained() {
+    public long getMoneyDrained() {
         try {
             if (this.getVillage().isPermanent) {
                 return 0L;

@@ -1,5 +1,14 @@
 package com.wurmonline.server.villages;
 
+import org.mockito.stubbing.Answer;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 public class MyGuardPlan extends GuardPlan {
     public long guardPlanDrained = 0L;
     public boolean savedDrainMod = false;
@@ -65,10 +74,35 @@ public class MyGuardPlan extends GuardPlan {
     }
 
     @Override
+    public long getMoneyDrained() {
+        return (long)GuardPlanMethods.getMoneyDrained(this, null, null);
+    }
+
+    @Override
     public long getMonthlyCost() {
         if (monthlyCost != null)
             return monthlyCost;
         else
-            return super.getMonthlyCost();
+            return (long)GuardPlanMethods.getMonthlyCost(this, null, null);
+    }
+
+    @Override
+    public long drainMoney() {
+        return (long)GuardPlanMethods.drainMoney(this, null, null);
+    }
+
+    @Override
+    public long getTimeLeft() {
+        try {
+            Method method = mock(Method.class);
+            when(method.invoke(any(), any())).thenAnswer((Answer<Long>)invocationOnMock -> MyGuardPlan.super.getTimeLeft());
+            return (long)GuardPlanMethods.getTimeLeft(this, method, null);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public boolean pollUpkeep() throws NoSuchFieldException, IllegalAccessException {
+        return (boolean)GuardPlanMethods.pollUpkeep(this, null, null);
     }
 }

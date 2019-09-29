@@ -1,5 +1,6 @@
 package GuardPlanMethodsTests;
 
+import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Village;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.junit.Assert;
@@ -32,15 +33,15 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     }
 
     private boolean call() throws Exception {
-        return (boolean)GuardPlanClass.getDeclaredMethod("pollUpkeep").invoke(gPlan);
+        return gPlan.pollUpkeep();
     }
 
     private void causeDisband() throws Exception {
         long moneyLeft = 10L;
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        gPlan.moneyLeft = moneyLeft;;
         long upkeep = 100000L;
         gPlan.monthlyCost = upkeep;
-        double calculatedUpkeep = (double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
+        double calculatedUpkeep = gPlan.calculateUpkeep(true);
         assert moneyLeft - calculatedUpkeep <= 0L;
     }
 
@@ -54,7 +55,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testFalseIfNotUpkeep() throws Exception {
-        LocalServer.getDeclaredField("isUpkeep").setBoolean(null, false);
+        setUpkeep(false);
         // Cause disband to make certain test is accurate.
         causeDisband();
         Assert.assertEquals(false, call());
@@ -69,24 +70,24 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     @Test
     public void testFalseOnPass() throws Exception {
         long moneyLeft = 1000L;
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        gPlan.moneyLeft = moneyLeft;;
         long upkeep = 100L;
         gPlan.monthlyCost = upkeep;
-        assert moneyLeft - (double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true) > 0L;
+        assert moneyLeft - gPlan.calculateUpkeep(true) > 0L;
         Assert.assertEquals(false, call());
     }
 
     @Test
     public void testGuardPlanUpdated() throws Exception {
         long moneyLeft = 1000L;
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        gPlan.moneyLeft = moneyLeft;;
         long upkeep = 1L;
         gPlan.monthlyCost = upkeep;
         int type = 1;
-        GuardPlanClass.getDeclaredField("type").setInt(gPlan, type);
-        long newMoneyLeft = moneyLeft - (long)(double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
+        gPlan.type = type;
+        long newMoneyLeft = moneyLeft - (long)gPlan.calculateUpkeep(true);
         int guards = 3;
-        GuardPlanClass.getDeclaredField("hiredGuardNumber").setInt(gPlan, guards);
+        gPlan.hiredGuardNumber = guards;
         call();
         Assert.assertEquals("type value incorrect:", type, gPlan.updateGuardPlan1);
         Assert.assertEquals("newMoneyLeft value incorrect:", newMoneyLeft, gPlan.updateGuardPlan2);
@@ -97,13 +98,13 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     public void testGuardPlanUpdatedWhenUpkeepLow() throws Exception {
         // Trigger sub-1L upkeep to test that Math.max(1L, upkeep) does not apply.
         long moneyLeft = 1000L;
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, moneyLeft);
+        gPlan.moneyLeft = moneyLeft;;
         long upkeep = 1L;
         gPlan.monthlyCost = upkeep;
         int type = 1;
-        GuardPlanClass.getDeclaredField("type").setInt(gPlan, type);
+        gPlan.type = type;
         int guards = 3;
-        GuardPlanClass.getDeclaredField("hiredGuardNumber").setInt(gPlan, guards);
+        gPlan.hiredGuardNumber = guards;
         call();
         Assert.assertEquals("type value incorrect:", type, gPlan.updateGuardPlan1);
         Assert.assertEquals("moneyLeft value incorrect:", moneyLeft, gPlan.updateGuardPlan2);
@@ -113,7 +114,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     @Test
     public void testUpkeepCounterIncremented() throws Exception {
         call();
-        Field upkeepCounter = GuardPlanClass.getDeclaredField("upkeepCounter");
+        Field upkeepCounter = GuardPlan.class.getDeclaredField("upkeepCounter");
         upkeepCounter.setAccessible(true);
         int value = upkeepCounter.getInt(gPlan);
         upkeepCounter.setAccessible(false);
@@ -122,7 +123,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testUpkeepCounterResetAt2() throws Exception {
-        Field upkeepCounter = GuardPlanClass.getDeclaredField("upkeepCounter");
+        Field upkeepCounter = GuardPlan.class.getDeclaredField("upkeepCounter");
         upkeepCounter.setAccessible(true);
         upkeepCounter.setInt(gPlan, 1);
         call();
@@ -135,7 +136,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     @Test
     public void testKingsShopUpdated() throws Exception {
         gPlan.monthlyCost = 25000L;
-        double upkeep = (double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
+        double upkeep = gPlan.calculateUpkeep(true);
         // Two calls to trigger shop update.
         call();
         call();
@@ -148,7 +149,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     @Test
     public void testKingsShopUpdatedWhenUpkeep0() throws Exception {
         gPlan.monthlyCost = 0L;
-        double upkeep = (double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
+        double upkeep = gPlan.calculateUpkeep(true);
         assert upkeep == 0.0D;
         // Two calls to trigger shop update.
         call();
@@ -161,9 +162,9 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testNoBroadcastOnGreaterThanWeekLeft() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 6040L);
+        gPlan.moneyLeft = 6040L;
         gPlan.monthlyCost = 1L;
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) > 604800000L;
+        assert gPlan.getTimeLeft() > 604800000L;
         call();
         doAnswer(new Answer<Void>() {
             @Override
@@ -179,9 +180,9 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnWeekLeft() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 604L);
+        gPlan.moneyLeft = 604L;
         gPlan.monthlyCost = 1L;
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 604800000L;
+        assert gPlan.getTimeLeft() < 604800000L;
         call();
         Assert.assertEquals("The village is disbanding within one week. Due to the low morale this gives, the guards have ceased their general maintenance of structures.",
                 broadcastMessages.get(0));
@@ -195,11 +196,11 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testDelayedBroadcastOnWeekLeft() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 604L);
+        gPlan.moneyLeft = 604L;
         gPlan.monthlyCost = 2L;
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 604800000L;
+        assert gPlan.getTimeLeft() < 604800000L;
         long lastSentWarning = System.currentTimeMillis();
-        Field field = GuardPlanClass.getDeclaredField("lastSentWarning");
+        Field field = GuardPlan.class.getDeclaredField("lastSentWarning");
         field.setAccessible(true);
         field.setLong(gPlan, lastSentWarning);
         field.setAccessible(false);
@@ -212,9 +213,9 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnDayTimeLeft() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 60L);
+        gPlan.moneyLeft = 60L;
         gPlan.monthlyCost = 1L;
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 86400000L;
+        assert gPlan.getTimeLeft() < 86400000L;
         call();
         Assert.assertEquals("The village is disbanding within 24 hours. You may add upkeep money to the village coffers at the token.",
                 broadcastMessages.get(0));
@@ -228,10 +229,10 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testDelayedBroadcastOnDayTimeLeft() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 60L);
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 86400000L;
+        gPlan.moneyLeft = 60L;
+        assert gPlan.getTimeLeft() < 86400000L;
         long lastSentWarning = System.currentTimeMillis();
-        Field field = GuardPlanClass.getDeclaredField("lastSentWarning");
+        Field field = GuardPlan.class.getDeclaredField("lastSentWarning");
         field.setAccessible(true);
         field.setLong(gPlan, lastSentWarning);
         field.setAccessible(false);
@@ -244,8 +245,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnHourTimeLeft() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 6L);
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 3600000L;
+        gPlan.moneyLeft = 6L;
+        assert gPlan.getTimeLeft() < 3600000L;
         call();
         Assert.assertEquals("The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.",
                 broadcastMessages.get(0));
@@ -259,10 +260,10 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testNotDelayedBroadcastOnHourLeft() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 6L);
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 3600000L;
+        gPlan.moneyLeft = 6L;
+        assert gPlan.getTimeLeft() < 3600000L;
         long lastSentWarning = System.currentTimeMillis();
-        Field field = GuardPlanClass.getDeclaredField("lastSentWarning");
+        Field field = GuardPlan.class.getDeclaredField("lastSentWarning");
         field.setAccessible(true);
         field.setLong(gPlan, lastSentWarning);
         field.setAccessible(false);
@@ -291,47 +292,47 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     @Test
     public void testUpkeepBufferIncrementedProperly() throws Exception {
         gPlan.monthlyCost = 4600L;
-        double calculatedUpkeep = (double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
+        double calculatedUpkeep = gPlan.calculateUpkeep(true);
         assert calculatedUpkeep < 1.0D && calculatedUpkeep * 2 > 1.0D;
         call();
-        Assert.assertEquals(calculatedUpkeep, GuardPlanClass.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.001);
+        Assert.assertEquals(calculatedUpkeep, gPlan.upkeepBuffer, 0.001);
         call();
-        Assert.assertEquals((calculatedUpkeep * 2) - 1.0, GuardPlanClass.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.001);
+        Assert.assertEquals((calculatedUpkeep * 2) - 1.0, gPlan.upkeepBuffer, 0.001);
     }
 
     @Test
     public void testUpkeepBufferLessThan1() throws Exception {
         gPlan.monthlyCost = 10L;
-        double calculatedUpkeep = (double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
+        double calculatedUpkeep = gPlan.calculateUpkeep(true);
         assert calculatedUpkeep * 100 < 1.0D;
         for (int i = 0; i <= 100; i++){
             call();
-            Assert.assertTrue(GuardPlanClass.getDeclaredField("upkeepBuffer").getDouble(gPlan) < 1.0D);
+            Assert.assertTrue(gPlan.upkeepBuffer < 1.0D);
         }
     }
 
     @Test
     public void testCorrectUpkeepRemoved() throws Exception {
-        long moneyLeft = GuardPlanClass.getDeclaredField("moneyLeft").getLong(gPlan);
+        long moneyLeft = gPlan.moneyLeft;
         gPlan.monthlyCost = 2420L;
         // Silly, I know.
-        assert (long)((double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true) * 1000.0D) == 500L;
+        assert (long)(gPlan.calculateUpkeep(true) * 1000.0D) == 500L;
         call();
         Assert.assertEquals(moneyLeft, gPlan.updateGuardPlan2);
-        Assert.assertEquals(0.5D, GuardPlanClass.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.01D);
+        Assert.assertEquals(0.5D, gPlan.upkeepBuffer, 0.01D);
         call();
         Assert.assertEquals(moneyLeft - 1, gPlan.updateGuardPlan2);
-        Assert.assertEquals(0.0D, GuardPlanClass.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.01D);
+        Assert.assertEquals(0.0D, gPlan.upkeepBuffer, 0.01D);
         call();
         // Not moneyLeft - 1 as the fake updateGuardPlan doesn't affect moneyLeft.
         Assert.assertEquals(moneyLeft, gPlan.updateGuardPlan2);
-        Assert.assertEquals(0.5D, GuardPlanClass.getDeclaredField("upkeepBuffer").getDouble(gPlan), 0.01D);
+        Assert.assertEquals(0.5D, gPlan.upkeepBuffer, 0.01D);
     }
 
     @Test
     public void testOutput() throws Exception {
         gPlan.monthlyCost = 4500L;
-        double upkeepD = (double)GuardPlanClass.getDeclaredMethod("calculateUpkeep", boolean.class).invoke(gPlan, true);
+        double upkeepD = gPlan.calculateUpkeep(true);
         assert upkeepD < 1.0D && upkeepD * 2 > 1.0D;
         UpkeepCosts.output = true;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -348,11 +349,11 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnWeekFreeMessage() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 604L);
+        gPlan.moneyLeft = 604L;
         gPlan.monthlyCost = 1L;
         UpkeepCosts.free_tiles = 10;
         UpkeepCosts.free_perimeter = 100;
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 604800000L;
+        assert gPlan.getTimeLeft() < 604800000L;
         call();
         Assert.assertEquals("You may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
                 broadcastMessages.get(1));
@@ -362,11 +363,11 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnDayFreeMessage() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 60L);
+        gPlan.moneyLeft = 60L;
         gPlan.monthlyCost = 1L;
         UpkeepCosts.free_tiles = 10;
         UpkeepCosts.free_perimeter = 100;
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 86400000L;
+        assert gPlan.getTimeLeft() < 86400000L;
         call();
         Assert.assertEquals("Or you may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
                 broadcastMessages.get(1));
@@ -376,10 +377,10 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnHourFreeMessage() throws Exception {
-        GuardPlanClass.getDeclaredField("moneyLeft").setLong(gPlan, 6L);
+        gPlan.moneyLeft = 6L;
         UpkeepCosts.free_tiles = 10;
         UpkeepCosts.free_perimeter = 100;
-        assert (long)GuardPlanClass.getDeclaredMethod("getTimeLeft").invoke(gPlan) < 3600000L;
+        assert gPlan.getTimeLeft() < 3600000L;
         call();
         Assert.assertEquals("Or you may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
                 broadcastMessages.get(1));
