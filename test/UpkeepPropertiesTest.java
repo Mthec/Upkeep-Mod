@@ -38,9 +38,9 @@ public class UpkeepPropertiesTest {
         Assert.assertEquals(Long.valueOf((String)properties.get("minimum_upkeep")).longValue(), upkeep.minimum_upkeep);
         Assert.assertEquals(Long.valueOf((String)properties.get("into_upkeep")).longValue(), upkeep.into_upkeep);
         Assert.assertEquals(Long.valueOf((String)properties.get("name_change")).longValue(), upkeep.name_change);
-        Assert.assertEquals(Long.valueOf((String)properties.get("min_drain")).longValue(), upkeep.min_drain);
-        Assert.assertEquals(Float.valueOf((String)properties.get("max_drain_modifier")), upkeep.max_drain_modifier, 0.0F);
-        Assert.assertEquals(Float.valueOf((String)properties.get("drain_modifier_increment")), upkeep.drain_modifier_increment, 0.0F);
+        Assert.assertEquals(Long.valueOf((String)properties.get("min_drain")).longValue(), UpkeepCosts.min_drain);
+        Assert.assertEquals(Float.valueOf((String)properties.get("max_drain_modifier")), UpkeepCosts.max_drain_modifier, 0.0F);
+        Assert.assertEquals(Float.valueOf((String)properties.get("drain_modifier_increment")), UpkeepCosts.drain_modifier_increment, 0.0F);
     }
 
     @Test

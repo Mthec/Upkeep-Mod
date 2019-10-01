@@ -192,7 +192,7 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
                                     toReturn = Creature.doNew(templateId, villToken.getPosX(), villToken.getPosY(), (float)Server.rand.nextInt(360), village.isOnSurface() ? 0 : -1, "", templateId, village.kingdom);
                                     village.createGuard(toReturn, System.currentTimeMillis());
                                 } else {
-                                    toReturn = (Creature)this.freeGuards.removeFirst();
+                                    toReturn = this.freeGuards.removeFirst();
                                     if (toReturn.getTemplate().getTemplateId() != templateId) {
                                         this.removeReturnedGuard(toReturn.getWurmId());
                                         toReturn.destroy();
@@ -253,7 +253,7 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
                                     toReturn = Creature.doNew(templateId, villToken.getPosX(), villToken.getPosY(), (float)Server.rand.nextInt(360), village.isOnSurface() ? 0 : -1, "", sex, village.kingdom);
                                     village.createGuard(toReturn, System.currentTimeMillis());
                                 } else {
-                                    toReturn = (Creature)this.freeGuards.removeFirst();
+                                    toReturn = this.freeGuards.removeFirst();
                                     if (toReturn.getTemplate().getTemplateId() != templateId) {
                                         this.removeReturnedGuard(toReturn.getWurmId());
                                         toReturn.destroy();
@@ -485,7 +485,7 @@ public abstract class GuardPlan implements CreatureTemplateIds, TimeConstants, M
                 changeInGuards = Math.abs(changeInGuards);
                 int x;
                 if (this.freeGuards.size() > 0) {
-                    Creature[] crets = (Creature[])this.freeGuards.toArray(new Creature[this.freeGuards.size()]);
+                    Creature[] crets = this.freeGuards.toArray(new Creature[this.freeGuards.size()]);
 
                     for(x = 0; x < Math.min(crets.length, changeInGuards); ++x) {
                         ++deleted;

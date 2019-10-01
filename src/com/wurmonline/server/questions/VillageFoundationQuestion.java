@@ -25,7 +25,6 @@ import com.wurmonline.server.items.ItemTypes;
 import com.wurmonline.server.kingdom.InfluenceChain;
 import com.wurmonline.server.kingdom.Kingdom;
 import com.wurmonline.server.kingdom.Kingdoms;
-import com.wurmonline.server.players.Player;
 import com.wurmonline.server.sounds.SoundPlayer;
 import com.wurmonline.server.structures.Structure;
 import com.wurmonline.server.villages.*;
@@ -679,7 +678,6 @@ public final class VillageFoundationQuestion extends Question implements Village
 
                 String newName;
                 for(newName = nsv.nextToken(); nsv.hasMoreTokens(); newName = newName + " " + StringUtilities.raiseFirstLetter(nsv.nextToken())) {
-                    ;
                 }
 
                 this.villageName = newName;
@@ -878,7 +876,7 @@ public final class VillageFoundationQuestion extends Question implements Village
                         left = DEED_VALUE - this.getFoundingCost();
                     }
 
-                    if(charge && !((Player)this.getResponder()).chargeMoney(iox)) {
+                    if(charge && !this.getResponder().chargeMoney(iox)) {
                         Change funds1 = new Change(iox);
                         this.getResponder().getCommunicator().sendAlertServerMessage("You do not have the required " + funds1.getChangeString() + " available in your bank account.");
                         this.removeSettlementMarkers();
@@ -945,7 +943,7 @@ public final class VillageFoundationQuestion extends Question implements Village
                                 this.getResponder().getCommunicator().sendNormalServerMessage("We need " + moneyNeeded + ". " + builder1 + " must be taken from the bank.");
                             }
 
-                            if(!((Player)this.getResponder()).chargeMoney(builder1)) {
+                            if(!this.getResponder().chargeMoney(builder1)) {
                                 this.error = "You try to change the settlement size, but your bank account could not be charged. The action was aborted.";
                                 this.removeSettlementMarkers();
                                 this.removePerimeterMarkers();
@@ -1097,7 +1095,7 @@ public final class VillageFoundationQuestion extends Question implements Village
 
             while(focusZoneReject1.hasNext()) {
                 Village checkFocusZones2 = (Village)focusZoneReject1.next();
-                String reason = (String) decliners.get(checkFocusZones2);
+                String reason = decliners.get(checkFocusZones2);
                 if (reason.startsWith("has perimeter")) {
                     this.getResponder().getCommunicator().sendSafeServerMessage(checkFocusZones2.getName() + " " + reason);
                 } else {
@@ -1340,7 +1338,6 @@ public final class VillageFoundationQuestion extends Question implements Village
                         oldStructures.add(c);
                     }
                 } catch (NoSuchVillageException var12) {
-                    ;
                 }
             }
 
