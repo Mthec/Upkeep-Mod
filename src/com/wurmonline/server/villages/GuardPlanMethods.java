@@ -101,6 +101,7 @@ public class GuardPlanMethods {
             Field upkeepBufferField = GuardPlan.class.getDeclaredField("upkeepBuffer");
             double upkeepBuffer = upkeepBufferField.getDouble(guardPlan);
             upkeepBuffer += upkeepD % 1;
+            upkeepD -= upkeepD % 1;
             while (upkeepBuffer >= 1.0D) {
                 upkeepBuffer -= 1.0D;
                 upkeepD += 1.0D;

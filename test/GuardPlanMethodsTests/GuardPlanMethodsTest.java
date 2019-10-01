@@ -3,7 +3,7 @@ package GuardPlanMethodsTests;
 import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Economy;
-import com.wurmonline.server.economy.Shop;
+import com.wurmonline.server.economy.MyShop;
 import com.wurmonline.server.questions.VillageFoundationQuestion;
 import com.wurmonline.server.villages.*;
 import javassist.ClassPool;
@@ -18,14 +18,14 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
 
 abstract class GuardPlanMethodsTest {
     static ClassReflector VillagesClass;
     MyGuardPlan gPlan;
     Village gVillage;
-    private Shop kingsShop;
+    private MyShop kingsShop;
     private int villageId = 0;
     private static boolean firstRun = true;
     private ServerEntry localServer = new ServerEntry();
@@ -54,6 +54,7 @@ abstract class GuardPlanMethodsTest {
 
 
         gVillage = mock(Village.class);
+        when(gVillage.getName()).thenReturn("VILLAGE_NAME");
         Map<Long, Citizen> citizens = new HashMap<>();
         FieldSetter.setField(gVillage, Village.class.getDeclaredField("citizens"), citizens);
         Villages.class.getDeclaredMethod("addVillage", Village.class).invoke(null, gVillage);
@@ -97,23 +98,9 @@ abstract class GuardPlanMethodsTest {
     }
 
     private void createOther(ClassPool pool) throws Exception {
-//        CtClass Economy = pool.makeClass("com.wurmonline.server.economy.Economy");
-//        new CtNewConstructor();
-//        Economy.addConstructor(CtNewConstructor.make("public Economy(){}", Economy));
-//        Economy.addField(CtField.make("public static com.wurmonline.server.economy.Economy economy = new com.wurmonline.server.economy.Economy();", Economy));
-//        Economy.addField(CtField.make("public static com.wurmonline.server.economy.Shop shop = new com.wurmonline.server.economy.Shop();", Economy));
-//        Economy.addMethod(CtMethod.make("public static com.wurmonline.server.economy.Economy getEconomy() {return economy;}", Economy));
-//        Economy.addMethod(CtMethod.make("public static com.wurmonline.server.economy.Shop getKingsShop() {return shop;}", Economy));
-//        CtClass Shop = pool.makeClass("com.wurmonline.server.economy.Shop");
-//        Shop.addConstructor(CtNewConstructor.make("public Shop(){}", Shop));
-//        Shop.addField(CtField.make("public static long money;", Shop));
-//        Shop.addMethod(CtMethod.make("public long getMoney() {return this.money;}", Shop));
-//        Shop.addMethod(CtMethod.make("public void setMoney(long money) {this.money = money; return;}", Shop));
-//
-//        Economy.toClass();
-//        KingsShop = Shop.toClass();
-
-        kingsShop = mock(Shop.class);
+        kingsShop = mock(MyShop.class);
+        when(kingsShop.getMoney()).thenCallRealMethod();
+        doCallRealMethod().when(kingsShop).setMoney(anyLong());
         Economy economy = mock(Economy.class);
         ReflectionUtil.setPrivateField(null, Economy.class.getDeclaredField("economy"), economy);
         when(economy.getKingsShop()).thenReturn(kingsShop);
