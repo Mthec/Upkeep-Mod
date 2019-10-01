@@ -3,9 +3,11 @@ package GuardPlanMethodsTests;
 import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.villages.Villages;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.internal.util.reflection.FieldSetter;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class getMoneyDrained extends GuardPlanMethodsTest {
     private long call() {
@@ -14,61 +16,61 @@ public class getMoneyDrained extends GuardPlanMethodsTest {
 
     @Test
     public void testPermanentVillage() throws Exception {
-        Villages.TILE_UPKEEP = 1;
         FieldSetter.setField(gVillage, Village.class.getDeclaredField("isPermanent"), true);
-        Assert.assertEquals(0L, call());
+        assertEquals(0L, call());
     }
 
     @Test
     public void testNotPermanentVillage() throws Exception {
-        Villages.TILE_UPKEEP = 1;
         FieldSetter.setField(gVillage, Village.class.getDeclaredField("isPermanent"), false);
-        Assert.assertNotEquals(0L, call());
+        assertNotEquals(0L, call());
     }
 
     @Test
     public void testLowMoneyLeft() {
         long moneyLeft = 10L;
         gPlan.moneyLeft = moneyLeft;
+        Villages.TILE_UPKEEP = 1;
         long monthlyCost = gPlan.getMonthlyCost();
         assert moneyLeft < UpkeepCosts.min_drain;
         assert moneyLeft < monthlyCost * 0.15;
-        Assert.assertEquals(moneyLeft, call());
+        assertEquals(moneyLeft, call());
     }
 
     @Test
     public void testDrainModifier() {
-        long moneyLeft = gPlan.moneyLeft;
-        long monthlyCost = 10000L;
+        long monthlyCost = 100000L;
         gPlan.monthlyCost = monthlyCost;
         long minMoneyDrained = UpkeepCosts.min_drain;
+        gPlan.moneyLeft = monthlyCost;
         assert monthlyCost * 0.15 > minMoneyDrained;
-        assert monthlyCost * 0.15 < moneyLeft;
-        Assert.assertEquals((long)(monthlyCost * 0.15 * 1.0), call());
+        assert monthlyCost * 0.15 < gPlan.moneyLeft;
+        assertEquals((long)(monthlyCost * 0.15 * 1.0), call());
         gPlan.drainModifier = 0.5f;
-        Assert.assertEquals((long)(monthlyCost * 0.15 * 1.5), call());
+        assertEquals((long)(monthlyCost * 0.15 * 1.5), call());
     }
 
     @Test
     public void testBelowMinimumDrain() {
-        long moneyLeft = gPlan.moneyLeft;
+        Villages.TILE_UPKEEP = 10;
         long monthlyCost = gPlan.getMonthlyCost();
         long minMoneyDrained = 1000L;
+        gPlan.moneyLeft = minMoneyDrained * 10;
         UpkeepCosts.min_drain = minMoneyDrained;
         assert minMoneyDrained > monthlyCost * 0.15;
-        assert minMoneyDrained < moneyLeft;
-        Assert.assertEquals(minMoneyDrained, call());
+        assertEquals(minMoneyDrained, call());
     }
 
     @Test
     public void testAboveMinimumDrain() {
         long moneyLeft = gPlan.moneyLeft;
+        Villages.TILE_UPKEEP = 1;
         long monthlyCost = gPlan.getMonthlyCost();
         long minMoneyDrained = 1L;
         UpkeepCosts.min_drain = minMoneyDrained;
         assert minMoneyDrained < monthlyCost * 0.15;
         assert minMoneyDrained < moneyLeft;
-        Assert.assertEquals((long)(monthlyCost * 0.15), call());
+        assertEquals((long)(monthlyCost * 0.15), call());
     }
 
     @Test
@@ -78,13 +80,13 @@ public class getMoneyDrained extends GuardPlanMethodsTest {
 
         long monthlyCost = 1000L;
         gPlan.monthlyCost = monthlyCost;
-        Assert.assertEquals((long)(monthlyCost * 0.15), call());
+        assertEquals((long)(monthlyCost * 0.15), call());
         monthlyCost = 250000L;
         gPlan.monthlyCost = monthlyCost;
-        Assert.assertEquals((long)(monthlyCost * 0.15), call());
+        assertEquals((long)(monthlyCost * 0.15), call());
         monthlyCost = 50000000L;
         gPlan.monthlyCost = monthlyCost;
-        Assert.assertEquals((long)(monthlyCost * 0.15), call());
+        assertEquals((long)(monthlyCost * 0.15), call());
 
     }
 }

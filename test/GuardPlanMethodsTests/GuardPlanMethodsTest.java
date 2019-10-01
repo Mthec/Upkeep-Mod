@@ -58,6 +58,9 @@ abstract class GuardPlanMethodsTest {
         FieldSetter.setField(gVillage, Village.class.getDeclaredField("citizens"), citizens);
         Villages.class.getDeclaredMethod("addVillage", Village.class).invoke(null, gVillage);
         FieldSetter.setField(gVillage, Village.class.getDeclaredField("isPermanent"), false);
+        when(gVillage.getNumTiles()).thenReturn(100);
+        when(gVillage.getMaxCitizens()).thenCallRealMethod();
+        when(gVillage.hasToomanyCitizens()).thenCallRealMethod();
 
         Villages.TILE_COST = 0L;
         Villages.TILE_UPKEEP = 0L;

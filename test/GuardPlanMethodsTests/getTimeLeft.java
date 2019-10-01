@@ -1,8 +1,10 @@
 package GuardPlanMethodsTests;
 
 import com.wurmonline.server.villages.Village;
-import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.internal.util.reflection.FieldSetter;
+
+import static org.junit.Assert.assertEquals;
 
 public class getTimeLeft extends GuardPlanMethodsTest {
     private long specialValue = 29030400000L;
@@ -13,14 +15,14 @@ public class getTimeLeft extends GuardPlanMethodsTest {
 
     @Test
     public void testPermanentVillage() throws Exception {
-        Village.class.getDeclaredField("isPermanent").setBoolean(gVillage, true);
-        Assert.assertEquals(specialValue, call());
+        FieldSetter.setField(gVillage, Village.class.getDeclaredField("isPermanent"), true);
+        assertEquals(specialValue, call());
     }
 
     @Test
     public void testNoUpkeep() throws Exception {
         setUpkeep(false);
-        Assert.assertEquals(specialValue, call());
+        assertEquals(specialValue, call());
     }
 
     @Test
@@ -29,7 +31,7 @@ public class getTimeLeft extends GuardPlanMethodsTest {
         gPlan.moneyLeft = moneyLeft;
         double calculatedUpkeep = gPlan.calculateUpkeep(true);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
-        Assert.assertEquals(result, call());
+        assertEquals(result, call());
     }
 
     @Test
@@ -38,7 +40,7 @@ public class getTimeLeft extends GuardPlanMethodsTest {
         gPlan.moneyLeft = moneyLeft;
         double calculatedUpkeep = gPlan.calculateUpkeep(true);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
-        Assert.assertEquals(result, call());
+        assertEquals(result, call());
     }
 
     @Test
@@ -47,7 +49,7 @@ public class getTimeLeft extends GuardPlanMethodsTest {
         long moneyLeft = gPlan.moneyLeft;
         double calculatedUpkeep = gPlan.calculateUpkeep(true);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
-        Assert.assertEquals(result, call());
+        assertEquals(result, call());
     }
 
     @Test
@@ -55,9 +57,9 @@ public class getTimeLeft extends GuardPlanMethodsTest {
         long moneyLeft = gPlan.moneyLeft;
         double calculatedUpkeep = gPlan.calculateUpkeep(true);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
-        Assert.assertEquals(result, call());
+        assertEquals(result, call());
         calculatedUpkeep = gPlan.calculateUpkeep(true);
         result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);
-        Assert.assertEquals(result, call());
+        assertEquals(result, call());
     }
 }
