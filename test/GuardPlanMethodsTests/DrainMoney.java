@@ -63,6 +63,7 @@ public class DrainMoney extends GuardPlanMethodsTest {
 
     @Test
     public void testDrainIncrements() throws Throwable {
+        gPlan.moneyLeft = UpkeepCosts.min_drain * 10;
         long drainCost = gPlan.getMoneyDrained();
         UpkeepCosts.drain_modifier_increment = 0.5f;
         UpkeepCosts.max_drain_modifier = 5.0f;
