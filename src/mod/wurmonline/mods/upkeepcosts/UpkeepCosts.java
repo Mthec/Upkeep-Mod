@@ -302,6 +302,7 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
 
 
         logger.info(String.format(messages.getString("all_values"),
+                use_per_server_settings,
                 Villages.TILE_COST_STRING,
                 Villages.TILE_UPKEEP_STRING,
                 free_tiles,
