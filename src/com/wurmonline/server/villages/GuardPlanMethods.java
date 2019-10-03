@@ -67,13 +67,13 @@ public class GuardPlanMethods {
         }
     }
     
-    public static Object getTimeLeft(Object o, Method method, Object[] args) throws IllegalAccessException, InvocationTargetException {
+    public static Object getTimeLeft(Object o, Method method, Object[] args) throws IllegalAccessException, InvocationTargetException, NoSuchFieldException {
         GuardPlan guardPlan = (GuardPlan)o;
         long toReturn = (long)method.invoke(o, args);
         if (toReturn == 29030400000L)
             return toReturn;
         
-        return (long)((double)guardPlan.moneyLeft / guardPlan.calculateUpkeep(false) * 500000.0D);
+        return (long)((guardPlan.moneyLeft - (double)ReflectionUtil.getPrivateField(guardPlan, GuardPlan.class.getDeclaredField("upkeepBuffer"))) / guardPlan.calculateUpkeep(false) * 500000.0D);
     }
 
     public static Object getCostForGuards(Object o, Method method, Object[] args) {
@@ -178,7 +178,7 @@ public class GuardPlanMethods {
                     ReflectionUtil.setPrivateField(guardPlan, lastSentWarningField, System.currentTimeMillis());
 
                     try {
-                        guardPlan.getVillage().broadCastAlert("The village is disbanding within one week. Due to the low morale guardPlan gives, the guards have ceased their general maintenance of structures.", (byte)4);
+                        guardPlan.getVillage().broadCastAlert("The village is disbanding within one week. Due to the low morale this gives, the guards have ceased their general maintenance of structures.", (byte)4);
                         if (UpkeepCosts.free_tiles > 0 || UpkeepCosts.free_perimeter > 0)
                             guardPlan.getVillage().broadCastAlert("You may resize to remove any non-free tiles.  You can have up to " + UpkeepCosts.free_tiles + " free tiles and " + UpkeepCosts.free_perimeter + " free perimeter tiles.", (byte)4);
                         guardPlan.getVillage().broadCastAlert("Any traders who are citizens of " + guardPlan.getVillage().getName() + " will disband without refund.");

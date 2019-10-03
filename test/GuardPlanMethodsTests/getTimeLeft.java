@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 public class getTimeLeft extends GuardPlanMethodsTest {
     private long specialValue = 29030400000L;
 
-    private long call() throws Exception{
+    private long call() {
         return gPlan.getTimeLeft();
     }
 
@@ -26,7 +26,7 @@ public class getTimeLeft extends GuardPlanMethodsTest {
     }
 
     @Test
-    public void testMoneyLeftOverDisbandLevel() throws Exception {
+    public void testMoneyLeftOverDisbandLevel() {
         long moneyLeft = 10000L;
         gPlan.moneyLeft = moneyLeft;
         double calculatedUpkeep = gPlan.calculateUpkeep(true);
@@ -35,7 +35,7 @@ public class getTimeLeft extends GuardPlanMethodsTest {
     }
 
     @Test
-    public void testMoneyLeftUnderDisbandLevel() throws Exception {
+    public void testMoneyLeftUnderDisbandLevel() {
         long moneyLeft = 10L;
         gPlan.moneyLeft = moneyLeft;
         double calculatedUpkeep = gPlan.calculateUpkeep(true);
@@ -44,7 +44,7 @@ public class getTimeLeft extends GuardPlanMethodsTest {
     }
 
     @Test
-    public void testNoMinimumCalculatedUpkeep() throws Exception {
+    public void testNoMinimumCalculatedUpkeep() {
         // Original version has 1.0D minimum.  Should be removed.
         long moneyLeft = gPlan.moneyLeft;
         double calculatedUpkeep = gPlan.calculateUpkeep(true);
@@ -53,7 +53,7 @@ public class getTimeLeft extends GuardPlanMethodsTest {
     }
 
     @Test
-    public void testCalculatedUpkeep() throws Exception {
+    public void testCalculatedUpkeep() {
         long moneyLeft = gPlan.moneyLeft;
         double calculatedUpkeep = gPlan.calculateUpkeep(true);
         long result = (long)((double)moneyLeft / calculatedUpkeep * 500000.0D);

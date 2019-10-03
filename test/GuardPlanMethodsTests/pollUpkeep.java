@@ -32,6 +32,18 @@ public class pollUpkeep extends GuardPlanMethodsTest {
         super.setUp();
         broadcastMessages.clear();
         broadcastBytes.clear();
+
+        Answer answer = i -> {
+            broadcastMessages.add(i.getArgument(0));
+            if (i.getArguments().length == 2)
+                broadcastBytes.add(i.getArgument(1));
+            else
+                broadcastBytes.add(null);
+            return null;
+        };
+
+        doAnswer(answer).when(gVillage).broadCastAlert(anyString(), anyByte());
+        doAnswer(answer).when(gVillage).broadCastAlert(anyString());
     }
 
     private boolean call() throws Exception {
@@ -158,25 +170,28 @@ public class pollUpkeep extends GuardPlanMethodsTest {
         assertEquals(0, Economy.getEconomy().getKingsShop().getMoney());
     }
 
+    private void setMoneyLeftTo(long millis) {
+        double upkeep = ((double)gPlan.monthlyCost / TimeConstants.MONTH_MILLIS) * millis;
+        double buffered = upkeep - (long)upkeep;
+
+        gPlan.moneyLeft = (long)upkeep + 1;
+        gPlan.upkeepBuffer = 1 - buffered;
+    }
+
     @Test
     public void testNoBroadcastOnGreaterThanWeekLeft() throws Exception {
-        gPlan.moneyLeft = 6040L;
         gPlan.monthlyCost = 1L;
-        assert gPlan.getTimeLeft() > 604800000L;
+        setMoneyLeftTo(TimeConstants.WEEK_MILLIS + TimeConstants.DAY_MILLIS);
+        assert gPlan.getTimeLeft() > TimeConstants.WEEK_MILLIS;
         call();
-        doAnswer((Answer<Void>)invocationOnMock -> {
-            broadcastMessages.add(invocationOnMock.getArgument(0));
-            broadcastBytes.add(invocationOnMock.getArgument(1));
-            return null;
-        }).when(gVillage).broadCastAlert(anyString(), anyByte());
         assertTrue(broadcastMessages.isEmpty());
         assertTrue(broadcastBytes.isEmpty());
     }
 
     @Test
     public void testBroadcastOnWeekLeft() throws Exception {
-        gPlan.moneyLeft = 604L;
         gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.WEEK_MILLIS - 1);
         assert gPlan.getTimeLeft() < TimeConstants.WEEK_MILLIS;
         call();
         assertEquals("The village is disbanding within one week. Due to the low morale this gives, the guards have ceased their general maintenance of structures.",
@@ -190,8 +205,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testDelayedBroadcastOnWeekLeft() throws Exception {
-        gPlan.moneyLeft = 604L;
         gPlan.monthlyCost = 2L;
+        setMoneyLeftTo(TimeConstants.WEEK_MILLIS - 1);
         assert gPlan.getTimeLeft() < TimeConstants.WEEK_MILLIS;
         long lastSentWarning = System.currentTimeMillis();
         Field field = GuardPlan.class.getDeclaredField("lastSentWarning");
@@ -207,8 +222,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnDayTimeLeft() throws Exception {
-        gPlan.moneyLeft = 60L;
         gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.DAY_MILLIS - 1);
         assert gPlan.getTimeLeft() < TimeConstants.DAY_MILLIS;
         call();
         assertEquals("The village is disbanding within 24 hours. You may add upkeep money to the village coffers at the token.",
@@ -222,7 +237,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testDelayedBroadcastOnDayTimeLeft() throws Exception {
-        gPlan.moneyLeft = 60L;
+        gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.DAY_MILLIS - 1);
         assert gPlan.getTimeLeft() < TimeConstants.DAY_MILLIS;
         long lastSentWarning = System.currentTimeMillis();
         Field field = GuardPlan.class.getDeclaredField("lastSentWarning");
@@ -238,7 +254,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnHourTimeLeft() throws Exception {
-        gPlan.moneyLeft = 6L;
+        gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.HOUR_MILLIS - 1);
         assert gPlan.getTimeLeft() < TimeConstants.HOUR_MILLIS;
         call();
         assertEquals("The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.",
@@ -252,7 +269,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testNotDelayedBroadcastOnHourLeft() throws Exception {
-        gPlan.moneyLeft = 6L;
+        gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.HOUR_MILLIS - 1);
         assert gPlan.getTimeLeft() < TimeConstants.HOUR_MILLIS;
         long lastSentWarning = System.currentTimeMillis();
         Field field = GuardPlan.class.getDeclaredField("lastSentWarning");
@@ -325,6 +343,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
         double upkeepD = gPlan.calculateUpkeep(true);
         assert upkeepD < 1.0D && upkeepD * 2 > 1.0D;
         UpkeepCosts.output = true;
+        PrintStream outStream = System.out;
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
         call();
@@ -334,16 +353,16 @@ public class pollUpkeep extends GuardPlanMethodsTest {
         call();
         assertEquals("Village upkeep - VILLAGE_NAME paid 1.0 this turn.  Upkeep buffer is now " + ((upkeepD * 2) - 1) + System.lineSeparator(),
                 out.toString());
-        System.setOut(null);
+        System.setOut(outStream);
     }
 
     @Test
     public void testBroadcastOnWeekFreeMessage() throws Exception {
-        gPlan.moneyLeft = 604L;
         gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.WEEK_MILLIS);
         UpkeepCosts.free_tiles = 10;
         UpkeepCosts.free_perimeter = 100;
-        assert gPlan.getTimeLeft() < 604800000L;
+        assert gPlan.getTimeLeft() == TimeConstants.WEEK_MILLIS;
         call();
         assertEquals("You may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
                 broadcastMessages.get(1));
@@ -353,8 +372,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnDayFreeMessage() throws Exception {
-        gPlan.moneyLeft = 60L;
         gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.DAY_MILLIS - 1);
         UpkeepCosts.free_tiles = 10;
         UpkeepCosts.free_perimeter = 100;
         assert gPlan.getTimeLeft() < TimeConstants.DAY_MILLIS;
@@ -367,7 +386,8 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
     @Test
     public void testBroadcastOnHourFreeMessage() throws Exception {
-        gPlan.moneyLeft = 6L;
+        gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.HOUR_MILLIS - 1);
         UpkeepCosts.free_tiles = 10;
         UpkeepCosts.free_perimeter = 100;
         assert gPlan.getTimeLeft() < TimeConstants.HOUR_MILLIS;

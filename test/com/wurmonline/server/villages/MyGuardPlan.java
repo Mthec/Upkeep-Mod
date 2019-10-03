@@ -97,7 +97,7 @@ public class MyGuardPlan extends GuardPlan {
             Method method = mock(Method.class);
             when(method.invoke(any(), any())).thenAnswer((Answer<Long>)invocationOnMock -> MyGuardPlan.super.getTimeLeft());
             return (long)GuardPlanMethods.getTimeLeft(this, method, null);
-        } catch (IllegalAccessException | InvocationTargetException e) {
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }
