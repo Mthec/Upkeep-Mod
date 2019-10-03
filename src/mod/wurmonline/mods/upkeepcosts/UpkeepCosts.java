@@ -53,8 +53,8 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
     public static long min_drain;
     public static float max_drain_modifier;
     public static float drain_modifier_increment;
-    public boolean use_per_server_settings;
-    ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCostsBundle");
+    private boolean use_per_server_settings;
+    private ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCostsBundle");
     private boolean createdDb = false;
     public static boolean output = false;
 
@@ -129,7 +129,7 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
                     if (property == null || property.equals("")) {
                         continue;
                     }
-                    boolean value = Boolean.valueOf(property);
+                    boolean value = Boolean.parseBoolean(property);
                     field.set(this, value);
                 }
             } catch (IllegalAccessException ex) {
@@ -209,11 +209,11 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
         logValues();
     }
 
-    File getFile () {
+    private File getFile () {
         return new File(Paths.get(ServerDirInfo.getFileDBPath(), "mods", "upkeepcosts", "upkeepcosts.properties").toUri());
     }
 
-    void lateConfigure () {
+    private void lateConfigure () {
         if (use_per_server_settings) {
             try {
                 File file = getFile();
@@ -239,7 +239,7 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
     }
 
     // TODO - How to prevent writing to intentionally blank values.
-    void saveUpkeep () {
+    private void saveUpkeep () {
         File file = getFile();
         Properties properties = new Properties();
 
@@ -272,39 +272,15 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
         }
     }
 
-    void negative (String property) {
+    private void negative(String property) {
         logger.warning(String.format("%s cannot be negative.  Value will not be changed.", property));
     }
     
-    void invalid (String property) {
+    private void invalid(String property) {
         logger.warning(String.format("Invalid value for %s.  Value will not be changed.", property));
     }
 
-    void logValues () {
-        String FREE_TILES = "?";
-        try {
-            FREE_TILES = String.valueOf(Villages.class.getDeclaredField("FREE_TILES").getLong(null));
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            ex.printStackTrace();
-        }
-        String FREE_PERIMETER = "?";
-        try {
-            FREE_PERIMETER = String.valueOf(Villages.class.getDeclaredField("FREE_PERIMETER").getLong(null));
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            ex.printStackTrace();
-        }
-        String FREE_GUARDS = "?";
-        try {
-            FREE_GUARDS = String.valueOf(Villages.class.getDeclaredField("FREE_GUARDS").getLong(null));
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            ex.printStackTrace();
-        }
-        String EPIC_UPKEEP_SCALING = "?";
-        try {
-            EPIC_UPKEEP_SCALING = String.valueOf(Villages.class.getDeclaredField("EPIC_UPKEEP_SCALING").getBoolean(null));
-        } catch (NoSuchFieldException | IllegalAccessException ex) {
-            ex.printStackTrace();
-        }
+    private void logValues() {
         String minMoneyDrained = "?";
         try {
             minMoneyDrained = String.valueOf(GuardPlan.class.getDeclaredField("minMoneyDrained").getLong(null));
@@ -328,14 +304,14 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
         logger.info(String.format(messages.getString("all_values"),
                 Villages.TILE_COST_STRING,
                 Villages.TILE_UPKEEP_STRING,
-                FREE_TILES,
+                free_tiles,
                 Villages.PERIMETER_COST_STRING,
                 Villages.PERIMETER_UPKEEP_STRING,
-                FREE_PERIMETER,
+                free_perimeter,
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
-                EPIC_UPKEEP_SCALING,
-                FREE_GUARDS,
+                epic_guard_upkeep_scaling,
+                free_guards,
                 Villages.MINIMUM_UPKEEP_STRING,
                 new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
                 new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString(),
@@ -344,7 +320,7 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
                 drainCumulateFigure));
     }
 
-    void createOrPass () {
+    private void createOrPass () {
         if (!createdDb) {
             Connection dbcon = null;
             PreparedStatement ps = null;
@@ -400,6 +376,7 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
             guardPlan.addField(upkeepBufferField, "0.0D");
 
             // Draining
+            guardPlan.getDeclaredField("minMoneyDrained").setModifiers(Modifier.setPublic(Modifier.STATIC));
             guardPlan.getDeclaredField("maxDrainModifier").setModifiers(Modifier.setPublic(Modifier.STATIC));
             guardPlan.getDeclaredField("drainCumulateFigure").setModifiers(Modifier.setPublic(Modifier.STATIC));
 
