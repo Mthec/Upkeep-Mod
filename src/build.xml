@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="jar" name="Upkeep Cost Settings">
     <target name="jar">
-        <jar destfile="../out/jar/mods/upkeepcosts/upkeepcosts.jar">
+        <manifest file="MANIFEST.MF">
+            <attribute name="Implementation-Version" value="1.4"/>
+        </manifest>
+
+        <jar manifest="MANIFEST.MF" destfile="../out/jar/mods/upkeepcosts/upkeepcosts.jar">
             <fileset dir="../out/production/NoMinimumUpkeep" includes="**/UpkeepCosts.class" />
             <fileset dir="../out/production/NoMinimumUpkeep" includes="**/GuardPlanMethods.class" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageFoundationQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
