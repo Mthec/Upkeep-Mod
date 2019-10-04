@@ -210,6 +210,18 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     }
 
     @Test
+    public void testMinimumUpkeepWithFreeTiles() {
+        long tileUpkeep = 10000L;
+        long numTiles = gVillage.getNumTiles();
+        assert numTiles == 100;
+        long minimumUpkeep = 1000L;
+        Villages.TILE_UPKEEP = tileUpkeep;
+        UpkeepCosts.free_tiles = 100;
+        Villages.MINIMUM_UPKEEP = minimumUpkeep;
+        assertEquals(minimumUpkeep, call());
+    }
+
+    @Test
     public void testDifferentSizes() {
         long tileUpkeep = 100L;
         long perimeterUpkeep = 10L;

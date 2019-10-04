@@ -36,6 +36,10 @@ public class MyGuardPlan extends GuardPlan {
         updateGuardPlan1 = i;
         updateGuardPlan2 = l;
         updateGuardPlan3 = i1;
+
+        this.type = i;
+        this.moneyLeft = l;
+        this.hiredGuardNumber = i1;
     }
 
     @Override

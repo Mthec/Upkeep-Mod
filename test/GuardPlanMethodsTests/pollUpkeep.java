@@ -332,8 +332,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
         assertEquals(moneyLeft - 1, gPlan.updateGuardPlan2);
         assertEquals(0.0D, gPlan.upkeepBuffer, 0.01D);
         call();
-        // Not moneyLeft - 1 as the fake updateGuardPlan doesn't affect moneyLeft.
-        assertEquals(moneyLeft, gPlan.updateGuardPlan2);
+        assertEquals(moneyLeft - 1, gPlan.updateGuardPlan2);
         assertEquals(0.5D, gPlan.upkeepBuffer, 0.01D);
     }
 
@@ -396,5 +395,21 @@ public class pollUpkeep extends GuardPlanMethodsTest {
                 broadcastMessages.get(1));
         assertEquals((byte)2,
                 (byte)broadcastBytes.get(1));
+    }
+
+    @Test
+    public void testMonthlyTotalUpkeep() throws Exception {
+        gPlan.monthlyCost = 100L;
+        long startingMoney = gPlan.monthlyCost + 1;
+        gPlan.moneyLeft = startingMoney;
+
+        // days in month * 24 hours * 60 minutes / pollInterval
+        int polls = 28 * 24 * 60 / 8;
+
+        for (int i = 0; i < polls; ++i) {
+            call();
+        }
+
+        assertEquals(gPlan.moneyLeft, startingMoney - gPlan.monthlyCost);
     }
 }
