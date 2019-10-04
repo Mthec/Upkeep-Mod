@@ -60,6 +60,7 @@ abstract class GuardPlanMethodsTest {
         Villages.class.getDeclaredMethod("addVillage", Village.class).invoke(null, gVillage);
         FieldSetter.setField(gVillage, Village.class.getDeclaredField("isPermanent"), false);
         when(gVillage.getNumTiles()).thenReturn(100);
+        when(gVillage.getPerimeterNonFreeTiles()).thenReturn(100);
         when(gVillage.getMaxCitizens()).thenCallRealMethod();
         when(gVillage.hasToomanyCitizens()).thenCallRealMethod();
 

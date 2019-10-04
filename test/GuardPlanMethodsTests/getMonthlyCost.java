@@ -158,15 +158,55 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     }
 
     @Test
-    public void testMinimumUpkeep() throws Exception {
+    public void testMinimumUpkeep() {
         long tileUpkeep = 10L;
         long numTiles = gVillage.getNumTiles();
         long minimumUpkeep = 2000L;
         Villages.TILE_UPKEEP = tileUpkeep;
-        VillagesClass.getDeclaredField("MINIMUM_UPKEEP").setLong(null, minimumUpkeep);
+        Villages.MINIMUM_UPKEEP = minimumUpkeep;
         long upkeep = (numTiles * tileUpkeep);
         assert upkeep < minimumUpkeep;
         assertEquals(minimumUpkeep, call());
+    }
+
+    @Test
+    public void testMinimumUpkeepWithPerimeter() {
+        long tileUpkeep = 10L;
+        long numTiles = gVillage.getNumTiles() + gVillage.getPerimeterNonFreeTiles();
+        long minimumUpkeep = 4000L;
+        Villages.TILE_UPKEEP = tileUpkeep;
+        Villages.PERIMETER_UPKEEP = tileUpkeep;
+        Villages.MINIMUM_UPKEEP = minimumUpkeep;
+        long upkeep = (numTiles * tileUpkeep);
+        assert upkeep < minimumUpkeep;
+        assertEquals(minimumUpkeep, call());
+    }
+
+    @Test
+    public void testMinimumUpkeepWithPerimeterAndGuards() {
+        long tileUpkeep = 10L;
+        long numTiles = gVillage.getNumTiles() + gVillage.getPerimeterNonFreeTiles();
+        long minimumUpkeep = 5000L;
+        when(gPlan.getNumHiredGuards()).thenReturn(10);
+        Villages.TILE_UPKEEP = tileUpkeep;
+        Villages.PERIMETER_UPKEEP = tileUpkeep;
+        Villages.GUARD_UPKEEP = tileUpkeep;
+        Villages.MINIMUM_UPKEEP = minimumUpkeep;
+        long upkeep = (numTiles * tileUpkeep) + gPlan.getNumHiredGuards() * tileUpkeep;
+        assert upkeep < minimumUpkeep;
+        assertEquals(minimumUpkeep, call());
+    }
+
+    @Test
+    public void testAboveMinimumUpkeep() {
+        long tileUpkeep = 10L;
+        long numTiles = gVillage.getNumTiles();
+        assert numTiles == 100;
+        long minimumUpkeep = numTiles * tileUpkeep - 1;
+        Villages.TILE_UPKEEP = tileUpkeep;
+        Villages.MINIMUM_UPKEEP = minimumUpkeep;
+        long upkeep = (numTiles * tileUpkeep);
+        assertEquals(upkeep, call());
     }
 
     @Test
