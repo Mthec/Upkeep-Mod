@@ -53,7 +53,8 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
     public static long min_drain;
     public static float max_drain_modifier;
     public static float drain_modifier_increment;
-    private boolean use_per_server_settings;
+    @SuppressWarnings("WeakerAccess")
+    public boolean use_per_server_settings;
     private ResourceBundle messages = ResourceBundle.getBundle("mod.wurmonline.mods.upkeepcosts.UpkeepCostsBundle");
     private boolean createdDb = false;
     public static boolean output = false;

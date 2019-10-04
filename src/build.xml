@@ -22,9 +22,6 @@
         <copy todir="E:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher">
             <fileset dir="../out/jar" />
         </copy>
-        <copy todir="E:/Steam/steamapps/common/Wurm Unlimited/WurmServerLauncher/locales">
-            <fileset dir="locale" />
-        </copy>
     </target>
     <target name="zip" depends="jar">
         <zip destfile="../upkeepcosts.zip">
