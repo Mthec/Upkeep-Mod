@@ -2,7 +2,7 @@
 <project default="jar" name="Upkeep Cost Settings">
     <target name="jar">
         <manifest file="MANIFEST.MF">
-            <attribute name="Implementation-Version" value="1.4"/>
+            <attribute name="Implementation-Version" value="1.4.1"/>
         </manifest>
 
         <jar manifest="MANIFEST.MF" destfile="../out/jar/mods/upkeepcosts/upkeepcosts.jar">
