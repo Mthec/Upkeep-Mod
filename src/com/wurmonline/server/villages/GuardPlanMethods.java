@@ -117,7 +117,7 @@ public class GuardPlanMethods {
             }
 
             long upkeep = (long)upkeepD;
-            if (guardPlan.moneyLeft - upkeep <= 0L) {
+            if (upkeep != 0 && guardPlan.moneyLeft - upkeep <= 0L) {
                 try {
                     logger.log(Level.INFO, guardPlan.getVillage().getName() + " disbanding. Money left=" + guardPlan.moneyLeft + ", upkeep=" + upkeep);
                 } catch (NoSuchVillageException var6) {

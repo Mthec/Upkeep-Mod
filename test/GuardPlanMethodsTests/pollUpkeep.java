@@ -4,6 +4,7 @@ import com.wurmonline.server.TimeConstants;
 import com.wurmonline.server.economy.Economy;
 import com.wurmonline.server.villages.GuardPlan;
 import com.wurmonline.server.villages.Village;
+import com.wurmonline.server.villages.Villages;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.junit.Before;
 import org.junit.Test;
@@ -411,5 +412,17 @@ public class pollUpkeep extends GuardPlanMethodsTest {
         }
 
         assertEquals(gPlan.moneyLeft, startingMoney - gPlan.monthlyCost);
+    }
+
+    @Test
+    public void testZeroCostDeedDoesNotDisband() throws Exception {
+        UpkeepCosts.free_tiles = 441;
+        UpkeepCosts.free_guards = 1;
+        Villages.MINIMUM_UPKEEP = 0;
+
+        gPlan.moneyLeft = 0;
+
+        assert gPlan.calculateUpkeep(true) == 0;
+        assertFalse(call());
     }
 }
