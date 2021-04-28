@@ -10,6 +10,7 @@
             <fileset dir="../out/production/NoMinimumUpkeep" includes="**/GuardPlanMethods.class" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageFoundationQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageUpkeep.class" prefix="mod/wurmonline/mods/upkeepcosts" />
+            <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageInfo.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/GuardManagementQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/ParseGuardRentalQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/locale/UpkeepCosts.properties" fullpath="mod/wurmonline/mods/upkeepcosts/UpkeepCostsBundle.properties" />

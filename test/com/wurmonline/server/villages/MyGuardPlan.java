@@ -15,7 +15,7 @@ public class MyGuardPlan extends GuardPlan {
     public int updateGuardPlan1 = -1;
     public long updateGuardPlan2 = -1;
     public int updateGuardPlan3 = -1;
-    public Long monthlyCost = null;
+    public long monthlyCost = -1;
 
     public MyGuardPlan(int aVillageId) {
         super(aVillageId);
@@ -84,7 +84,7 @@ public class MyGuardPlan extends GuardPlan {
 
     @Override
     public long getMonthlyCost() {
-        if (monthlyCost != null)
+        if (monthlyCost != -1)
             return monthlyCost;
         else
             return (long)GuardPlanMethods.getMonthlyCost(this, null, null);
