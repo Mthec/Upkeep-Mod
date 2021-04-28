@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@SuppressWarnings("unused")
 public class GuardPlanMethods {
     private static final Logger logger = Logger.getLogger(GuardPlanMethods.class.getName());
 
@@ -69,9 +70,8 @@ public class GuardPlanMethods {
     
     public static Object getTimeLeft(Object o, Method method, Object[] args) throws IllegalAccessException, InvocationTargetException, NoSuchFieldException {
         GuardPlan guardPlan = (GuardPlan)o;
-        long toReturn = (long)method.invoke(o, args);
-        if (toReturn == 29030400000L)
-            return toReturn;
+        if (guardPlan.calculateUpkeep(false) == 0 || (long)method.invoke(o, args) == 29030400000L)
+            return 29030400000L;
         
         return (long)((guardPlan.moneyLeft - (double)ReflectionUtil.getPrivateField(guardPlan, GuardPlan.class.getDeclaredField("upkeepBuffer"))) / guardPlan.calculateUpkeep(false) * 500000.0D);
     }
@@ -82,7 +82,7 @@ public class GuardPlanMethods {
         if (!UpkeepCosts.epic_guard_upkeep_scaling) {
             return nonFreeGuards * Villages.GUARD_UPKEEP;
         }
-        return Servers.localServer.isChallengeOrEpicServer() ? (nonFreeGuards * Villages.GUARD_UPKEEP + (nonFreeGuards - 1) * nonFreeGuards / 2 * 100 * 50) : nonFreeGuards * Villages.GUARD_UPKEEP;
+        return Servers.localServer.isChallengeOrEpicServer() ? (nonFreeGuards * Villages.GUARD_UPKEEP + (nonFreeGuards - 1L) * nonFreeGuards / 2 * 100 * 50) : nonFreeGuards * Villages.GUARD_UPKEEP;
     }
 
     public static Object pollUpkeep(Object o, Method method, Object[] args) throws NoSuchFieldException, IllegalAccessException {
@@ -91,7 +91,7 @@ public class GuardPlanMethods {
             if (guardPlan.getVillage().isPermanent) {
                 return false;
             }
-        } catch (NoSuchVillageException var11) {
+        } catch (NoSuchVillageException ignored) {
         }
 
         if (!Servers.localServer.isUpkeep()) {

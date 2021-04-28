@@ -368,8 +368,11 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
             CtClass question2 = pool.getCtClass("com.wurmonline.server.questions.VillageUpkeep");
             question2.detach();
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageUpkeep.class"));
-            CtClass question3 = pool.getCtClass("com.wurmonline.server.questions.GuardManagementQuestion");
+            CtClass question3 = pool.getCtClass("com.wurmonline.server.questions.VillageInfo");
             question3.detach();
+            pool.makeClass(UpkeepCosts.class.getResourceAsStream("VillageInfo.class"));
+            CtClass question4 = pool.getCtClass("com.wurmonline.server.questions.GuardManagementQuestion");
+            question4.detach();
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("GuardManagementQuestion.class"));
             pool.makeClass(UpkeepCosts.class.getResourceAsStream("ParseGuardRentalQuestion.class"));
 

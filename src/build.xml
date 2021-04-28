@@ -2,7 +2,7 @@
 <project default="jar" name="Upkeep Cost Settings">
     <target name="jar">
         <manifest file="MANIFEST.MF">
-            <attribute name="Implementation-Version" value="1.4.2"/>
+            <attribute name="Implementation-Version" value="1.4.3"/>
         </manifest>
 
         <jar manifest="MANIFEST.MF" destfile="../out/jar/mods/upkeepcosts/upkeepcosts.jar">
@@ -10,6 +10,7 @@
             <fileset dir="../out/production/NoMinimumUpkeep" includes="**/GuardPlanMethods.class" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageFoundationQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageUpkeep.class" prefix="mod/wurmonline/mods/upkeepcosts" />
+            <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/VillageInfo.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/GuardManagementQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/com/wurmonline/server/questions/ParseGuardRentalQuestion.class" prefix="mod/wurmonline/mods/upkeepcosts" />
             <zipfileset file="../out/production/NoMinimumUpkeep/locale/UpkeepCosts.properties" fullpath="mod/wurmonline/mods/upkeepcosts/UpkeepCostsBundle.properties" />

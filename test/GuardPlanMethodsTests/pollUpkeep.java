@@ -24,8 +24,8 @@ import static org.mockito.Mockito.doAnswer;
 
 // TODO - Also test logging?
 public class pollUpkeep extends GuardPlanMethodsTest {
-    private List<String> broadcastMessages = new ArrayList<>();
-    private List<Byte> broadcastBytes = new ArrayList<>();
+    private final List<String> broadcastMessages = new ArrayList<>();
+    private final List<Byte> broadcastBytes = new ArrayList<>();
 
     @Override
     @Before
@@ -34,7 +34,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
         broadcastMessages.clear();
         broadcastBytes.clear();
 
-        Answer answer = i -> {
+        Answer<String> answer = i -> {
             broadcastMessages.add(i.getArgument(0));
             if (i.getArguments().length == 2)
                 broadcastBytes.add(i.getArgument(1));

@@ -7,7 +7,7 @@ public class ServerSetup {
     @BeforeClass
     public static void setUp () throws Exception {
 
-        ServerLauncher.main(new String[0]);
+//        ServerLauncher.main(new String[0]);
 
         /*try {
             Loader loader = HookManager.getInstance().getLoader();

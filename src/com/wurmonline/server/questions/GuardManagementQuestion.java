@@ -46,8 +46,12 @@ public final class GuardManagementQuestion extends Question implements TimeConst
                     buf.append("text{text='The settlement has " + c.getChangeString() + " left in its coffers.'}");
                     Change upkeep = Economy.getEconomy().getChangeFor(plan.getMonthlyCost());
                     buf.append("text{text='Upkeep per month is " + upkeep.getChangeString() + ".'}");
-                    float left = (float)plan.moneyLeft / (float)plan.getMonthlyCost();
-                    buf.append("text{text=\"This means that the upkeep should last for about " + left * 28.0F + " days.\"}");
+                    long monthlyCost = plan.getMonthlyCost();
+                    float cost = (float)plan.moneyLeft / (float)monthlyCost;
+                    if (monthlyCost == 0)
+                        buf.append("text{text=\"This means that the upkeep should last indefinitely.\"}");
+                    else
+                        buf.append("text{text=\"This means that the upkeep should last for about " + (cost * 28.0F) + " days.\"}");
                     if (Servers.localServer.PVPSERVER || Servers.localServer.id == 3) {
                         buf.append("text{text=\"A drain would cost " + new Change(plan.getMoneyDrained()).getChangeShortString() + ".\"};");
                         long minimumDrain = UpkeepCosts.min_drain;

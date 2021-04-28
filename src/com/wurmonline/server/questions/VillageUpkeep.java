@@ -64,8 +64,12 @@ public final class VillageUpkeep extends Question implements VillageStatus, Time
                     buf1.append("text{text=\'The settlement has " + money.getChangeString() + " left in its coffers.\'}");
                     Change upkeep = Economy.getEconomy().getChangeFor(plan1.getMonthlyCost());
                     buf1.append("text{text=\'Upkeep per month is " + upkeep.getChangeString() + ".\'}");
-                    float mayor = (float)plan1.moneyLeft / (float)plan1.getMonthlyCost();
-                    buf1.append("text{text=\"This means that the upkeep should last for about " + (int)(mayor * 28.0F) + " days.\"}");
+                    long monthlyCost = plan1.getMonthlyCost();
+                    float cost = (float)plan1.moneyLeft / (float)monthlyCost;
+                    if (monthlyCost == 0)
+                        buf1.append("text{text=\"This means that the upkeep should last indefinitely.\"}");
+                    else
+                        buf1.append("text{text=\"This means that the upkeep should last for about " + (int)(cost * 28.0F) + " days.\"}");
                     if(Servers.localServer.PVPSERVER) {
                         buf1.append("text{text=\"A drain would cost " + Economy.getEconomy().getChangeFor(plan1.getMoneyDrained()).getChangeString() + ".\"};");
                         if(plan1.moneyLeft < plan1.getMoneyDrained() * 5) {
