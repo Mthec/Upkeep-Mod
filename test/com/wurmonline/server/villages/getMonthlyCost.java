@@ -1,9 +1,7 @@
-package GuardPlanMethodsTests;
+package com.wurmonline.server.villages;
 
 import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
-import com.wurmonline.server.villages.MyCitizen;
-import com.wurmonline.server.villages.Villages;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.junit.Test;
@@ -65,7 +63,8 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
     public void testLowFreeTiles() {
         long tileUpkeep = 10L;
         long numTiles = gVillage.getNumTiles();
-        long freeTiles = numTiles - 100L;
+        long freeTiles = numTiles - 50L;
+        assert freeTiles != 0;
         Villages.TILE_UPKEEP = tileUpkeep;
         UpkeepCosts.free_tiles = freeTiles;
         long upkeep = (numTiles - freeTiles) * tileUpkeep;
@@ -80,6 +79,19 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
         Villages.TILE_UPKEEP = tileUpkeep;
         UpkeepCosts.free_tiles = freeTiles;
         assertEquals(0L, call());
+    }
+
+    @Test
+    public void testFreeTilesUpkeepTrue() {
+        long tileUpkeep = 10L;
+        long numTiles = gVillage.getNumTiles();
+        long freeTiles = numTiles - 50L;
+        assert freeTiles != 0;
+        Villages.TILE_UPKEEP = tileUpkeep;
+        UpkeepCosts.free_tiles = freeTiles;
+        UpkeepCosts.free_tiles_upkeep = true;
+        long upkeep = numTiles * tileUpkeep;
+        assertEquals(upkeep, call());
     }
 
     @Test
@@ -117,6 +129,19 @@ public class getMonthlyCost extends GuardPlanMethodsTest {
         Villages.PERIMETER_UPKEEP = perimeter_upkeep;
         UpkeepCosts.free_perimeter = freePerimeter;
         assertEquals(0L, call());
+    }
+
+    @Test
+    public void testFreePerimeterUpkeepTrue() {
+        setTilesToZero();
+        long perimeter_upkeep = 10L;
+        int perimeterNonFreeTiles = 100;
+        when(gVillage.getPerimeterNonFreeTiles()).thenReturn(perimeterNonFreeTiles);
+        Villages.PERIMETER_UPKEEP = perimeter_upkeep;
+        UpkeepCosts.free_perimeter = perimeterNonFreeTiles;
+        UpkeepCosts.free_perimeter_upkeep = true;
+        long upkeep = perimeterNonFreeTiles * perimeter_upkeep;
+        assertEquals(upkeep, call());
     }
 
     @Test

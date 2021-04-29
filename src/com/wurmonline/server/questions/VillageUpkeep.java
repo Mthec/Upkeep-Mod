@@ -16,6 +16,7 @@ import com.wurmonline.server.economy.Economy;
 import com.wurmonline.server.economy.MonetaryConstants;
 import com.wurmonline.server.items.Item;
 import com.wurmonline.server.villages.*;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 
 import java.text.NumberFormat;
 import java.util.Properties;
@@ -66,10 +67,14 @@ public final class VillageUpkeep extends Question implements VillageStatus, Time
                     buf1.append("text{text=\'Upkeep per month is " + upkeep.getChangeString() + ".\'}");
                     long monthlyCost = plan1.getMonthlyCost();
                     float cost = (float)plan1.moneyLeft / (float)monthlyCost;
-                    if (monthlyCost == 0)
+                    long grace = GuardPlanMethods.graceTimeRemaining(nsv);
+                    if (monthlyCost == 0) {
                         buf1.append("text{text=\"This means that the upkeep should last indefinitely.\"}");
-                    else
+                    } else if (UpkeepCosts.upkeep_grace_period > 0 && grace > 0) {
+                        GuardPlanMethods.addGraceTimeRemaining(buf1, grace);
+                    } else {
                         buf1.append("text{text=\"This means that the upkeep should last for about " + (int)(cost * 28.0F) + " days.\"}");
+                    }
                     if(Servers.localServer.PVPSERVER) {
                         buf1.append("text{text=\"A drain would cost " + Economy.getEconomy().getChangeFor(plan1.getMoneyDrained()).getChangeString() + ".\"};");
                         if(plan1.moneyLeft < plan1.getMoneyDrained() * 5) {

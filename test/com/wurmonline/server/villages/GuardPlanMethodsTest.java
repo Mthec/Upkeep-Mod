@@ -1,11 +1,10 @@
-package GuardPlanMethodsTests;
+package com.wurmonline.server.villages;
 
 import com.wurmonline.server.ServerEntry;
 import com.wurmonline.server.Servers;
 import com.wurmonline.server.economy.Economy;
 import com.wurmonline.server.economy.MyShop;
 import com.wurmonline.server.questions.VillageFoundationQuestion;
-import com.wurmonline.server.villages.*;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -73,9 +72,13 @@ abstract class GuardPlanMethodsTest {
         UpkeepCosts.epic_guard_upkeep_scaling = false;
         VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP = 30000L;
         VillageFoundationQuestion.NAME_CHANGE_COST = 50000L;
+        UpkeepCosts.upkeep_grace_period = 0;
         UpkeepCosts.free_tiles = 0;
+        UpkeepCosts.free_tiles_upkeep = false;
         UpkeepCosts.free_perimeter = 0;
+        UpkeepCosts.free_perimeter_upkeep = false;
         UpkeepCosts.free_guards = 0;
+        UpkeepCosts.free_guards_upkeep = false;
         UpkeepCosts.min_drain = 7500;
         UpkeepCosts.max_drain_modifier = 5.0F;
         UpkeepCosts.drain_modifier_increment = 0.5F;

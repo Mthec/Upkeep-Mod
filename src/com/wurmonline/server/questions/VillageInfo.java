@@ -13,6 +13,7 @@ import com.wurmonline.server.items.Item;
 import com.wurmonline.server.kingdom.Kingdoms;
 import com.wurmonline.server.villages.*;
 import com.wurmonline.server.zones.FocusZone;
+import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -125,10 +126,14 @@ public final class VillageInfo extends Question implements VillageStatus, TimeCo
                         monthly = village.plan.getMonthlyCost();
                         change = new Change(monthly);
                         buf.append("text{text=\"The monthly cost is " + change.getChangeString() + ".\"}");
-                        if (monthly == 0)
+                        long grace = GuardPlanMethods.graceTimeRemaining(village);
+                        if (monthly == 0) {
                             buf.append("text{text=\"The upkeep will last indefinitely.\"}");
-                        else
+                        } else if (UpkeepCosts.upkeep_grace_period > 0 && grace > 0) {
+                            GuardPlanMethods.addGraceTimeRemaining(buf, grace);
+                        } else {
                             buf.append("text{text=\"The upkeep will last approximately " + Server.getTimeFor(village.plan.getTimeLeft()) + " more.\"}");
+                        }
                     }
 
                     buf.append("text{text=\"\"}");

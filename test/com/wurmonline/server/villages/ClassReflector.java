@@ -1,4 +1,4 @@
-package GuardPlanMethodsTests;
+package com.wurmonline.server.villages;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

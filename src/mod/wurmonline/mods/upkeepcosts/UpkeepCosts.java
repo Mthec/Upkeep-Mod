@@ -39,6 +39,7 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
     public long tile_upkeep;
     public long perimeter_cost;
     public long perimeter_upkeep;
+    public static int upkeep_grace_period;
     public long normal_guard_cost;
     public long normal_guard_upkeep;
     public long epic_guard_cost;
@@ -48,8 +49,11 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
     public long into_upkeep;
     public long name_change;
     public static long free_tiles;
+    public static boolean free_tiles_upkeep;
     public static long free_perimeter;
+    public static boolean free_perimeter_upkeep;
     public static int free_guards;
+    public static boolean free_guards_upkeep;
     public static long min_drain;
     public static float max_drain_modifier;
     public static float drain_modifier_increment;
@@ -76,9 +80,13 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
         minimum_upkeep = 10000;
         into_upkeep = 30000;
         name_change = 50000;
+        upkeep_grace_period = 0;
         free_tiles = 0;
+        free_tiles_upkeep = false;
         free_perimeter = 0;
+        free_perimeter_upkeep = false;
         free_guards = 0;
+        free_guards_upkeep = false;
         min_drain = 7500;
         max_drain_modifier = 5.0F;
         drain_modifier_increment = 0.5F;
@@ -307,16 +315,20 @@ public class UpkeepCosts implements WurmServerMod, Configurable, PreInitable, Se
                 Villages.TILE_COST_STRING,
                 Villages.TILE_UPKEEP_STRING,
                 free_tiles,
+                free_tiles_upkeep ? "upkeep" : "no upkeep",
                 Villages.PERIMETER_COST_STRING,
                 Villages.PERIMETER_UPKEEP_STRING,
                 free_perimeter,
+                free_perimeter_upkeep ? "upkeep" : "no upkeep",
                 Villages.GUARD_COST_STRING,
                 Villages.GUARD_UPKEEP_STRING,
                 epic_guard_upkeep_scaling,
                 free_guards,
+                free_guards_upkeep ? "upkeep" : "no upkeep",
                 Villages.MINIMUM_UPKEEP_STRING,
                 new Change(VillageFoundationQuestion.MINIMUM_LEFT_UPKEEP).getChangeString(),
                 new Change(VillageFoundationQuestion.NAME_CHANGE_COST).getChangeString(),
+                upkeep_grace_period,
                 new Change(Long.parseLong(minMoneyDrained)).getChangeString(),
                 maxDrainModifier,
                 drainCumulateFigure));

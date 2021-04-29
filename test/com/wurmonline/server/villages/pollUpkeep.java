@@ -1,10 +1,7 @@
-package GuardPlanMethodsTests;
+package com.wurmonline.server.villages;
 
 import com.wurmonline.server.TimeConstants;
 import com.wurmonline.server.economy.Economy;
-import com.wurmonline.server.villages.GuardPlan;
-import com.wurmonline.server.villages.Village;
-import com.wurmonline.server.villages.Villages;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,6 +42,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
         doAnswer(answer).when(gVillage).broadCastAlert(anyString(), anyByte());
         doAnswer(answer).when(gVillage).broadCastAlert(anyString());
+        doAnswer(answer).when(gVillage).broadCastNormal(anyString());
     }
 
     private boolean call() throws Exception {
@@ -364,7 +362,7 @@ public class pollUpkeep extends GuardPlanMethodsTest {
         UpkeepCosts.free_perimeter = 100;
         assert gPlan.getTimeLeft() == TimeConstants.WEEK_MILLIS;
         call();
-        assertEquals("You may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
+        assertEquals("Or you may resize to remove any non-free tiles.  You can have up to 10 free tiles and 100 free perimeter tiles.",
                 broadcastMessages.get(1));
         assertEquals((byte)4,
                 (byte)broadcastBytes.get(1));
@@ -399,6 +397,46 @@ public class pollUpkeep extends GuardPlanMethodsTest {
     }
 
     @Test
+    public void testBroadcastOnHourFreeMessageOnlyTiles() throws Exception {
+        gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.HOUR_MILLIS - 1);
+        UpkeepCosts.free_tiles = 10;
+        UpkeepCosts.free_perimeter = 0;
+        assert gPlan.getTimeLeft() < TimeConstants.HOUR_MILLIS;
+        call();
+        assertEquals("Or you may resize to remove any non-free tiles.  You can have up to 10 free tiles.",
+                broadcastMessages.get(1));
+        assertEquals((byte)2,
+                (byte)broadcastBytes.get(1));
+    }
+
+    @Test
+    public void testBroadcastOnHourFreeMessageOnlyPerimeter() throws Exception {
+        gPlan.monthlyCost = 1L;
+        setMoneyLeftTo(TimeConstants.HOUR_MILLIS - 1);
+        UpkeepCosts.free_tiles = 0;
+        UpkeepCosts.free_perimeter = 100;
+        assert gPlan.getTimeLeft() < TimeConstants.HOUR_MILLIS;
+        call();
+        assertEquals("Or you may resize to remove any non-free tiles.  You can have up to 100 free perimeter tiles.",
+                broadcastMessages.get(1));
+        assertEquals((byte)2,
+                (byte)broadcastBytes.get(1));
+    }
+
+    @Test
+    public void testBroadcastOnGracePeriodAlmostOver() throws Exception {
+        UpkeepCosts.upkeep_grace_period = 1;
+        FieldSetter.setField(gVillage, Village.class.getDeclaredField("creationDate"), System.currentTimeMillis() - 1000);
+        long timeLeft = GuardPlanMethods.graceTimeRemaining(gVillage);
+        assert timeLeft > 0 && timeLeft < TimeConstants.DAY_MILLIS;
+        assertFalse(call());
+        assertEquals("Your village upkeep grace period will run out soon.",
+                broadcastMessages.get(0));
+        assertEquals(1, broadcastMessages.size());
+    }
+
+    @Test
     public void testMonthlyTotalUpkeep() throws Exception {
         gPlan.monthlyCost = 100L;
         long startingMoney = gPlan.monthlyCost + 1;
@@ -424,5 +462,34 @@ public class pollUpkeep extends GuardPlanMethodsTest {
 
         assert gPlan.calculateUpkeep(true) == 0;
         assertFalse(call());
+    }
+
+    @Test
+    public void testGradePeriodLeftReturnsNegativeForNotUsed() {
+        UpkeepCosts.upkeep_grace_period = 0;
+
+        assertEquals(-1, GuardPlanMethods.graceTimeRemaining(gVillage));
+    }
+
+    @Test
+    public void testGradePeriodLeft() throws NoSuchFieldException {
+        UpkeepCosts.upkeep_grace_period = 1;
+        FieldSetter.setField(gVillage, Village.class.getDeclaredField("creationDate"), System.currentTimeMillis());
+
+        assertWithin(TimeConstants.DAY_MILLIS, GuardPlanMethods.graceTimeRemaining(gVillage), 100);
+    }
+
+    @Test
+    public void testGradePeriodLeftOtherValue() throws NoSuchFieldException {
+        UpkeepCosts.upkeep_grace_period = 2;
+        FieldSetter.setField(gVillage, Village.class.getDeclaredField("creationDate"), System.currentTimeMillis());
+
+        assertWithin(TimeConstants.DAY_MILLIS * 2, GuardPlanMethods.graceTimeRemaining(gVillage), 100);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private void assertWithin(long expected, long actual, long epsilon) {
+        assertTrue(expected < actual + epsilon);
+        assertTrue(expected > actual - epsilon);
     }
 }

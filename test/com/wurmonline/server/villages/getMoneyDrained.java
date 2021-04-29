@@ -1,7 +1,5 @@
-package GuardPlanMethodsTests;
+package com.wurmonline.server.villages;
 
-import com.wurmonline.server.villages.Village;
-import com.wurmonline.server.villages.Villages;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.junit.Test;
 import org.mockito.internal.util.reflection.FieldSetter;

@@ -13,6 +13,8 @@ import com.wurmonline.server.economy.Change;
 import com.wurmonline.server.economy.Economy;
 import com.wurmonline.server.economy.MonetaryConstants;
 import com.wurmonline.server.villages.GuardPlan;
+import com.wurmonline.server.villages.GuardPlanMethods;
+import com.wurmonline.server.villages.Village;
 import com.wurmonline.server.villages.Villages;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 
@@ -30,16 +32,17 @@ public final class GuardManagementQuestion extends Question implements TimeConst
 
     public void sendQuestion() {
         StringBuilder buf = new StringBuilder(this.getBmlHeader());
-        if (this.getResponder().getCitizenVillage() != null) {
-            if (this.getResponder().getCitizenVillage().plan != null) {
-                GuardPlan plan = this.getResponder().getCitizenVillage().plan;
-                if (this.getResponder().getCitizenVillage().isCitizen(this.getResponder())) {
-                    buf.append("text{text=\"The size of " + this.getResponder().getCitizenVillage().getName() + " is " + this.getResponder().getCitizenVillage().getDiameterX() + " by " + this.getResponder().getCitizenVillage().getDiameterY() + ".\"}");
-                    buf.append("text{text=\"The perimeter is " + (5 + this.getResponder().getCitizenVillage().getPerimeterSize()) + " and it has " + plan.getNumHiredGuards() + " guards hired.\"}");
+        Village village = this.getResponder().getCitizenVillage();
+        if (village != null) {
+            GuardPlan plan = village.plan;
+            if (plan != null) {                
+                if (village.isCitizen(this.getResponder())) {
+                    buf.append("text{text=\"The size of " + village.getName() + " is " + village.getDiameterX() + " by " + village.getDiameterY() + ".\"}");
+                    buf.append("text{text=\"The perimeter is " + (5 + village.getPerimeterSize()) + " and it has " + plan.getNumHiredGuards() + " guards hired.\"}");
                 }
 
                 buf.append("text{text=\"\"}");
-                if (this.getResponder().getCitizenVillage().isPermanent) {
+                if (village.isPermanent) {
                     buf.append("text{text='This village is permanent, and should never run out of money or be drained.'}");
                 } else {
                     Change c = Economy.getEconomy().getChangeFor(plan.moneyLeft);
@@ -48,10 +51,14 @@ public final class GuardManagementQuestion extends Question implements TimeConst
                     buf.append("text{text='Upkeep per month is " + upkeep.getChangeString() + ".'}");
                     long monthlyCost = plan.getMonthlyCost();
                     float cost = (float)plan.moneyLeft / (float)monthlyCost;
-                    if (monthlyCost == 0)
+                    long grace = GuardPlanMethods.graceTimeRemaining(village);
+                    if (monthlyCost == 0) {
                         buf.append("text{text=\"This means that the upkeep should last indefinitely.\"}");
-                    else
+                    } else if (UpkeepCosts.upkeep_grace_period > 0 && grace > 0) {
+                        GuardPlanMethods.addGraceTimeRemaining(buf, grace);
+                    } else {
                         buf.append("text{text=\"This means that the upkeep should last for about " + (cost * 28.0F) + " days.\"}");
+                    }
                     if (Servers.localServer.PVPSERVER || Servers.localServer.id == 3) {
                         buf.append("text{text=\"A drain would cost " + new Change(plan.getMoneyDrained()).getChangeShortString() + ".\"};");
                         long minimumDrain = UpkeepCosts.min_drain;
@@ -82,7 +89,7 @@ public final class GuardManagementQuestion extends Question implements TimeConst
 
                 freeGuards = Math.max(0, UpkeepCosts.free_guards - plan.getNumHiredGuards());
 
-                buf.append("text{text=\"How many guards do you wish to have? You currently have " + plan.getNumHiredGuards() + ", can hire " + freeGuards + " more for free and may hire up to " + GuardPlan.getMaxGuards(this.getResponder().getCitizenVillage()) + ".\"};input{text=\"" + plan.getNumHiredGuards() + "\";id=\"hired\"}; ");
+                buf.append("text{text=\"How many guards do you wish to have? You currently have " + plan.getNumHiredGuards() + ", can hire " + freeGuards + " more for free and may hire up to " + GuardPlan.getMaxGuards(village) + ".\"};input{text=\"" + plan.getNumHiredGuards() + "\";id=\"hired\"}; ");
                 buf.append("text{text=\"\"};");
 
                 buf.append("harray{label{text=\"Take money from my bank if there is not enough in the coffers\"};checkbox{id=\"use_bank\";selected=\"false\";text=\" \"}}");

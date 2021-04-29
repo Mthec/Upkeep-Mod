@@ -153,18 +153,30 @@ public final class VillageFoundationQuestion extends Question implements Village
         return UpkeepCosts.free_guards;
     }
 
+    private int getNonFreeTiles() {
+        return this.tiles - getFreeTiles();
+    }
+
     private int getChargeableTiles() {
-        int tiles = this.tiles - getFreeTiles();
-        if (tiles < 0)
-            return 0;
-        return tiles;
+        int tiles;
+        if (UpkeepCosts.free_tiles_upkeep)
+            tiles = this.tiles;
+        else
+            tiles = this.tiles - getFreeTiles();
+        return Math.max(tiles, 0);
+    }
+
+    private int getNonFreePerimeter() {
+        return this.perimeterTiles - getFreePerimeter();
     }
 
     private int getChargeablePerimeter() {
-        int perimeter = this.perimeterTiles - getFreePerimeter();
-        if (perimeter < 0)
-            return 0;
-        return perimeter;
+        int perimeter;
+        if (UpkeepCosts.free_perimeter_upkeep)
+            perimeter = this.perimeterTiles;
+        else
+            perimeter = this.perimeterTiles - getFreePerimeter();
+        return Math.max(perimeter, 0);
     }
 
     private int getExpansionDiff(long free, int newSize, int oldSize) {
@@ -835,9 +847,9 @@ public final class VillageFoundationQuestion extends Question implements Village
     }
 
     private long getFoundingCost() {
-        long moneyNeeded = this.getChargeableTiles() * Villages.TILE_COST;
-        moneyNeeded += this.getChargeablePerimeter() * Villages.PERIMETER_COST;
-        moneyNeeded += (long)Math.max(0, this.selectedGuards - getFreeGuards()) * Villages.GUARD_COST;
+        long moneyNeeded = this.getNonFreeTiles() * Villages.TILE_COST;
+        moneyNeeded += this.getNonFreePerimeter() * Villages.PERIMETER_COST;
+        moneyNeeded += getNonFreeGuards(this.selectedGuards) * Villages.GUARD_COST;
         return moneyNeeded;
     }
 
@@ -1375,7 +1387,7 @@ public final class VillageFoundationQuestion extends Question implements Village
         buf.append("text{text=\"You selected a size of ").append(this.diameterX).append(" by ").append(this.diameterY).append(".\"}");
         if(!this.expanding) {
             if(!Servers.localServer.isFreeDeeds()) {
-                buf.append("text{text=\"The Purchase price for these tiles are ").append((new Change(this.getChargeableTiles() * Villages.TILE_COST)).getChangeString()).append(".\"}");
+                buf.append("text{text=\"The Purchase price for these tiles are ").append((new Change(this.getNonFreeTiles() * Villages.TILE_COST)).getChangeString()).append(".\"}");
             }
 
             if(Servers.localServer.isUpkeep()) {
@@ -1417,7 +1429,7 @@ public final class VillageFoundationQuestion extends Question implements Village
             buf.append("text{text=\"You have selected a perimeter of 5").append(Servers.localServer.isFreeDeeds() ? "" : " free").append(" tiles plus ").append(this.initialPerimeter).append(" additional tiles from your settlement boundary.\"}");
             if(this.initialPerimeter > 0) {
                 if(!Servers.localServer.isFreeDeeds()) {
-                    buf.append("text{text=\"The initial cost for the perimeter tiles will be ").append((new Change(this.getChargeablePerimeter() * Villages.PERIMETER_COST)).getChangeString()).append(".\"}");
+                    buf.append("text{text=\"The initial cost for the perimeter tiles will be ").append((new Change(this.getNonFreePerimeter() * Villages.PERIMETER_COST)).getChangeString()).append(".\"}");
                 }
 
                 if(Servers.localServer.isUpkeep()) {
@@ -1623,6 +1635,10 @@ public final class VillageFoundationQuestion extends Question implements Village
             }
 
             buf.append("text{text=\"Please enter in the boxes below the distances in tiles between").append(from).append("and the border of your settlement.").append(" Example: 5, 5, 6, 6 will create a deed 11 tiles by 13 tiles.").append(" Minimum is 5.\"}");
+            if (UpkeepCosts.free_tiles_upkeep)
+                buf.append("text{text=\"You get ").append(getFreePerimeter()).append(" tiles for free, but you still have to pay upkeep on them.\"}");
+            else
+                buf.append("text{text=\"You get ").append(getFreePerimeter()).append(" tiles for free.\"}");
             buf.append("text{text=\"\"}");
             buf.append("text{text=\"");
             if(!Servers.localServer.isFreeDeeds()) {
@@ -1733,6 +1749,11 @@ public final class VillageFoundationQuestion extends Question implements Village
 
         buf.append("text{text=\"\"}");
         buf.append("text{text=\"Please enter the number of tiles BEYOND the 5").append(Servers.localServer.isFreeDeeds() ? "" : " initial tiles that you get for free").append(". You can simply leave the number at zero if you are happy with the ").append(5).append(Servers.localServer.isFreeDeeds() ? "" : " free").append(" tiles or extend the perimeter at a later date.\"}");
+        if (UpkeepCosts.free_perimeter_upkeep)
+            buf.append("text{text=\"You get ").append(getFreePerimeter()).append(" tiles for free, but you still have to pay upkeep on them.\"}");
+        else
+            buf.append("text{text=\"You get ").append(getFreePerimeter()).append(" tiles for free.\"}");
+        buf.append("text{text=\"\"}");
         buf.append("text{text=\"\"}");
         buf.append("harray{label{text=\"Perimeter Size: 5").append(Servers.localServer.isFreeDeeds() ? "" : " free").append(" tiles plus: \"}");
         buf.append("input{maxchars=\"3\";id=\"perimeter\";text=\"").append(this.initialPerimeter).append("\"};label{text=\" tiles radius\"}}");
@@ -1838,7 +1859,7 @@ public final class VillageFoundationQuestion extends Question implements Village
         buf.append("text{type=\"bold\";text=\"Do you wish to hire guards?\"}");
         buf.append("text{text=\"\"}");
         buf.append("text{text=\"For ").append(this.villageName).append(" you may hire up to ").append(this.maxGuards).append(" guards.\"}");
-        buf.append("text{text=\"You may have up to ").append(getFreeGuards()).append(" free guards.\"}");
+        buf.append("text{text=\"You may have up to ").append(getFreeGuards()).append(" free guards.").append(UpkeepCosts.free_guards_upkeep ? "  Their initial cost is free, however you will still be charged upkeep." : "").append("\"}");
         buf.append("text{text=\"\"}");
         if(Servers.localServer.isChallengeOrEpicServer() && !Servers.localServer.isFreeDeeds()) {
             buf.append("text{text=\"The only guard type is heavy guards. The running upkeep cost increases the more guards you have in a sort of ladder system. The first guards are cheaper than the last.\"};");
@@ -1911,6 +1932,18 @@ public final class VillageFoundationQuestion extends Question implements Village
         }
 
         this.addTotalUpkeep(buf);
+        if (UpkeepCosts.upkeep_grace_period > 0) {
+            if (this.expanding) {
+                try {
+                    Village village = Villages.getVillage(this.deed.getData2());
+                    GuardPlanMethods.addGraceTimeRemaining(buf, GuardPlanMethods.graceTimeRemaining(village));
+                } catch (NoSuchVillageException ignored) {
+                    // Handled below.
+                }
+            } else {
+                buf.append("text{text=\"This server has a grace period of ").append(UpkeepCosts.upkeep_grace_period).append(" days before you will start paying upkeep.\"}");
+            }
+        }
         buf.append("text{text=\"\"}");
         buf.append("text{type=\"bold\";text=\"Name and Type\"}");
         if(!this.expanding) {
@@ -1951,20 +1984,20 @@ public final class VillageFoundationQuestion extends Question implements Village
                     if (this.willHaveHighay()) {
                         if (!village.isHighwayAllowed()) {
                             hasError = true;
-                            buf.append("text{type=\"bold\";color=\"255,0,0\";text=\"Error: The new size covers a highway but highways have not been allowed, see settlment settings to change this option.\"}");
+                            buf.append("text{type=\"bold\";color=\"255,0,0\";text=\"Error: The new size covers a highway but highways have not been allowed, see settlement settings to change this option.\"}");
                         } else if (village.hasHighway()) {
                             buf.append("text{text=\"The new size will still cover a highway which is already allowed by settlement settings.\"}");
                         } else {
                             buf.append("text{text=\"The new size will now cover a highway which is already allowed by settlement settings.\"}");
                         }
                     } else if (village.isHighwayAllowed()) {
-                        buf.append("text{text=\"Note: You will not be able to use KOS as highways have been enabled for this settlment, see settlment settings to change this option.\"}");
+                        buf.append("text{text=\"Note: You will not be able to use KOS as highways have been enabled for this settlement, see settlement settings to change this option.\"}");
                     } else {
                         buf.append("label{text=\"Note: To allow KOS or Highways, use the settlement settings.\"}");
                     }
                 } else if (this.willHaveHighay()) {
                     hasError = true;
-                    buf.append("text{type=\"bold\";color=\"255,0,0\";text=\"Error: Cannot expand over a highway if KOS is enabled, see settlment settings to change this option.\"}");
+                    buf.append("text{type=\"bold\";color=\"255,0,0\";text=\"Error: Cannot expand over a highway if KOS is enabled, see settlement settings to change this option.\"}");
                 } else {
                     buf.append("text{text=\"Note: You will not be able to have highway through this settlement as KOS is active.\"}");
                 }

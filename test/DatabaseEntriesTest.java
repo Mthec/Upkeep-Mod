@@ -23,15 +23,9 @@ public class DatabaseEntriesTest {
     public void setUp() throws SQLException {
         String currentDir = "Creative Copy";
         ServerDirInfo.setPath(Paths.get(currentDir + (currentDir.endsWith(File.separator) ? "" : File.separator)));
-        // TODO - No longer needed?
-        //ServerDirInfo.setConstantsFileName(ServerDirInfo.getFileDBPath() + "wurm.ini");
         Constants.load();
         Constants.dbHost = currentDir;
         Constants.dbPort = "";
-        //Constants.loginDbHost = currentDir;
-        //Constants.loginDbPort = "";
-        //Constants.siteDbHost = currentDir;
-        //Constants.siteDbPort = "";
         DbConnector.initialize();
         db = DbConnector.getZonesDbCon();
     }
@@ -48,19 +42,5 @@ public class DatabaseEntriesTest {
         ps = db.prepareStatement("SELECT name FROM sqlite_master WHERE type='table' AND name='UPKEEP_BUFFER';");
         rs = ps.executeQuery();
         Assert.assertTrue(rs.next());
-    }
-
-    @Test
-    public void testBufferForEveryVillage () throws SQLException {
-        PreparedStatement ps2 = db.prepareStatement("SELECT ID FROM VILLAGES;");
-        ResultSet rs2 = ps2.executeQuery();
-        Assert.assertTrue(rs2.isBeforeFirst());
-        while (rs2.next()) {
-            ps = db.prepareStatement("SELECT * FROM UPKEEP_BUFFER WHERE VILLAGEID=?");
-            ps.setInt(1, rs2.getInt("ID"));
-            rs = ps.executeQuery();
-            Assert.assertTrue(rs.isBeforeFirst());
-        }
-        DbUtilities.closeDatabaseObjects(ps2, rs2);
     }
 }

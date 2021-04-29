@@ -1,6 +1,7 @@
 package com.wurmonline.server.villages;
 
 import com.wurmonline.server.Servers;
+import com.wurmonline.server.TimeConstants;
 import com.wurmonline.server.economy.Economy;
 import com.wurmonline.server.economy.Shop;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
@@ -46,9 +47,9 @@ public class GuardPlanMethods {
             GuardPlan guardPlan = (GuardPlan)o;
             try {
                 Village vill = guardPlan.getVillage();
-                long tiles = (long)vill.getNumTiles() - UpkeepCosts.free_tiles;
+                long tiles = (long)vill.getNumTiles() - (UpkeepCosts.free_tiles_upkeep ? 0 : UpkeepCosts.free_tiles);
                 long cost = tiles > 0L ? tiles * Villages.TILE_UPKEEP : 0L;
-                long perimeter = (long)vill.getPerimeterNonFreeTiles() - UpkeepCosts.free_perimeter;
+                long perimeter = (long)vill.getPerimeterNonFreeTiles() - (UpkeepCosts.free_perimeter_upkeep ? 0 : UpkeepCosts.free_perimeter);
                 cost += perimeter > 0L ? perimeter * com.wurmonline.server.villages.Villages.PERIMETER_UPKEEP : 0L;
                 cost += GuardPlan.getCostForGuards(guardPlan.hiredGuardNumber);
                 if (vill.isCapital()) {
@@ -78,7 +79,7 @@ public class GuardPlanMethods {
 
     public static Object getCostForGuards(Object o, Method method, Object[] args) {
         int nonFreeGuards = (int)args[0];
-        nonFreeGuards = Math.max(0, nonFreeGuards - UpkeepCosts.free_guards);
+        nonFreeGuards = Math.max(0, nonFreeGuards - (UpkeepCosts.free_guards_upkeep ? 0 : UpkeepCosts.free_guards));
         if (!UpkeepCosts.epic_guard_upkeep_scaling) {
             return nonFreeGuards * Villages.GUARD_UPKEEP;
         }
@@ -88,8 +89,27 @@ public class GuardPlanMethods {
     public static Object pollUpkeep(Object o, Method method, Object[] args) throws NoSuchFieldException, IllegalAccessException {
         GuardPlan guardPlan = (GuardPlan)o;
         try {
-            if (guardPlan.getVillage().isPermanent) {
+            Village village = guardPlan.getVillage();
+
+            if (village.isPermanent)
                 return false;
+
+            if (UpkeepCosts.upkeep_grace_period > 0) {
+                long timeLeft = graceTimeRemaining(village);
+                if (timeLeft > 0 && timeLeft <= TimeConstants.DAY_MILLIS) {
+                    Field lastSentWarningField = GuardPlan.class.getDeclaredField("lastSentWarning");
+                    long lastSentWarning = ReflectionUtil.getPrivateField(guardPlan, lastSentWarningField);
+                    long now = System.currentTimeMillis();
+
+                    if (now - lastSentWarning >= TimeConstants.HOUR_MILLIS) {
+                        ReflectionUtil.setPrivateField(guardPlan, lastSentWarningField, now);
+                        village.broadCastNormal("Your village upkeep grace period will run out soon.");
+                    }
+                }
+
+                if (timeLeft >= 0) {
+                    return false;
+                }
             }
         } catch (NoSuchVillageException ignored) {
         }
@@ -155,8 +175,7 @@ public class GuardPlanMethods {
                 if (tl < 3600000L) {
                     try {
                         guardPlan.getVillage().broadCastAlert("The village is disbanding within the hour. You may add upkeep money to the village coffers at the token immediately.", (byte)2);
-                        if (UpkeepCosts.free_tiles > 0 || UpkeepCosts.free_perimeter > 0)
-                            guardPlan.getVillage().broadCastAlert("Or you may resize to remove any non-free tiles.  You can have up to " + UpkeepCosts.free_tiles + " free tiles and " + UpkeepCosts.free_perimeter + " free perimeter tiles.", (byte)2);
+                        removeNonFreeTilesMessage(guardPlan.getVillage(), (byte)2);
                         guardPlan.getVillage().broadCastAlert("Any traders who are citizens of " + guardPlan.getVillage().getName() + " will disband without refund.");
                     } catch (NoSuchVillageException var9) {
                         logger.log(Level.WARNING, "No Village? " + guardPlan.villageId, var9);
@@ -167,8 +186,7 @@ public class GuardPlanMethods {
 
                         try {
                             guardPlan.getVillage().broadCastAlert("The village is disbanding within 24 hours. You may add upkeep money to the village coffers at the token.", (byte)2);
-                            if (UpkeepCosts.free_tiles > 0 || UpkeepCosts.free_perimeter > 0)
-                                guardPlan.getVillage().broadCastAlert("Or you may resize to remove any non-free tiles.  You can have up to " + UpkeepCosts.free_tiles + " free tiles and " + UpkeepCosts.free_perimeter + " free perimeter tiles.", (byte)2);
+                            removeNonFreeTilesMessage(guardPlan.getVillage(), (byte)2);
                             guardPlan.getVillage().broadCastAlert("Any traders who are citizens of " + guardPlan.getVillage().getName() + " will disband without refund.");
                         } catch (NoSuchVillageException var8) {
                             logger.log(Level.WARNING, "No Village? " + guardPlan.villageId, var8);
@@ -179,8 +197,7 @@ public class GuardPlanMethods {
 
                     try {
                         guardPlan.getVillage().broadCastAlert("The village is disbanding within one week. Due to the low morale this gives, the guards have ceased their general maintenance of structures.", (byte)4);
-                        if (UpkeepCosts.free_tiles > 0 || UpkeepCosts.free_perimeter > 0)
-                            guardPlan.getVillage().broadCastAlert("You may resize to remove any non-free tiles.  You can have up to " + UpkeepCosts.free_tiles + " free tiles and " + UpkeepCosts.free_perimeter + " free perimeter tiles.", (byte)4);
+                        removeNonFreeTilesMessage(guardPlan.getVillage(), (byte)4);
                         guardPlan.getVillage().broadCastAlert("Any traders who are citizens of " + guardPlan.getVillage().getName() + " will disband without refund.");
                     } catch (NoSuchVillageException var7) {
                         logger.log(Level.WARNING, "No Village? " + guardPlan.villageId, var7);
@@ -190,5 +207,49 @@ public class GuardPlanMethods {
                 return false;
             }
         }
+    }
+
+    public static long graceTimeRemaining(Village village) {
+        int grace = UpkeepCosts.upkeep_grace_period;
+        if (grace > 0) {
+            return (village.creationDate + (grace * TimeConstants.DAY_MILLIS)) - System.currentTimeMillis();
+        }
+        return -1;
+    }
+
+    public static void addGraceTimeRemaining(StringBuilder sb, long grace) {
+        long remainingDays = grace / TimeConstants.DAY_MILLIS;
+        sb.append("text{text=\"This village is still in it's grace period, it will start paying upkeep in ");
+        if (remainingDays > 0) {
+            sb.append(remainingDays == 1 ? "1 day" : remainingDays + " days");
+        } else {
+            long remainingHours = grace / TimeConstants.HOUR_MILLIS;
+            if (remainingHours == 0)
+                sb.append("less than an hour");
+            else
+                sb.append(remainingHours == 1 ? "1 hour" : remainingHours + " hours");
+        }
+        sb.append(".\"}");
+    }
+    
+    private static void removeNonFreeTilesMessage(Village village, byte messageType) {
+        StringBuilder sb = new StringBuilder("Or you may resize to remove any non-free tiles.  You can have up to ");
+        boolean freeTiles = false;
+        if (!UpkeepCosts.free_tiles_upkeep && UpkeepCosts.free_tiles > 0) {
+            freeTiles = true;
+            sb.append(UpkeepCosts.free_tiles).append(" free tiles");
+        }
+
+        boolean freePerimeter = false;
+        if (!UpkeepCosts.free_perimeter_upkeep && UpkeepCosts.free_perimeter > 0) {
+            if (freeTiles)
+                sb.append(" and ");
+
+            freePerimeter = true;
+            sb.append(UpkeepCosts.free_perimeter).append(" free perimeter tiles");
+        }
+
+        if (freeTiles || freePerimeter)
+            village.broadCastAlert(sb.append(".").toString(), messageType);
     }
 }

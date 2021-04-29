@@ -1,8 +1,5 @@
-package GuardPlanMethodsTests;
+package com.wurmonline.server.villages;
 
-import com.wurmonline.server.villages.GuardPlan;
-import com.wurmonline.server.villages.GuardPlanMethods;
-import com.wurmonline.server.villages.MyGuardPlan;
 import mod.wurmonline.mods.upkeepcosts.UpkeepCosts;
 import org.gotti.wurmunlimited.modloader.ReflectionUtil;
 import org.junit.Test;
